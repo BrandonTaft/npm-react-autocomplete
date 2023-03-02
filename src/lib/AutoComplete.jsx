@@ -2,18 +2,28 @@ import { useState, useEffect, useRef } from "react";
 import Trie from "./trie";
 
 
-export default function AutoComplete({ list }) {
+export default function AutoComplete({ list, getObjectValue }) {
   const [trie, setTrie] = useState();
   const [cached, setCached] = useState(false)
   const [suggestedWords, setSuggestedWords] = useState([]);
   const cursor = useRef(0);
-
+console.log(getObjectValue)
   useEffect(() => {
     setTrie(new Trie())
     setCached(false)
   }, [])
-
+let listItems;
   //If the Node isn't already initialized and once the list prop is loaded
+  if(getObjectValue){ listItems = list.map(getObjectValue)
+    if (listItems && !cached && trie) {
+      for (let i = 0; i < listItems.length; i++) {
+        const item = listItems[i]
+        trie.insert(item)
+      }
+      setCached(true)
+    }
+  }
+  else{
   if (list && !cached && trie) {
     for (let i = 0; i < list.length; i++) {
       const item = list[i]
@@ -21,7 +31,8 @@ export default function AutoComplete({ list }) {
     }
     setCached(true)
   }
-
+  }
+  console.log(listItems)
   const handlePrefix = (e) => {
     cursor.current = 0
     const prefix = e.target.value
