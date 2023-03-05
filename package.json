@@ -1,8 +1,9 @@
 {
   "name": "react-autocomplete-input-component",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Accessible, Easy to implement , autocomplete, customizable, Autocomplete search bar for React.js",
   "author": "BTaftCan <btaftcan@gmail.com>",
+  "license": "MIT",
   "keywords": [
     "react",
     "component",
