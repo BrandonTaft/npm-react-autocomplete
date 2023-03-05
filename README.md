@@ -10,6 +10,9 @@
         {name: 'Dick'},
         {name: 'Harry'}
     ]}
+    onSelect={() => {
+          console.log("I RAN")
+        }}
 />
 
 ```
@@ -31,3 +34,6 @@ npm install --save react-autocomplete-input-component
 ### `getPropValue: Function` (Optional)
 - Only needed if `list` contains objects
 - Sets the object property value that will be displayed
+
+### `onSelect: Function` (Optional)
+- Function that will run when list item is selected
