@@ -2,11 +2,12 @@ import { useState, useEffect, useRef } from "react";
 import Trie from "./trie";
 
 export default function AutoComplete({ list, propValue, highlightFirstItem, onSelect, itemStyle }) {
-  const [isHighlighted, setIsHighlighted] = useState(Number(highlightFirstItem - 1))
+  const [isHighlighted, setIsHighlighted] = useState(0)
   const [suggestedWords, setSuggestedWords] = useState([]);
   const trie = useRef();
-
+  const inputRef = useRef()
   useEffect(() => {
+
     // Determine value to retrieve from list
     let listItems;
     if (!propValue) {
@@ -14,6 +15,11 @@ export default function AutoComplete({ list, propValue, highlightFirstItem, onSe
     } else {
       listItems = list.map(propValue)
     };
+
+    // If specified, set first item in dropdown to not be auto highlighted
+    if (highlightFirstItem === false) {
+      setIsHighlighted(-1)
+    }
 
     // Initialize root node and store in ref.current
     trie.current = new Trie();
@@ -31,6 +37,11 @@ export default function AutoComplete({ list, propValue, highlightFirstItem, onSe
       setSuggestedWords(trie.current.find(e.target.value))
     } else {
       setSuggestedWords([])
+      if (highlightFirstItem === false) {
+        setIsHighlighted(-1)
+      } else {
+        setIsHighlighted(0)
+      }
     }
   };
 
@@ -48,9 +59,16 @@ export default function AutoComplete({ list, propValue, highlightFirstItem, onSe
       }
     };
     if (e.keyCode === 13) {
-      e.target.value = suggestedWords[isHighlighted]
-      onSelect( suggestedWords[isHighlighted], isHighlighted)
+      inputRef.current.value = suggestedWords[isHighlighted]
+      onSelect(suggestedWords[isHighlighted], isHighlighted)
+      setSuggestedWords([])
     };
+  }
+
+  const onMouseClick = (e,suggestedWord, index) => {
+    inputRef.current.value = suggestedWord
+    setSuggestedWords([])
+    onSelect(suggestedWord, index)
   }
 
   const suggestedWordList = suggestedWords.map((suggestedWord, index) => {
@@ -58,7 +76,13 @@ export default function AutoComplete({ list, propValue, highlightFirstItem, onSe
       setIsHighlighted(0)
     }
     return (
-      <div key={index} id={`suggested-word-${index}`} style={{ background: isHighlighted === index ? 'lightgray' : 'white', ...itemStyle }} onClick={ () => { onSelect(suggestedWord, index)} } >
+      <div
+        key={index}
+        id={`suggested-word-${index}`}
+        style={{ background: isHighlighted === index ? 'lightgray' : 'none', ...itemStyle }}
+        onClick={(e) => { onMouseClick(e,suggestedWord, index) }}
+        onMouseEnter={() => setIsHighlighted(index)}
+      >
         {suggestedWord}
       </div>
     )
@@ -68,6 +92,7 @@ export default function AutoComplete({ list, propValue, highlightFirstItem, onSe
   return (
     <>
       <input
+        ref={inputRef}
         type="text"
         name="search"
         placeholder="Search..."
@@ -75,9 +100,7 @@ export default function AutoComplete({ list, propValue, highlightFirstItem, onSe
         onKeyDown={handleKeyDown}
         autoComplete='off'
       />
-     
-        {suggestedWordList}
-     
+      {!suggestedWordList ? null : suggestedWordList}
     </>
   )
 }

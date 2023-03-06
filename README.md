@@ -11,8 +11,9 @@
     ]}
     getPropValue={(listItem) => listItem.name}
     highlightFirstItem={false}
-    onSelect={() => {
-          console.log("I RAN")
+    itemStyle = { itemStyle }
+    onSelect={(suggestedWord, index) => {
+          console.log(suggestedWord, index)
         }}
 />
 
@@ -37,6 +38,12 @@ npm install --save react-autocomplete-input-component
 - Sets the object property value that will be displayed
 
 ### `highlightFirstItem: Boolean`
+- True - automatically highlights first item in dropdown
+- False - Press down arrow or hover with mouse to highlight
 
-### `onSelect: Function` (Optional)
+### `itemStyle: Object`
+- J.S. Style Object Variable
+
+### `onSelect: Function`
 - Function that will run when list item is selected
+- Has access to the item selected and it's index
