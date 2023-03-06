@@ -1,70 +1,64 @@
 import { useState, useEffect, useRef } from "react";
 import Trie from "./trie";
 
-
-export default function AutoComplete({ list, propValue, highlightFirstItem, onSelect }) {
-  const [trie, setTrie] = useState();
-  const [isCached, setIsCached] = useState(false);
+export default function AutoComplete({ list, propValue, highlightFirstItem, onSelect, itemStyle }) {
   const [isHighlighted, setIsHighlighted] = useState(Number(highlightFirstItem - 1))
   const [suggestedWords, setSuggestedWords] = useState([]);
-  
+  const trie = useRef();
+
   useEffect(() => {
-    setTrie(new Trie())
-    setIsCached(false)
-  }, [])
+    // Determine value to retrieve from list
+    let listItems;
+    if (!propValue) {
+      listItems = list
+    } else {
+      listItems = list.map(propValue)
+    };
 
-  // Getting and Setting list items
-  let listItems;
-  if (!propValue) {
-    listItems = list
-  } else {
-    listItems = list.map(propValue)
-  };
+    // Initialize root node and store in ref.current
+    trie.current = new Trie();
 
-  //If the Node isn't already initialized and the list prop is loaded
-  if (listItems && !isCached && trie) {
+    // Insert each word into the data trie
     for (let i = 0; i < listItems.length; i++) {
       const item = listItems[i]
-      trie.insert(item)
+      trie.current.insert(item)
     }
-    setIsCached(true)
-  }
+  }, [list, propValue]);
 
   const handlePrefix = (e) => {
     const prefix = e.target.value
     if (prefix.length > 0) {
-      setSuggestedWords(trie.find(e.target.value))
+      setSuggestedWords(trie.current.find(e.target.value))
     } else {
       setSuggestedWords([])
     }
-    
-  }
+  };
 
-  const handleKeyDown = (e) => { 
-    if (e.keyCode === 40 ) {
+  const handleKeyDown = (e) => {
+    if (e.keyCode === 40) {
       e.preventDefault()
-      if(isHighlighted < suggestedWords.length - 1) {
-     setIsHighlighted( isHighlighted + 1 )
+      if (isHighlighted < suggestedWords.length - 1) {
+        setIsHighlighted(isHighlighted + 1)
       }
     };
-    if (e.keyCode === 38 ) {
+    if (e.keyCode === 38) {
       e.preventDefault()
-      if(isHighlighted > 0) {
-     setIsHighlighted( isHighlighted - 1 )
+      if (isHighlighted > 0) {
+        setIsHighlighted(isHighlighted - 1)
       }
     };
-    if (e.keyCode === 13 ) {
+    if (e.keyCode === 13) {
       e.target.value = suggestedWords[isHighlighted]
-      onSelect()
+      onSelect( suggestedWords[isHighlighted], isHighlighted)
     };
   }
 
   const suggestedWordList = suggestedWords.map((suggestedWord, index) => {
-    if(isHighlighted > suggestedWords.length) {
+    if (isHighlighted > suggestedWords.length) {
       setIsHighlighted(0)
     }
     return (
-      <div key={index} id={`suggested-word-${index}`} style={{ background: isHighlighted === index ? 'lightgray' : 'white' }}>
+      <div key={index} id={`suggested-word-${index}`} style={{ background: isHighlighted === index ? 'lightgray' : 'white', ...itemStyle }} onClick={ () => { onSelect(suggestedWord, index)} } >
         {suggestedWord}
       </div>
     )
@@ -81,9 +75,9 @@ export default function AutoComplete({ list, propValue, highlightFirstItem, onSe
         onKeyDown={handleKeyDown}
         autoComplete='off'
       />
-      <div className="search-list" >
+     
         {suggestedWordList}
-      </div>
+     
     </>
   )
 }
