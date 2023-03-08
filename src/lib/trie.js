@@ -76,13 +76,13 @@ export default class Trie {
                     node = node.nextLetters[prefix[i].toUpperCase()];
                 } else {
                     // if there are none then return it.
-                    return output;
+                    return output ;
                 }
             }
 
             // find all words in the node that match
             findAllWords(node, output);
-            return output;
+            return output.sort();
         };
 
         // find all words in the given node.

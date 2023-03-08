@@ -1,6 +1,6 @@
 {
   "name": "react-autocomplete-input-component",
-  "version": "1.0.6",
+  "version": "1.0.14",
   "description": "Accessible, Easy to implement , autocomplete, customizable, Autocomplete search bar for React.js",
   "author": "BTaftCan <btaftcan@gmail.com>",
   "license": "MIT",
@@ -59,6 +59,7 @@
   "devDependencies": {
     "@babel/cli": "^7.21.0",
     "@babel/core": "^7.21.0",
-    "@babel/preset-env": "^7.20.2"
+    "@babel/preset-env": "^7.20.2",
+    "@types/core-js": "^2.5.5"
   }
 }

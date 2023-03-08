@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
+require("core-js/modules/es.array.sort.js");
 class TrieNode {
   constructor(letter) {
     this.letter = letter;
@@ -85,7 +86,7 @@ class Trie {
 
       // find all words in the node that match
       findAllWords(node, output);
-      return output;
+      return output.sort();
     };
 
     // find all words in the given node.

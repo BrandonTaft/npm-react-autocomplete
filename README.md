@@ -4,17 +4,24 @@
 ```jsx
 
 <AutoComplete
-    list={[
-        {name: 'Tom'},
-        {name: 'Dick'},
-        {name: 'Harry'}
-    ]}
     getPropValue={(listItem) => listItem.name}
     highlightFirstItem={false}
-    itemStyle = { itemStyle }
-    onSelect={(suggestedWord, index) => {
-          console.log(suggestedWord, index)
+    list={[
+        {name: 'Tom', id: 3233},
+        {name: 'Tommy', id: 3445},
+        {name: 'Thomas', id: 3663}
+    ]}
+    itemStyle = {{ 
+          cursor: "pointer",
+          padding: "5px"
         }}
+    onSelect={(index, suggestedWord, list) => {
+            for(let i = 0 ; i < list.length; i++) {
+              if(suggestedWord === list[i].name) {
+                console.log(list[i])
+              }
+            } 
+          }}
 />
 
 ```
@@ -35,11 +42,11 @@ npm install --save react-autocomplete-input-component
 
 ### `getPropValue: Function` (Optional)
 - Only needed if `list` contains objects
-- Sets the object property value that will be displayed
+- Sets the object property value that will be displayed in dropdown
 
 ### `highlightFirstItem: Boolean`
-- True - automatically highlights first item in dropdown
-- False - Press down arrow or hover with mouse to highlight
+- True (default) - automatically highlights first item in dropdown
+- False - Press arrow key or hover with mouse to highlight
 
 ### `itemStyle: Object`
 - J.S. Style Object Variable

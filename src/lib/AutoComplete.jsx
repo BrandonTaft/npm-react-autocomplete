@@ -1,19 +1,27 @@
 import { useState, useEffect, useRef } from "react";
 import Trie from "./trie";
 
-export default function AutoComplete({ list, propValue, highlightFirstItem, onSelect, itemStyle }) {
+export default function AutoComplete({ list, getPropValue, highlightFirstItem, onSelect, itemStyle }) {
   const [isHighlighted, setIsHighlighted] = useState(0)
   const [suggestedWords, setSuggestedWords] = useState([]);
   const trie = useRef();
   const inputRef = useRef()
   useEffect(() => {
-
+    if (!list) { console.warn("You must provide an array to the list prop") }
+    if (!onSelect) { console.warn("You must provide a function to the onSelect prop") }
     // Determine value to retrieve from list
     let listItems;
-    if (!propValue) {
+    if (!getPropValue) {
       listItems = list
     } else {
-      listItems = list.map(propValue)
+      try{ 
+        listItems = list.map(getPropValue)
+        if(listItems[0] == null) {
+          throw("Check the getPropValue function - the property value doesn't seem to exist")
+        }
+      } catch(error) {
+        throw("Check the getPropValue function - the property value doesn't seem to exist")
+      }
     };
 
     // If specified, set first item in dropdown to not be auto highlighted
@@ -25,11 +33,13 @@ export default function AutoComplete({ list, propValue, highlightFirstItem, onSe
     trie.current = new Trie();
 
     // Insert each word into the data trie
-    for (let i = 0; i < listItems.length; i++) {
-      const item = listItems[i]
-      trie.current.insert(item)
+    if (list) {
+      for (let i = 0; i < listItems.length; i++) {
+        const item = listItems[i]
+        trie.current.insert(item)
+      }
     }
-  }, [list, propValue]);
+  }, [list, getPropValue]);
 
   const handlePrefix = (e) => {
     const prefix = e.target.value
@@ -59,20 +69,44 @@ export default function AutoComplete({ list, propValue, highlightFirstItem, onSe
       }
     };
     if (e.keyCode === 13) {
-      inputRef.current.value = suggestedWords[isHighlighted]
-      onSelect(suggestedWords[isHighlighted], isHighlighted)
-      setSuggestedWords([])
+      if (list) {
+        inputRef.current.value = suggestedWords[isHighlighted]
+        try {
+          onSelect(isHighlighted, suggestedWords[isHighlighted], list)
+        } catch (error) {
+          throw ("You must provide a function to the onSelect prop")
+        } finally {
+          setSuggestedWords([])
+        }
+      } else {
+        try {
+          onSelect(-1, inputRef.current.value)
+        } catch (error) {
+          throw ("You must provide a function to the onSelect prop")
+        } finally {
+          inputRef.current.value = ""
+        }
+      }
     };
+    // if (e.keyCode === 8) {
+    //   if (isHighlighted > suggestedWords.length) {
+    //     setIsHighlighted(suggestedWords.length)
+    //   }
+    // };
   }
 
-  const onMouseClick = (e,suggestedWord, index) => {
+  const onMouseClick = (index, suggestedWord) => {
     inputRef.current.value = suggestedWord
     setSuggestedWords([])
-    onSelect(suggestedWord, index)
+    try {
+      onSelect(index, suggestedWord, list)
+    } catch (error) {
+      throw ("You must provide a function to the onSelect prop")
+    }
   }
 
   const suggestedWordList = suggestedWords.map((suggestedWord, index) => {
-    if (isHighlighted > suggestedWords.length) {
+    if (isHighlighted + 1 > suggestedWords.length) {
       setIsHighlighted(0)
     }
     return (
@@ -80,7 +114,7 @@ export default function AutoComplete({ list, propValue, highlightFirstItem, onSe
         key={index}
         id={`suggested-word-${index}`}
         style={{ background: isHighlighted === index ? 'lightgray' : 'none', ...itemStyle }}
-        onClick={(e) => { onMouseClick(e,suggestedWord, index) }}
+        onClick={(e) => { onMouseClick(index, suggestedWord) }}
         onMouseEnter={() => setIsHighlighted(index)}
       >
         {suggestedWord}
