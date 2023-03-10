@@ -2,14 +2,14 @@
 # React Autocomplete Input Component
 
 ```jsx
+import { AutoComplete } from 'react-autocomplete-input-component';
 
 <AutoComplete
         getPropValue={(listItem) => listItem.name}
         highlightFirstItem={false}
         clearOnSelect={false}
         inputProps={{
-          placeholder: "search...",
-
+          placeholder: "search..."
         }}
         list={[
           { name: 'Tom', id: 3233 },
@@ -30,9 +30,8 @@
         }}
         onSelect={(selectedItem, list) => {
           for (let i = 0; i < list.length; i++) {
-            console.log(list[i], "TEST")
             if (selectedItem === list[i].name) {
-              console.log(list[i], "TEST")
+              console.log(list[i])
             }
           }
         }}
@@ -52,6 +51,7 @@ npm install --save react-autocomplete-input-component
 
 ### `list: Array`
 - `Array` of the values to be searched for a match to the user input
+- Values are first inserted and stored into a Trie
 - values that contain the text entered will be displayed in the dropdown
 - `getPropValue: Function` is needed to display Object Property Values
 
@@ -82,4 +82,4 @@ npm install --save react-autocomplete-input-component
 
 ### `onSelect: Function`
 - Function that will run when list item is selected
-- Has access to the item selected and it's index
+- Has access to the item selected and the original list array

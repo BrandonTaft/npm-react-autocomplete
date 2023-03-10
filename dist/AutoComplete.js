@@ -176,7 +176,7 @@ function AutoComplete(_ref) {
       onMouseEnter: () => setIsHighlighted(index)
     }, suggestedWord);
   });
-  return /*#__PURE__*/createElement(Fragment, null, /*#__PURE__*/.createElement("input", _extends({}, inputProps, {
+  return /*#__PURE__*/createElement(Fragment, null, /*#__PURE__*/createElement("input", _extends({}, inputProps, {
     style: inputStyle,
     ref: inputRef,
     type: "text",

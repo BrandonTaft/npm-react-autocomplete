@@ -8,8 +8,7 @@ function App() {
         highlightFirstItem={false}
         clearOnSelect={false}
         inputProps={{
-          placeholder: "search...",
-
+          placeholder: "search..."
         }}
         list={[
           { name: 'Tom', id: 3233 },
@@ -30,9 +29,8 @@ function App() {
         }}
         onSelect={(selectedItem, list) => {
           for (let i = 0; i < list.length; i++) {
-            console.log(list[i], "TEST")
             if (selectedItem === list[i].name) {
-              console.log(list[i], "TEST")
+              console.log(list[i])
             }
           }
         }}

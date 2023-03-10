@@ -1,6 +1,6 @@
 {
   "name": "react-autocomplete-input-component",
-  "version": "1.0.17",
+  "version": "1.0.21",
   "description": "Accessible, Easy to implement , autocomplete, customizable, Autocomplete search bar for React.js",
   "author": "BTaftCan <btaftcan@gmail.com>",
   "license": "MIT",
@@ -21,7 +21,6 @@
     "type": "git",
     "url": "https://github.com/BrandonTaft/npm-react-autocomplete.git"
   },
-  "homepage": "https://Brandontaft.net",
   "dependencies": {
     "@babel/polyfill": "^7.12.1",
     "@testing-library/jest-dom": "^5.16.5",
