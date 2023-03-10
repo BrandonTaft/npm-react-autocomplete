@@ -1,14 +1,16 @@
 "use strict";
 
-require("core-js/modules/es.symbol.description.js");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = AutoComplete;
-require("core-js/modules/web.dom-collections.iterator.js");
-var _react = require("react");
+const _default = AutoComplete;
+export { _default as default };
+import "core-js/modules/web.dom-collections.iterator.js";
+import "core-js/modules/es.object.assign.js";
+import { useState, useRef, useEffect, createElement, Fragment } from "react";
 var _trie = _interopRequireDefault(require("./trie"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
 function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = null != arguments[i] ? arguments[i] : {}; i % 2 ? ownKeys(Object(source), !0).forEach(function (key) { _defineProperty(target, key, source[key]); }) : Object.getOwnPropertyDescriptors ? Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)) : ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } return target; }
 function _defineProperty(obj, key, value) { key = _toPropertyKey(key); if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
@@ -17,37 +19,46 @@ function _toPrimitive(input, hint) { if (typeof input !== "object" || input === 
 function AutoComplete(_ref) {
   let {
     list,
+    clearOnSelect,
+    inputProps,
     getPropValue,
     highlightFirstItem,
     onSelect,
-    itemStyle
+    listItemStyle,
+    inputStyle,
+    dropDownStyle
   } = _ref;
-  const [isHighlighted, setIsHighlighted] = (0, _react.useState)(0);
-  const [suggestedWords, setSuggestedWords] = (0, _react.useState)([]);
-  const trie = (0, _react.useRef)();
-  const inputRef = (0, _react.useRef)();
-  (0, _react.useEffect)(() => {
-    if (!list) {
-      console.warn("You must provide an array to the list prop");
-    }
-    if (!onSelect) {
-      console.warn("You must provide a function to the onSelect prop");
-    }
-    // Determine value to retrieve from list
+  const [isHighlighted, setIsHighlighted] = (0, useState)(0);
+  const [suggestedWords, setSuggestedWords] = (0, useState)([]);
+  const trie = (0, useRef)();
+  const inputRef = (0, useRef)();
+  const dropDownRef = (0, useRef)();
+  (0, useEffect)(() => {
     let listItems;
-    if (!getPropValue) {
-      listItems = list;
-    } else {
-      try {
-        listItems = list.map(getPropValue);
-        if (listItems[0] == null) {
-          throw "Check the getPropValue function - the property value doesn't seem to exist";
+    try {
+      if (list.some(value => {
+        return typeof value == "object";
+      })) {
+        if (!getPropValue) {
+          console.warn("getPropValue is needed to get property value");
+          listItems = list;
+        } else if (list) {
+          listItems = list.map(getPropValue);
+          if (listItems[0] == null) {
+            listItems = list;
+            console.warn("Check the getPropValue function - the property value doesn't seem to exist");
+          }
+        } else {
+          console.warn("List prop is missing!");
         }
-      } catch (error) {
-        throw "Check the getPropValue function - the property value doesn't seem to exist";
+      } else {
+        listItems = list;
       }
+    } catch (error) {
+      throw Object.assign(new Error("Check the list prop - list must be an array"), {
+        error: Error
+      });
     }
-    ;
 
     // If specified, set first item in dropdown to not be auto highlighted
     if (highlightFirstItem === false) {
@@ -64,8 +75,19 @@ function AutoComplete(_ref) {
         trie.current.insert(item);
       }
     }
-  }, [list, getPropValue]);
+    document.addEventListener("mousedown", onClickOff);
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("mousedown", onClickOff);
+    };
+  }, [list, getPropValue, dropDownRef]);
+  const onClickOff = e => {
+    if (dropDownRef.current && !dropDownRef.current.contains(e.target)) {
+      setSuggestedWords([]);
+    }
+  };
   const handlePrefix = e => {
+    if (!list) console.warn("You must pass an array to the list prop");
     const prefix = e.target.value;
     if (prefix.length > 0) {
       setSuggestedWords(trie.current.find(e.target.value));
@@ -95,64 +117,78 @@ function AutoComplete(_ref) {
     ;
     if (e.keyCode === 13) {
       if (list) {
-        inputRef.current.value = suggestedWords[isHighlighted];
         try {
-          onSelect(isHighlighted, suggestedWords[isHighlighted], list);
+          onSelect(suggestedWords[isHighlighted], list);
+          if (clearOnSelect == null) {
+            inputRef.current.value = "";
+          } else {
+            inputRef.current.value = suggestedWords[isHighlighted];
+          }
         } catch (error) {
-          throw "You must provide a function to the onSelect prop";
+          throw Object.assign(new Error("You must provide a function to the onSelect prop"), {
+            error: Error
+          });
         } finally {
           setSuggestedWords([]);
         }
       } else {
         try {
-          onSelect(-1, inputRef.current.value);
+          onSelect(inputRef.current.value);
         } catch (error) {
-          throw "You must provide a function to the onSelect prop";
+          throw Object.assign(new Error("You must provide a function to the onSelect prop"), {
+            error: Error
+          });
         } finally {
-          inputRef.current.value = "";
+          if (clearOnSelect == null) inputRef.current.value = "";
         }
       }
+      ;
     }
-    ;
-    // if (e.keyCode === 8) {
-    //   if (isHighlighted > suggestedWords.length) {
-    //     setIsHighlighted(suggestedWords.length)
-    //   }
-    // };
   };
-
-  const onMouseClick = (index, suggestedWord) => {
-    inputRef.current.value = suggestedWord;
+  const onMouseClick = suggestedWord => {
     setSuggestedWords([]);
     try {
-      onSelect(index, suggestedWord, list);
+      onSelect(suggestedWord, list);
+      if (clearOnSelect == null) {
+        inputRef.current.value = "";
+      } else {
+        inputRef.current.value = suggestedWord;
+      }
     } catch (error) {
-      throw "You must provide a function to the onSelect prop";
+      throw Object.assign(new Error("You must provide a function to the onSelect prop"), {
+        error: Error
+      });
     }
   };
   const suggestedWordList = suggestedWords.map((suggestedWord, index) => {
     if (isHighlighted + 1 > suggestedWords.length) {
       setIsHighlighted(0);
     }
-    return /*#__PURE__*/React.createElement("div", {
+    return /*#__PURE__*/createElement("div", {
       key: index,
       id: "suggested-word-".concat(index),
       style: _objectSpread({
         background: isHighlighted === index ? 'lightgray' : 'none'
-      }, itemStyle),
-      onClick: e => {
-        onMouseClick(index, suggestedWord);
+      }, listItemStyle),
+      onClick: () => {
+        onMouseClick(suggestedWord);
       },
       onMouseEnter: () => setIsHighlighted(index)
     }, suggestedWord);
   });
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("input", {
+  return /*#__PURE__*/createElement(Fragment, null, /*#__PURE__*/.createElement("input", _extends({}, inputProps, {
+    style: inputStyle,
     ref: inputRef,
     type: "text",
-    name: "search",
-    placeholder: "Search...",
+    onClick: handlePrefix,
     onChange: handlePrefix,
     onKeyDown: handleKeyDown,
     autoComplete: "off"
-  }), !suggestedWordList ? null : suggestedWordList);
+  })), /*#__PURE__*/createElement("div", {
+    ref: dropDownRef,
+    style: dropDownStyle,
+    onClick: e => {
+      onClickOff(e);
+    }
+  }, !suggestedWordList ? null : suggestedWordList));
 }

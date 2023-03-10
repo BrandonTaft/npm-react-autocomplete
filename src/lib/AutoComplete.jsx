@@ -1,28 +1,38 @@
 import { useState, useEffect, useRef } from "react";
 import Trie from "./trie";
 
-export default function AutoComplete({ list, getPropValue, highlightFirstItem, onSelect, itemStyle }) {
+export default function AutoComplete({ list, clearOnSelect, inputProps, getPropValue, highlightFirstItem, onSelect, listItemStyle, inputStyle, dropDownStyle }) {
   const [isHighlighted, setIsHighlighted] = useState(0)
   const [suggestedWords, setSuggestedWords] = useState([]);
   const trie = useRef();
-  const inputRef = useRef()
+  const inputRef = useRef();
+  const dropDownRef = useRef();
+
   useEffect(() => {
-    if (!list) { console.warn("You must provide an array to the list prop") }
-    if (!onSelect) { console.warn("You must provide a function to the onSelect prop") }
-    // Determine value to retrieve from list
     let listItems;
-    if (!getPropValue) {
-      listItems = list
-    } else {
-      try{ 
-        listItems = list.map(getPropValue)
-        if(listItems[0] == null) {
-          throw("Check the getPropValue function - the property value doesn't seem to exist")
+    try {
+      if (list.some(value => { return typeof value == "object" })) {
+        if (!getPropValue) {
+          console.warn("getPropValue is needed to get property value")
+          listItems = list
+        } else if (list) {
+          listItems = list.map(getPropValue)
+          if (listItems[0] == null) {
+            listItems = list
+            console.warn("Check the getPropValue function - the property value doesn't seem to exist")
+          }
+        } else {
+          console.warn("List prop is missing!")
         }
-      } catch(error) {
-        throw("Check the getPropValue function - the property value doesn't seem to exist")
+      } else {
+        listItems = list
       }
-    };
+    } catch (error) {
+      throw Object.assign(
+        new Error("Check the list prop - list must be an array"),
+        { error: Error }
+      );
+    }
 
     // If specified, set first item in dropdown to not be auto highlighted
     if (highlightFirstItem === false) {
@@ -39,9 +49,23 @@ export default function AutoComplete({ list, getPropValue, highlightFirstItem, o
         trie.current.insert(item)
       }
     }
-  }, [list, getPropValue]);
+
+    
+    document.addEventListener("mousedown", onClickOff);
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("mousedown", onClickOff);
+    };
+  }, [list, getPropValue, dropDownRef]);
+
+  const onClickOff = (e) => {
+    if (dropDownRef.current && !dropDownRef.current.contains(e.target)) {
+      setSuggestedWords([])
+    }
+  };
 
   const handlePrefix = (e) => {
+    if (!list) console.warn("You must pass an array to the list prop")
     const prefix = e.target.value
     if (prefix.length > 0) {
       setSuggestedWords(trie.current.find(e.target.value))
@@ -70,40 +94,54 @@ export default function AutoComplete({ list, getPropValue, highlightFirstItem, o
     };
     if (e.keyCode === 13) {
       if (list) {
-        inputRef.current.value = suggestedWords[isHighlighted]
         try {
-          onSelect(isHighlighted, suggestedWords[isHighlighted], list)
+          onSelect(suggestedWords[isHighlighted], list)
+          if (clearOnSelect == null) {
+            inputRef.current.value = ""
+          } else {
+            inputRef.current.value = suggestedWords[isHighlighted]
+          }
         } catch (error) {
-          throw ("You must provide a function to the onSelect prop")
+          throw Object.assign(
+            new Error("You must provide a function to the onSelect prop"),
+            { error: Error }
+          );
         } finally {
           setSuggestedWords([])
         }
       } else {
         try {
-          onSelect(-1, inputRef.current.value)
+          onSelect(inputRef.current.value)
         } catch (error) {
-          throw ("You must provide a function to the onSelect prop")
+          throw Object.assign(
+            new Error("You must provide a function to the onSelect prop"),
+            { error: Error }
+          );
         } finally {
-          inputRef.current.value = ""
+          if (clearOnSelect == null) inputRef.current.value = ""
         }
-      }
-    };
-    // if (e.keyCode === 8) {
-    //   if (isHighlighted > suggestedWords.length) {
-    //     setIsHighlighted(suggestedWords.length)
-    //   }
-    // };
-  }
-
-  const onMouseClick = (index, suggestedWord) => {
-    inputRef.current.value = suggestedWord
-    setSuggestedWords([])
-    try {
-      onSelect(index, suggestedWord, list)
-    } catch (error) {
-      throw ("You must provide a function to the onSelect prop")
+      };
     }
   }
+
+  const onMouseClick = (suggestedWord) => {
+    setSuggestedWords([])
+    try {
+      onSelect(suggestedWord, list)
+      if (clearOnSelect == null) {
+        inputRef.current.value = ""
+      } else {
+        inputRef.current.value = suggestedWord
+      }
+    } catch (error) {
+      throw Object.assign(
+        new Error("You must provide a function to the onSelect prop"),
+        { error: Error }
+      );
+    }
+  }
+
+  
 
   const suggestedWordList = suggestedWords.map((suggestedWord, index) => {
     if (isHighlighted + 1 > suggestedWords.length) {
@@ -113,8 +151,8 @@ export default function AutoComplete({ list, getPropValue, highlightFirstItem, o
       <div
         key={index}
         id={`suggested-word-${index}`}
-        style={{ background: isHighlighted === index ? 'lightgray' : 'none', ...itemStyle }}
-        onClick={(e) => { onMouseClick(index, suggestedWord) }}
+        style={{ background: isHighlighted === index ? 'lightgray' : 'none', ...listItemStyle }}
+        onClick={() => { onMouseClick(suggestedWord) }}
         onMouseEnter={() => setIsHighlighted(index)}
       >
         {suggestedWord}
@@ -126,15 +164,22 @@ export default function AutoComplete({ list, getPropValue, highlightFirstItem, o
   return (
     <>
       <input
+        {...inputProps}
+        style={inputStyle}
         ref={inputRef}
         type="text"
-        name="search"
-        placeholder="Search..."
+        onClick={handlePrefix}
         onChange={handlePrefix}
         onKeyDown={handleKeyDown}
         autoComplete='off'
       />
-      {!suggestedWordList ? null : suggestedWordList}
+      <div 
+      ref={dropDownRef} 
+      style={dropDownStyle}
+      onClick={(e) => { onClickOff(e) }}
+      >
+        {!suggestedWordList ? null : suggestedWordList}
+      </div>
     </>
   )
 }

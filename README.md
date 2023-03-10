@@ -4,25 +4,39 @@
 ```jsx
 
 <AutoComplete
-    getPropValue={(listItem) => listItem.name}
-    highlightFirstItem={false}
-    list={[
-        {name: 'Tom', id: 3233},
-        {name: 'Tommy', id: 3445},
-        {name: 'Thomas', id: 3663}
-    ]}
-    itemStyle = {{ 
+        getPropValue={(listItem) => listItem.name}
+        highlightFirstItem={false}
+        clearOnSelect={false}
+        inputProps={{
+          placeholder: "search...",
+
+        }}
+        list={[
+          { name: 'Tom', id: 3233 },
+          { name: 'Tommy', id: 3445 },
+          { name: 'Thomas', id: 3663 }
+        ]}
+        inputStyle={{
+          width: "200px",
+          padding: "5px"
+        }}
+        listItemStyle={{
           cursor: "pointer",
           padding: "5px"
         }}
-    onSelect={(index, suggestedWord, list) => {
-            for(let i = 0 ; i < list.length; i++) {
-              if(suggestedWord === list[i].name) {
-                console.log(list[i])
-              }
-            } 
-          }}
-/>
+        dropDownStyle={{
+          backgroundColor: "antiquewhite",
+          width: "215px"
+        }}
+        onSelect={(selectedItem, list) => {
+          for (let i = 0; i < list.length; i++) {
+            console.log(list[i], "TEST")
+            if (selectedItem === list[i].name) {
+              console.log(list[i], "TEST")
+            }
+          }
+        }}
+      />
 
 ```
 
@@ -37,19 +51,34 @@ npm install --save react-autocomplete-input-component
 ## Props
 
 ### `list: Array`
-- `Array` of the values to be displayed in the dropdown
+- `Array` of the values to be searched for a match to the user input
+- values that contain the text entered will be displayed in the dropdown
 - `getPropValue: Function` is needed to display Object Property Values
 
 ### `getPropValue: Function` (Optional)
 - Only needed if `list` contains objects
 - Sets the object property value that will be displayed in dropdown
 
-### `highlightFirstItem: Boolean`
+### `highlightFirstItem: Boolean` (Optional)
 - True (default) - automatically highlights first item in dropdown
 - False - Press arrow key or hover with mouse to highlight
 
-### `itemStyle: Object`
-- J.S. Style Object Variable
+### `clearOnSelect: Boolean` (Optional)
+- True (default) the input will clear when an item is selected
+- False value selected will become the input value
+
+### `inputProps: Object`
+- Sets HTML text input attributes with some exceptions
+- Type and Autocomplete are unable to be overridden
+
+### `inputStyle: Object`
+- J.S. Style Object Variable for input
+
+### `listItemStyle: Object`
+- J.S. Style Object Variable for each item dropdown
+
+### `dropDownStyle: Object`
+- J.S. Style Object Variable for dropdown
 
 ### `onSelect: Function`
 - Function that will run when list item is selected
