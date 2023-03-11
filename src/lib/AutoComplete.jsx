@@ -176,7 +176,6 @@ export default function AutoComplete({ list, clearOnSelect, inputProps, getPropV
       <div 
       ref={dropDownRef} 
       style={dropDownStyle}
-      onClick={(e) => { onClickOff(e) }}
       >
         {!suggestedWordList ? null : suggestedWordList}
       </div>
