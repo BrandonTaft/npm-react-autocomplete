@@ -10,11 +10,12 @@ function App() {
         inputProps={{
           placeholder: "search..."
         }}
-        list={[
-          { name: 'Tom', id: 3233 },
-          { name: 'Tommy', id: 3445 },
-          { name: 'Thomas', id: 3663 }
-        ]}
+        // list={[
+        //   { name: 'Tom', id: 3233 },
+        //   { name: 'Tommy', id: 3445 },
+        //   { name: 'Thomas', id: 3663 }
+        // ]}
+        //list={['tom', 'tommy', 'tomas','tommmy', 'tory']}
         inputStyle={{
           width: "200px",
           padding: "5px"

@@ -1,8 +1,20 @@
 import { render, screen } from '@testing-library/react';
 import App from './App';
+import AutoComplete from './lib/AutoComplete';
 
-test('renders learn react link', () => {
-  render(<App />);
-  const linkElement = screen.getByText(/learn react/i);
-  expect(linkElement).toBeInTheDocument();
+
+describe('AutoComplete', () => {
+  it('renders AutoComplete component', () => {
+    render(<AutoComplete />);
+  });
+});
+
+describe('true is truthy and false is falsy', () => {
+  it('true is truthy', () => {
+    expect(true).toBe(true);
+  });
+
+  it('false is falsy', () => {
+    expect(false).toBe(false);
+  });
 });

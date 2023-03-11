@@ -56,7 +56,7 @@ export default function AutoComplete({ list, clearOnSelect, inputProps, getPropV
       // Unbind the event listener on clean up
       document.removeEventListener("mousedown", onClickOff);
     };
-  }, [list, getPropValue, dropDownRef]);
+  }, [list, getPropValue, highlightFirstItem, dropDownRef]);
 
   const onClickOff = (e) => {
     if (dropDownRef.current && !dropDownRef.current.contains(e.target)) {
