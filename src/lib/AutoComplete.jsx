@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Children } from "react";
 import Trie from "./trie";
 
 export default function AutoComplete({ list, clearOnSelect, inputProps, getPropValue, highlightFirstItem, onSelect, listItemStyle, inputStyle, dropDownStyle }) {
@@ -11,21 +11,25 @@ export default function AutoComplete({ list, clearOnSelect, inputProps, getPropV
   useEffect(() => {
     let listItems;
     try {
-      if (list.some(value => { return typeof value == "object" })) {
-        if (!getPropValue) {
-          console.warn("getPropValue is needed to get property value")
-          listItems = list
-        } else if (list) {
-          listItems = list.map(getPropValue)
-          if (listItems[0] == null) {
+      if (list) {
+        if (list.some(value => { return typeof value == "object" })) {
+          if (!getPropValue) {
+            console.warn("getPropValue is needed to get property value")
             listItems = list
-            console.warn("Check the getPropValue function - the property value doesn't seem to exist")
+          } else if (list) {
+            listItems = list.map(getPropValue)
+            if (listItems[0] == null) {
+              listItems = list
+              console.warn("Check the getPropValue function - the property value doesn't seem to exist")
+            }
+          } else {
+            console.warn("List prop is missing!")
           }
         } else {
-          console.warn("List prop is missing!")
+          listItems = list
         }
       } else {
-        listItems = list
+        list = []
       }
     } catch (error) {
       throw Object.assign(
@@ -43,14 +47,14 @@ export default function AutoComplete({ list, clearOnSelect, inputProps, getPropV
     trie.current = new Trie();
 
     // Insert each word into the data trie
-    if (list) {
+    if (listItems) {
       for (let i = 0; i < listItems.length; i++) {
         const item = listItems[i]
         trie.current.insert(item)
       }
     }
 
-    
+
     document.addEventListener("mousedown", onClickOff);
     return () => {
       // Unbind the event listener on clean up
@@ -65,7 +69,7 @@ export default function AutoComplete({ list, clearOnSelect, inputProps, getPropV
   };
 
   const handlePrefix = (e) => {
-    if (!list) console.warn("You must pass an array to the list prop")
+    if (!list) console.warn("You must pass a valid array to the list prop")
     const prefix = e.target.value
     if (prefix.length > 0) {
       setSuggestedWords(trie.current.find(e.target.value))
@@ -81,15 +85,22 @@ export default function AutoComplete({ list, clearOnSelect, inputProps, getPropV
 
   const handleKeyDown = (e) => {
     if (e.keyCode === 40) {
-      e.preventDefault()
+     e.preventDefault()
       if (isHighlighted < suggestedWords.length - 1) {
         setIsHighlighted(isHighlighted + 1)
+        if(dropDownRef.current.children[isHighlighted]) {
+        dropDownRef.current.children[isHighlighted + 1].scrollIntoView({ block: "nearest", inline: "nearest" })
       }
+    }
     };
     if (e.keyCode === 38) {
       e.preventDefault()
       if (isHighlighted > 0) {
         setIsHighlighted(isHighlighted - 1)
+        if(dropDownRef.current.children[isHighlighted]) {
+          dropDownRef.current.children[isHighlighted - 1].scrollIntoView({ block: "nearest", inline: "nearest" })
+
+        }
       }
     };
     if (e.keyCode === 13) {
@@ -108,6 +119,15 @@ export default function AutoComplete({ list, clearOnSelect, inputProps, getPropV
           );
         } finally {
           setSuggestedWords([])
+          if (clearOnSelect == null) {
+            inputRef.current.value = ""
+          } else {
+            if (!suggestedWords[isHighlighted]) {
+              inputRef.current.value = ""
+            } else {
+              inputRef.current.value = suggestedWords[isHighlighted]
+            }
+          }
         }
       } else {
         try {
@@ -138,10 +158,14 @@ export default function AutoComplete({ list, clearOnSelect, inputProps, getPropV
         new Error("You must provide a function to the onSelect prop"),
         { error: Error }
       );
+    } finally {
+      if (clearOnSelect == null) {
+        inputRef.current.value = ""
+      } else {
+        inputRef.current.value = suggestedWord
+      }
     }
   }
-
-  
 
   const suggestedWordList = suggestedWords.map((suggestedWord, index) => {
     if (isHighlighted + 1 > suggestedWords.length) {
@@ -150,6 +174,7 @@ export default function AutoComplete({ list, clearOnSelect, inputProps, getPropV
     return (
       <div
         key={index}
+        tabndex={index}
         id={`suggested-word-${index}`}
         style={{ background: isHighlighted === index ? 'lightgray' : 'none', ...listItemStyle }}
         onClick={() => { onMouseClick(suggestedWord) }}
@@ -159,7 +184,6 @@ export default function AutoComplete({ list, clearOnSelect, inputProps, getPropV
       </div>
     )
   })
-
 
   return (
     <>
@@ -171,11 +195,12 @@ export default function AutoComplete({ list, clearOnSelect, inputProps, getPropV
         onClick={handlePrefix}
         onChange={handlePrefix}
         onKeyDown={handleKeyDown}
+       
         autoComplete='off'
       />
-      <div 
-      ref={dropDownRef} 
-      style={dropDownStyle}
+      <div
+        ref={dropDownRef}
+        style={dropDownStyle}
       >
         {!suggestedWordList ? null : suggestedWordList}
       </div>
