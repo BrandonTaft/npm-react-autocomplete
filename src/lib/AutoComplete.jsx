@@ -85,19 +85,19 @@ export default function AutoComplete({ list, clearOnSelect, inputProps, getPropV
 
   const handleKeyDown = (e) => {
     if (e.keyCode === 40) {
-     e.preventDefault()
+      e.preventDefault()
       if (isHighlighted < suggestedWords.length - 1) {
         setIsHighlighted(isHighlighted + 1)
-        if(dropDownRef.current.children[isHighlighted]) {
-        dropDownRef.current.children[isHighlighted + 1].scrollIntoView({ block: "nearest", inline: "nearest" })
+        if (dropDownRef.current.children[isHighlighted]) {
+          dropDownRef.current.children[isHighlighted + 1].scrollIntoView({ block: "nearest", inline: "nearest" })
+        }
       }
-    }
     };
     if (e.keyCode === 38) {
       e.preventDefault()
       if (isHighlighted > 0) {
         setIsHighlighted(isHighlighted - 1)
-        if(dropDownRef.current.children[isHighlighted]) {
+        if (dropDownRef.current.children[isHighlighted]) {
           dropDownRef.current.children[isHighlighted - 1].scrollIntoView({ block: "nearest", inline: "nearest" })
 
         }
@@ -195,7 +195,7 @@ export default function AutoComplete({ list, clearOnSelect, inputProps, getPropV
         onClick={handlePrefix}
         onChange={handlePrefix}
         onKeyDown={handleKeyDown}
-       
+
         autoComplete='off'
       />
       <div

@@ -36,23 +36,27 @@ function AutoComplete(_ref) {
   (0, useEffect)(() => {
     let listItems;
     try {
-      if (list.some(value => {
-        return typeof value == "object";
-      })) {
-        if (!getPropValue) {
-          console.warn("getPropValue is needed to get property value");
-          listItems = list;
-        } else if (list) {
-          listItems = list.map(getPropValue);
-          if (listItems[0] == null) {
+      if (list) {
+        if (list.some(value => {
+          return typeof value == "object";
+        })) {
+          if (!getPropValue) {
+            console.warn("getPropValue is needed to get property value");
             listItems = list;
-            console.warn("Check the getPropValue function - the property value doesn't seem to exist");
+          } else if (list) {
+            listItems = list.map(getPropValue);
+            if (listItems[0] == null) {
+              listItems = list;
+              console.warn("Check the getPropValue function - the property value doesn't seem to exist");
+            }
+          } else {
+            console.warn("List prop is missing!");
           }
         } else {
-          console.warn("List prop is missing!");
+          listItems = list;
         }
       } else {
-        listItems = list;
+        list = [];
       }
     } catch (error) {
       throw Object.assign(new Error("Check the list prop - list must be an array"), {
@@ -69,7 +73,7 @@ function AutoComplete(_ref) {
     trie.current = new _trie.default();
 
     // Insert each word into the data trie
-    if (list) {
+    if (listItems) {
       for (let i = 0; i < listItems.length; i++) {
         const item = listItems[i];
         trie.current.insert(item);
@@ -80,14 +84,14 @@ function AutoComplete(_ref) {
       // Unbind the event listener on clean up
       document.removeEventListener("mousedown", onClickOff);
     };
-  }, [list, getPropValue, dropDownRef]);
+  }, [list, getPropValue, highlightFirstItem, dropDownRef]);
   const onClickOff = e => {
     if (dropDownRef.current && !dropDownRef.current.contains(e.target)) {
       setSuggestedWords([]);
     }
   };
   const handlePrefix = e => {
-    if (!list) console.warn("You must pass an array to the list prop");
+    if (!list) console.warn("You must pass a valid array to the list prop");
     const prefix = e.target.value;
     if (prefix.length > 0) {
       setSuggestedWords(trie.current.find(e.target.value));
@@ -105,6 +109,12 @@ function AutoComplete(_ref) {
       e.preventDefault();
       if (isHighlighted < suggestedWords.length - 1) {
         setIsHighlighted(isHighlighted + 1);
+        if (dropDownRef.current.children[isHighlighted]) {
+          dropDownRef.current.children[isHighlighted + 1].scrollIntoView({
+            block: "nearest",
+            inline: "nearest"
+          });
+        }
       }
     }
     ;
@@ -112,6 +122,12 @@ function AutoComplete(_ref) {
       e.preventDefault();
       if (isHighlighted > 0) {
         setIsHighlighted(isHighlighted - 1);
+        if (dropDownRef.current.children[isHighlighted]) {
+          dropDownRef.current.children[isHighlighted - 1].scrollIntoView({
+            block: "nearest",
+            inline: "nearest"
+          });
+        }
       }
     }
     ;
@@ -130,6 +146,15 @@ function AutoComplete(_ref) {
           });
         } finally {
           setSuggestedWords([]);
+          if (clearOnSelect == null) {
+            inputRef.current.value = "";
+          } else {
+            if (!suggestedWords[isHighlighted]) {
+              inputRef.current.value = "";
+            } else {
+              inputRef.current.value = suggestedWords[isHighlighted];
+            }
+          }
         }
       } else {
         try {
@@ -158,6 +183,12 @@ function AutoComplete(_ref) {
       throw Object.assign(new Error("You must provide a function to the onSelect prop"), {
         error: Error
       });
+    } finally {
+      if (clearOnSelect == null) {
+        inputRef.current.value = "";
+      } else {
+        inputRef.current.value = suggestedWord;
+      }
     }
   };
   const suggestedWordList = suggestedWords.map((suggestedWord, index) => {
@@ -166,6 +197,7 @@ function AutoComplete(_ref) {
     }
     return /*#__PURE__*/createElement("div", {
       key: index,
+      tabndex: index,
       id: "suggested-word-".concat(index),
       style: _objectSpread({
         background: isHighlighted === index ? 'lightgray' : 'none'
@@ -186,9 +218,6 @@ function AutoComplete(_ref) {
     autoComplete: "off"
   })), /*#__PURE__*/createElement("div", {
     ref: dropDownRef,
-    style: dropDownStyle,
-    onClick: e => {
-      onClickOff(e);
-    }
+    style: dropDownStyle
   }, !suggestedWordList ? null : suggestedWordList));
 }
