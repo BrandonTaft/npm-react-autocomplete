@@ -1,5 +1,6 @@
 import AutoComplete from './lib/AutoComplete';
 import testData from './test-data.json'
+import "./index.css"
 
 
 function App() {
@@ -7,17 +8,21 @@ function App() {
     <div className="App">
       <AutoComplete
         getPropValue={(listItem) => listItem.name}
-        //highlightFirstItem={false}
+        showAll={true}
+        highlightFirstItem={false}
         clearOnSelect={false}
         inputProps={{
           placeholder: "search...",
-          maxLength: "5"
         }}
         list={testData}
         inputStyle={{
           width: "200px",
           padding: "5px"
         }}
+        highlightedItem={{
+          backgroundColor: "gray"
+        }}
+        wrapperDiv={"block"}
         listItemStyle={{
           cursor: "pointer",
           padding: "5px"
@@ -25,7 +30,7 @@ function App() {
         dropDownStyle={{
           backgroundColor: "antiquewhite",
           width: "215px",
-          overflowY: "scroll",
+          overflowY: "auto",
           maxHeight: "300px"
         }}
         onSelect={(selectedItem, list) => {

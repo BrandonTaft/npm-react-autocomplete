@@ -8,7 +8,9 @@ export { _default as default };
 import "core-js/modules/web.dom-collections.iterator.js";
 import "core-js/modules/es.object.assign.js";
 import { useState, useRef, useEffect, createElement, Fragment } from "react";
+var _domScrollIntoView = _interopRequireDefault(require("dom-scroll-into-view"));
 var _trie = _interopRequireDefault(require("./trie"));
+var _reactOutsideClickHandler = _interopRequireDefault(require("react-outside-click-handler"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
@@ -19,20 +21,25 @@ function _toPrimitive(input, hint) { if (typeof input !== "object" || input === 
 function AutoComplete(_ref) {
   let {
     list,
+    showAll,
     clearOnSelect,
     inputProps,
     getPropValue,
     highlightFirstItem,
+    highlightedItem,
     onSelect,
+    wrapperDiv,
     listItemStyle,
     inputStyle,
     dropDownStyle
   } = _ref;
   const [isHighlighted, setIsHighlighted] = (0, useState)(0);
   const [suggestedWords, setSuggestedWords] = (0, useState)([]);
+  const [listItems, setListItems] = (0, useState)([]);
   const trie = (0, useRef)();
   const inputRef = (0, useRef)();
   const dropDownRef = (0, useRef)();
+  const itemsRef = (0, useRef)([]);
   (0, useEffect)(() => {
     let listItems;
     try {
@@ -58,6 +65,7 @@ function AutoComplete(_ref) {
       } else {
         list = [];
       }
+      setListItems(listItems);
     } catch (error) {
       throw Object.assign(new Error("Check the list prop - list must be an array"), {
         error: Error
@@ -76,23 +84,17 @@ function AutoComplete(_ref) {
     if (listItems) {
       for (let i = 0; i < listItems.length; i++) {
         const item = listItems[i];
-        trie.current.insert(item);
+        if (item) trie.current.insert(item);
       }
     }
-    document.addEventListener("mousedown", onClickOff);
-    return () => {
-      // Unbind the event listener on clean up
-      document.removeEventListener("mousedown", onClickOff);
-    };
   }, [list, getPropValue, highlightFirstItem, dropDownRef]);
-  const onClickOff = e => {
-    if (dropDownRef.current && !dropDownRef.current.contains(e.target)) {
-      setSuggestedWords([]);
-    }
-  };
   const handlePrefix = e => {
     if (!list) console.warn("You must pass a valid array to the list prop");
     const prefix = e.target.value;
+    if (showAll && prefix.length === 0) {
+      setSuggestedWords(listItems.sort());
+      return;
+    }
     if (prefix.length > 0) {
       setSuggestedWords(trie.current.find(e.target.value));
     } else {
@@ -103,31 +105,30 @@ function AutoComplete(_ref) {
         setIsHighlighted(0);
       }
     }
+    if (isHighlighted + 1 > suggestedWords.length) {
+      setIsHighlighted(0);
+    }
   };
   const handleKeyDown = e => {
     if (e.keyCode === 40) {
+      if (isHighlighted === suggestedWords.length - 1) {
+        setIsHighlighted(0);
+      }
       e.preventDefault();
-      if (isHighlighted < suggestedWords.length - 1) {
+      if (itemsRef.current[isHighlighted + 1]) {
         setIsHighlighted(isHighlighted + 1);
-        if (dropDownRef.current.children[isHighlighted]) {
-          dropDownRef.current.children[isHighlighted + 1].scrollIntoView({
-            block: "nearest",
-            inline: "nearest"
-          });
-        }
+        (0, _domScrollIntoView.default)(itemsRef.current[isHighlighted + 1], dropDownRef.current, {
+          onlyScrollIfNeeded: true
+        });
       }
     }
-    ;
     if (e.keyCode === 38) {
       e.preventDefault();
-      if (isHighlighted > 0) {
+      if (itemsRef.current[isHighlighted - 1]) {
         setIsHighlighted(isHighlighted - 1);
-        if (dropDownRef.current.children[isHighlighted]) {
-          dropDownRef.current.children[isHighlighted - 1].scrollIntoView({
-            block: "nearest",
-            inline: "nearest"
-          });
-        }
+        (0, _domScrollIntoView.default)(itemsRef.current[isHighlighted - 1], dropDownRef.current, {
+          onlyScrollIfNeeded: true
+        });
       }
     }
     ;
@@ -195,29 +196,33 @@ function AutoComplete(_ref) {
     if (isHighlighted + 1 > suggestedWords.length) {
       setIsHighlighted(0);
     }
-    return /*#__PURE__*/createElement("div", {
+    if (suggestedWord) return /*#__PURE__*/createElement("div", {
       key: index,
-      tabndex: index,
+      ref: el => itemsRef.current[index] = el,
       id: "suggested-word-".concat(index),
-      style: _objectSpread({
-        background: isHighlighted === index ? 'lightgray' : 'none'
-      }, listItemStyle),
+      style: isHighlighted === index ? _objectSpread(_objectSpread({}, highlightedItem), listItemStyle) : _objectSpread({}, listItemStyle),
       onClick: () => {
         onMouseClick(suggestedWord);
       },
       onMouseEnter: () => setIsHighlighted(index)
     }, suggestedWord);
   });
-  return /*#__PURE__*/createElement(Fragment, null, /*#__PURE__*/createElement("input", _extends({}, inputProps, {
+  return /*#__PURE__*/createElement(_reactOutsideClickHandler.default, {
+    display: wrapperDiv ? wrapperDiv : 'block',
+    onOutsideClick: () => {
+      setSuggestedWords([]);
+    }
+  }, /*#__PURE__*/createElement("input", _extends({}, inputProps, {
     style: inputStyle,
     ref: inputRef,
     type: "text",
-    onClick: handlePrefix,
+    onMouseDown: handlePrefix,
     onChange: handlePrefix,
     onKeyDown: handleKeyDown,
+    onFocus: handlePrefix,
     autoComplete: "off"
-  })), /*#__PURE__*/createElement("div", {
+  })), suggestedWordList.length ? /*#__PURE__*/createElement("div", {
     ref: dropDownRef,
     style: dropDownStyle
-  }, !suggestedWordList ? null : suggestedWordList));
+  }, suggestedWordList) : null);
 }

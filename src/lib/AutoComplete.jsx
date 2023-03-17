@@ -1,12 +1,16 @@
-import { useState, useEffect, useRef, Children } from "react";
+import { useState, useEffect, useRef } from "react";
+import scrollIntoView from 'dom-scroll-into-view';
+import OutsideClickHandler from 'react-outside-click-handler';
 import Trie from "./trie";
 
-export default function AutoComplete({ list, clearOnSelect, inputProps, getPropValue, highlightFirstItem, onSelect, listItemStyle, inputStyle, dropDownStyle }) {
+export default function AutoComplete({ list, showAll, clearOnSelect, inputProps, getPropValue, highlightFirstItem, highlightedItem, onSelect, wrapperDiv, listItemStyle, inputStyle, dropDownStyle }) {
   const [isHighlighted, setIsHighlighted] = useState(0)
   const [suggestedWords, setSuggestedWords] = useState([]);
+  const [listItems, setListItems] = useState([])
   const trie = useRef();
   const inputRef = useRef();
   const dropDownRef = useRef();
+  const itemsRef = useRef([]);
 
   useEffect(() => {
     let listItems;
@@ -31,6 +35,7 @@ export default function AutoComplete({ list, clearOnSelect, inputProps, getPropV
       } else {
         list = []
       }
+      setListItems(listItems)
     } catch (error) {
       throw Object.assign(
         new Error("Check the list prop - list must be an array"),
@@ -50,27 +55,19 @@ export default function AutoComplete({ list, clearOnSelect, inputProps, getPropV
     if (listItems) {
       for (let i = 0; i < listItems.length; i++) {
         const item = listItems[i]
+        if(item)
         trie.current.insert(item)
       }
     }
-
-
-    document.addEventListener("mousedown", onClickOff);
-    return () => {
-      // Unbind the event listener on clean up
-      document.removeEventListener("mousedown", onClickOff);
-    };
   }, [list, getPropValue, highlightFirstItem, dropDownRef]);
-
-  const onClickOff = (e) => {
-    if (dropDownRef.current && !dropDownRef.current.contains(e.target)) {
-      setSuggestedWords([])
-    }
-  };
 
   const handlePrefix = (e) => {
     if (!list) console.warn("You must pass a valid array to the list prop")
     const prefix = e.target.value
+    if(showAll && prefix.length === 0) {
+      setSuggestedWords(listItems.sort())
+      return
+    }
     if (prefix.length > 0) {
       setSuggestedWords(trie.current.find(e.target.value))
     } else {
@@ -81,26 +78,35 @@ export default function AutoComplete({ list, clearOnSelect, inputProps, getPropV
         setIsHighlighted(0)
       }
     }
+    if (isHighlighted + 1 > suggestedWords.length) {
+      setIsHighlighted(0)
+    }
   };
 
   const handleKeyDown = (e) => {
     if (e.keyCode === 40) {
-      e.preventDefault()
-      if (isHighlighted < suggestedWords.length - 1) {
-        setIsHighlighted(isHighlighted + 1)
-        if (dropDownRef.current.children[isHighlighted]) {
-          dropDownRef.current.children[isHighlighted + 1].scrollIntoView({ block: "nearest", inline: "nearest" })
-        }
+      if (isHighlighted === suggestedWords.length - 1) {
+        setIsHighlighted(0)
       }
-    };
+      e.preventDefault()
+      if (itemsRef.current[isHighlighted + 1]) {
+        setIsHighlighted(isHighlighted + 1)
+        scrollIntoView(
+          itemsRef.current[isHighlighted + 1],
+          dropDownRef.current,
+          { onlyScrollIfNeeded: true }
+        )
+      }
+    }
     if (e.keyCode === 38) {
       e.preventDefault()
-      if (isHighlighted > 0) {
+      if (itemsRef.current[isHighlighted - 1]) {
         setIsHighlighted(isHighlighted - 1)
-        if (dropDownRef.current.children[isHighlighted]) {
-          dropDownRef.current.children[isHighlighted - 1].scrollIntoView({ block: "nearest", inline: "nearest" })
-
-        }
+        scrollIntoView(
+          itemsRef.current[isHighlighted - 1],
+          dropDownRef.current,
+          { onlyScrollIfNeeded: true }
+        )
       }
     };
     if (e.keyCode === 13) {
@@ -171,12 +177,13 @@ export default function AutoComplete({ list, clearOnSelect, inputProps, getPropV
     if (isHighlighted + 1 > suggestedWords.length) {
       setIsHighlighted(0)
     }
+    if(suggestedWord)
     return (
       <div
         key={index}
-        tabndex={index}
+        ref={el => itemsRef.current[index] = el}
         id={`suggested-word-${index}`}
-        style={{ background: isHighlighted === index ? 'lightgray' : 'none', ...listItemStyle }}
+        style={isHighlighted === index ? { ...highlightedItem, ...listItemStyle } : { ...listItemStyle }}
         onClick={() => { onMouseClick(suggestedWord) }}
         onMouseEnter={() => setIsHighlighted(index)}
       >
@@ -185,25 +192,36 @@ export default function AutoComplete({ list, clearOnSelect, inputProps, getPropV
     )
   })
 
+
+
+
   return (
-    <>
+    <OutsideClickHandler
+      display={wrapperDiv ? wrapperDiv : 'block'}
+      onOutsideClick={() => {
+        setSuggestedWords([])
+      }}
+    >
       <input
         {...inputProps}
         style={inputStyle}
         ref={inputRef}
         type="text"
-        onClick={handlePrefix}
+        onMouseDown={handlePrefix}
         onChange={handlePrefix}
         onKeyDown={handleKeyDown}
-
+        onFocus={handlePrefix}
         autoComplete='off'
       />
-      <div
-        ref={dropDownRef}
-        style={dropDownStyle}
-      >
-        {!suggestedWordList ? null : suggestedWordList}
-      </div>
-    </>
+      {suggestedWordList.length ?
+        <div
+          ref={dropDownRef}
+          style={dropDownStyle}
+        >
+          {suggestedWordList}
+        </div>
+        :
+        null}
+    </OutsideClickHandler>
   )
 }
