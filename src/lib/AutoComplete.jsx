@@ -3,7 +3,23 @@ import scrollIntoView from 'dom-scroll-into-view';
 import OutsideClickHandler from 'react-outside-click-handler';
 import Trie from "./trie";
 
-export default function AutoComplete({ list, showAll, clearOnSelect, inputProps, getPropValue, highlightFirstItem, highlightedItem, onSelect, wrapperDiv, listItemStyle, inputStyle, dropDownStyle }) {
+export default function AutoComplete(
+  { 
+    list,
+    getPropValue,
+    onSelect,
+    highlightedItem,
+    showAll = false,
+    clearOnSelect = true,
+    highlightFirstItem = true,
+    disableOutsideClick = false,
+    wrapperDiv = 'block',
+    inputProps,
+    inputStyle,
+    dropDownStyle,
+    listItemStyle
+  }
+) {
   const [isHighlighted, setIsHighlighted] = useState(0)
   const [suggestedWords, setSuggestedWords] = useState([]);
   const [listItems, setListItems] = useState([])
@@ -55,8 +71,8 @@ export default function AutoComplete({ list, showAll, clearOnSelect, inputProps,
     if (listItems) {
       for (let i = 0; i < listItems.length; i++) {
         const item = listItems[i]
-        if(item)
-        trie.current.insert(item)
+        if (item)
+          trie.current.insert(item)
       }
     }
   }, [list, getPropValue, highlightFirstItem, dropDownRef]);
@@ -64,7 +80,7 @@ export default function AutoComplete({ list, showAll, clearOnSelect, inputProps,
   const handlePrefix = (e) => {
     if (!list) console.warn("You must pass a valid array to the list prop")
     const prefix = e.target.value
-    if(showAll && prefix.length === 0) {
+    if (showAll && prefix.length === 0) {
       setSuggestedWords(listItems.sort())
       return
     }
@@ -110,10 +126,17 @@ export default function AutoComplete({ list, showAll, clearOnSelect, inputProps,
       }
     };
     if (e.keyCode === 13) {
-      if (list) {
+      if (list && suggestedWords[isHighlighted]) {
         try {
           onSelect(suggestedWords[isHighlighted], list)
-          if (clearOnSelect == null) {
+          if(showAll) {
+            if (highlightFirstItem === false) {
+              setIsHighlighted(-1)
+            } else {
+              setIsHighlighted(0)
+            }
+          }
+          if (clearOnSelect) {
             inputRef.current.value = ""
           } else {
             inputRef.current.value = suggestedWords[isHighlighted]
@@ -125,7 +148,7 @@ export default function AutoComplete({ list, showAll, clearOnSelect, inputProps,
           );
         } finally {
           setSuggestedWords([])
-          if (clearOnSelect == null) {
+          if (clearOnSelect) {
             inputRef.current.value = ""
           } else {
             if (!suggestedWords[isHighlighted]) {
@@ -137,14 +160,16 @@ export default function AutoComplete({ list, showAll, clearOnSelect, inputProps,
         }
       } else {
         try {
-          onSelect(inputRef.current.value)
+          if(inputRef.current.value){
+          onSelect(inputRef.current.value, list)
+          }
         } catch (error) {
           throw Object.assign(
-            new Error("You must provide a function to the onSelect prop"),
+            new Error("You must provide a function to the onSelect prop", error),
             { error: Error }
           );
         } finally {
-          if (clearOnSelect == null) inputRef.current.value = ""
+          if (clearOnSelect) inputRef.current.value = ""
         }
       };
     }
@@ -154,7 +179,14 @@ export default function AutoComplete({ list, showAll, clearOnSelect, inputProps,
     setSuggestedWords([])
     try {
       onSelect(suggestedWord, list)
-      if (clearOnSelect == null) {
+      if(showAll) {
+        if (highlightFirstItem === false) {
+          setIsHighlighted(-1)
+        } else {
+          setIsHighlighted(0)
+        }
+      }
+      if (clearOnSelect) {
         inputRef.current.value = ""
       } else {
         inputRef.current.value = suggestedWord
@@ -165,7 +197,7 @@ export default function AutoComplete({ list, showAll, clearOnSelect, inputProps,
         { error: Error }
       );
     } finally {
-      if (clearOnSelect == null) {
+      if (clearOnSelect) {
         inputRef.current.value = ""
       } else {
         inputRef.current.value = suggestedWord
@@ -177,27 +209,29 @@ export default function AutoComplete({ list, showAll, clearOnSelect, inputProps,
     if (isHighlighted + 1 > suggestedWords.length) {
       setIsHighlighted(0)
     }
-    if(suggestedWord)
-    return (
-      <div
-        key={index}
-        ref={el => itemsRef.current[index] = el}
-        id={`suggested-word-${index}`}
-        style={isHighlighted === index ? { ...highlightedItem, ...listItemStyle } : { ...listItemStyle }}
-        onClick={() => { onMouseClick(suggestedWord) }}
-        onMouseEnter={() => setIsHighlighted(index)}
-      >
-        {suggestedWord}
-      </div>
-    )
+    if (suggestedWord)
+      return (
+        <div
+          key={index}
+          ref={el => itemsRef.current[index] = el}
+          id={`suggested-word-${index}`}
+          style={isHighlighted === index ? { ...highlightedItem, ...listItemStyle } : { ...listItemStyle }}
+          onClick={() => { onMouseClick(suggestedWord) }}
+          onMouseEnter={() => setIsHighlighted(index)}
+        >
+          {suggestedWord}
+        </div>
+      )
   })
 
 
-
-
+const testRef = useRef()
+console.log(testRef)
   return (
     <OutsideClickHandler
       display={wrapperDiv ? wrapperDiv : 'block'}
+      disabled={disableOutsideClick}
+      ref={testRef}
       onOutsideClick={() => {
         setSuggestedWords([])
       }}

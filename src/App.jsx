@@ -8,9 +8,10 @@ function App() {
     <div className="App">
       <AutoComplete
         getPropValue={(listItem) => listItem.name}
+        //disableOutsideClick={true}
         showAll={true}
         highlightFirstItem={false}
-        clearOnSelect={false}
+        //clearOnSelect={false}
         inputProps={{
           placeholder: "search...",
         }}
