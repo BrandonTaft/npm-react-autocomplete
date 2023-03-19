@@ -7,15 +7,23 @@ function App() {
   return (
     <div className="App">
       <AutoComplete
-        getPropValue={(listItem) => listItem.name}
+       //list={testData}
+       //list={[1,2,3,5,7,9,11]}
+      //  list={[
+      //   { name: 'Tom', id: 3233 },
+      //   { name: 'Tommy', id: 3445 },
+      //   { name: 'Thomas', id: 3663 }
+      // ]}
+     // list={"test"}
+       // getPropValue={(listItem) => listItem.name}
         //disableOutsideClick={true}
         showAll={true}
         highlightFirstItem={false}
-        //clearOnSelect={false}
+        clearOnSelect={false}
         inputProps={{
           placeholder: "search...",
         }}
-        list={testData}
+       
         inputStyle={{
           width: "200px",
           padding: "5px"
@@ -23,7 +31,7 @@ function App() {
         highlightedItem={{
           backgroundColor: "gray"
         }}
-        wrapperDiv={"block"}
+        wrapperDiv={"inline"}
         listItemStyle={{
           cursor: "pointer",
           padding: "5px"
@@ -35,6 +43,7 @@ function App() {
           maxHeight: "300px"
         }}
         onSelect={(selectedItem, list) => {
+          console.log(selectedItem)
           for (let i = 0; i < list.length; i++) {
             if (selectedItem === list[i].name) {
               console.log(list[i])

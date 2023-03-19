@@ -4,8 +4,8 @@ import OutsideClickHandler from 'react-outside-click-handler';
 import Trie from "./trie";
 
 export default function AutoComplete(
-  { 
-    list,
+  {
+    list = [],
     getPropValue,
     onSelect,
     highlightedItem,
@@ -22,7 +22,7 @@ export default function AutoComplete(
 ) {
   const [isHighlighted, setIsHighlighted] = useState(0)
   const [suggestedWords, setSuggestedWords] = useState([]);
-  const [listItems, setListItems] = useState([])
+  const [listItems, setListItems] = useState()
   const trie = useRef();
   const inputRef = useRef();
   const dropDownRef = useRef();
@@ -31,33 +31,24 @@ export default function AutoComplete(
   useEffect(() => {
     let listItems;
     try {
-      if (list) {
-        if (list.some(value => { return typeof value == "object" })) {
-          if (!getPropValue) {
-            console.warn("getPropValue is needed to get property value")
-            listItems = list
-          } else if (list) {
-            listItems = list.map(getPropValue)
-            if (listItems[0] == null) {
-              listItems = list
-              console.warn("Check the getPropValue function - the property value doesn't seem to exist")
-            }
-          } else {
-            console.warn("List prop is missing!")
-          }
-        } else {
-          listItems = list
-        }
+      if(list.length){
+      if (list.some(value => { return typeof value == "object" })) {
+        if (!getPropValue) {
+          console.error("getPropValue is needed to get property value")
+        } else if (list) {
+          listItems = list.map(getPropValue)
+          if (listItems[0] == null) {
+            console.error("Check the getPropValue function - the property value doesn't seem to exist")
+          } 
+        };
       } else {
-        list = []
-      }
-      setListItems(listItems)
-    } catch (error) {
-      throw Object.assign(
-        new Error("Check the list prop - list must be an array"),
-        { error: Error }
-      );
+       listItems = list
+      };
     }
+    } catch (error) {
+      console.log(error)
+      console.error("Check the list prop - list must be an array")
+    };
 
     // If specified, set first item in dropdown to not be auto highlighted
     if (highlightFirstItem === false) {
@@ -75,12 +66,13 @@ export default function AutoComplete(
           trie.current.insert(item)
       }
     }
+    setListItems(listItems)
   }, [list, getPropValue, highlightFirstItem, dropDownRef]);
 
   const handlePrefix = (e) => {
-    if (!list) console.warn("You must pass a valid array to the list prop")
+    // if (!list) console.warn("You must pass a valid array to the list prop")
     const prefix = e.target.value
-    if (showAll && prefix.length === 0) {
+    if (listItems && showAll && prefix.length === 0) {
       setSuggestedWords(listItems.sort())
       return
     }
@@ -88,11 +80,7 @@ export default function AutoComplete(
       setSuggestedWords(trie.current.find(e.target.value))
     } else {
       setSuggestedWords([])
-      if (highlightFirstItem === false) {
-        setIsHighlighted(-1)
-      } else {
-        setIsHighlighted(0)
-      }
+      resetHighlight()
     }
     if (isHighlighted + 1 > suggestedWords.length) {
       setIsHighlighted(0)
@@ -101,8 +89,13 @@ export default function AutoComplete(
 
   const handleKeyDown = (e) => {
     if (e.keyCode === 40) {
-      if (isHighlighted === suggestedWords.length - 1) {
+      if (!itemsRef.current[isHighlighted + 1]) {
         setIsHighlighted(0)
+        scrollIntoView(
+          itemsRef.current[0],
+          dropDownRef.current,
+          { onlyScrollIfNeeded: true }
+        )
       }
       e.preventDefault()
       if (itemsRef.current[isHighlighted + 1]) {
@@ -114,6 +107,7 @@ export default function AutoComplete(
         )
       }
     }
+
     if (e.keyCode === 38) {
       e.preventDefault()
       if (itemsRef.current[isHighlighted - 1]) {
@@ -129,18 +123,10 @@ export default function AutoComplete(
       if (list && suggestedWords[isHighlighted]) {
         try {
           onSelect(suggestedWords[isHighlighted], list)
-          if(showAll) {
-            if (highlightFirstItem === false) {
-              setIsHighlighted(-1)
-            } else {
-              setIsHighlighted(0)
-            }
+          if (showAll) {
+            resetHighlight()
           }
-          if (clearOnSelect) {
-            inputRef.current.value = ""
-          } else {
-            inputRef.current.value = suggestedWords[isHighlighted]
-          }
+          resetInputValue(suggestedWords[isHighlighted]);
         } catch (error) {
           throw Object.assign(
             new Error("You must provide a function to the onSelect prop"),
@@ -148,30 +134,26 @@ export default function AutoComplete(
           );
         } finally {
           setSuggestedWords([])
-          if (clearOnSelect) {
-            inputRef.current.value = ""
-          } else {
-            if (!suggestedWords[isHighlighted]) {
-              inputRef.current.value = ""
-            } else {
-              inputRef.current.value = suggestedWords[isHighlighted]
-            }
-          }
+          resetInputValue(suggestedWords[isHighlighted])
         }
       } else {
         try {
-          if(inputRef.current.value){
-          onSelect(inputRef.current.value, list)
+          if (inputRef.current.value) {
+            onSelect(inputRef.current.value, list)
+            resetInputValue(inputRef.current.value)
+            setSuggestedWords([])
           }
         } catch (error) {
           throw Object.assign(
             new Error("You must provide a function to the onSelect prop", error),
             { error: Error }
           );
-        } finally {
-          if (clearOnSelect) inputRef.current.value = ""
         }
       };
+    }
+    if (e.keyCode === 9) {
+      resetHighlight()
+      setSuggestedWords([])
     }
   }
 
@@ -179,29 +161,17 @@ export default function AutoComplete(
     setSuggestedWords([])
     try {
       onSelect(suggestedWord, list)
-      if(showAll) {
-        if (highlightFirstItem === false) {
-          setIsHighlighted(-1)
-        } else {
-          setIsHighlighted(0)
-        }
+      if (showAll) {
+        resetHighlight()
       }
-      if (clearOnSelect) {
-        inputRef.current.value = ""
-      } else {
-        inputRef.current.value = suggestedWord
-      }
+      resetInputValue(suggestedWord);
     } catch (error) {
       throw Object.assign(
         new Error("You must provide a function to the onSelect prop"),
         { error: Error }
       );
     } finally {
-      if (clearOnSelect) {
-        inputRef.current.value = ""
-      } else {
-        inputRef.current.value = suggestedWord
-      }
+      resetInputValue(suggestedWord);
     }
   }
 
@@ -209,8 +179,8 @@ export default function AutoComplete(
     if (isHighlighted + 1 > suggestedWords.length) {
       setIsHighlighted(0)
     }
-    if (suggestedWord)
-      return (
+    return (
+      suggestedWord ?
         <div
           key={index}
           ref={el => itemsRef.current[index] = el}
@@ -221,19 +191,17 @@ export default function AutoComplete(
         >
           {suggestedWord}
         </div>
-      )
+        : ""
+    )
   })
 
-
-const testRef = useRef()
-console.log(testRef)
   return (
     <OutsideClickHandler
       display={wrapperDiv ? wrapperDiv : 'block'}
       disabled={disableOutsideClick}
-      ref={testRef}
       onOutsideClick={() => {
         setSuggestedWords([])
+        resetHighlight()
       }}
     >
       <input
@@ -258,4 +226,24 @@ console.log(testRef)
         null}
     </OutsideClickHandler>
   )
+
+  function resetInputValue(suggestedWord) {
+    if (clearOnSelect) {
+      inputRef.current.value = "";
+    } else {
+      if (!suggestedWord) {
+        inputRef.current.value = ""
+      } else {
+        inputRef.current.value = suggestedWord;
+      }
+    }
+  }
+
+  function resetHighlight() {
+    if (highlightFirstItem === false) {
+      setIsHighlighted(-1);
+    } else {
+      setIsHighlighted(0);
+    }
+  }
 }
