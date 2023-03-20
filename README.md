@@ -64,28 +64,34 @@ npm install --save react-autocomplete-input-component
 - Only needed if `list` contains objects
 - Sets the object property value that will be displayed in dropdown
 
+### `onSelect: Function`
+- Function that will run when list item is selected
+- Has access to the item selected and the original list array
+- If the list contains numbers they will be returned as strings
+
 ### `showAll: Boolean` (Optional)
-- False (default) - behaves like you think it would - 
-  the dropdown doesn't appear until input value matches a list item's prefix
-- True - If the input is focused and empty the dropdown displays all list items
-  until a character is entered and it filters out words without matching prefixes 
+- false (default) dropdown doesn't appear until input value matches an item's prefix
+- true - If the input is focused and empty the dropdown displays all list items
 
 ### `highlightFirstItem: Boolean` (Optional)
-- True (default) - automatically highlights first item in dropdown
-- False - Press arrow key or hover with mouse to highlight
+- true (default) - automatically highlights first item in dropdown
+- false - Press arrow key or hover with mouse to highlight
 
 ### `clearOnSelect: Boolean` (Optional)
-- True (default) the input will clear when an item is selected
-- False value selected will become the input value
+- true (default) the input will clear when an item is selected
+- false value selected will become the input value
 
 ### `inputProps: Object`
 - Sets HTML text input attributes with some exceptions
 - Type and Autocomplete are unable to be overridden
 
 ### `wrapperDiv: String` (Optional)
-- Default ('block'') the component is wrapped in a div display: 'block'
+- Default ('block') the component is wrapped in a div display: 'block'
 - wrapperDiv prop accepts one of five strings
 - ( 'block', 'flex', 'inline-block', 'inline', 'contents' )
+
+### `disableOutsideClick`
+- false (default) 
 
 ### `inputStyle: Object`
 - J.S. Style Object Variable for input
@@ -99,6 +105,7 @@ npm install --save react-autocomplete-input-component
 ### `dropDownStyle: Object`
 - J.S. Style Object Variable for dropdown
 
-### `onSelect: Function`
-- Function that will run when list item is selected
-- Has access to the item selected and the original list array
+
+
+
+

@@ -1,35 +1,32 @@
+import { useState } from 'react';
 import AutoComplete from './lib/AutoComplete';
 import testData from './test-data.json'
 import "./index.css"
 
 
 function App() {
+  const [closeMenu, setCloseMenu] = useState()
+  
   return (
     <div className="App">
+      <button onClick={() => {setCloseMenu(closeMenu ? false : true)}} />
       <AutoComplete
-       //list={testData}
-       //list={[1,2,3,5,7,9,11]}
-      //  list={[
-      //   { name: 'Tom', id: 3233 },
-      //   { name: 'Tommy', id: 3445 },
-      //   { name: 'Thomas', id: 3663 }
-      // ]}
-     // list={"test"}
-       // getPropValue={(listItem) => listItem.name}
-        //disableOutsideClick={true}
-        showAll={true}
-        highlightFirstItem={false}
-        clearOnSelect={false}
-        inputProps={{
-          placeholder: "search...",
-        }}
-       
+      list={testData}
+      getPropValue={(listItem) => listItem.name}
+      disableOutsideClick={true}
+      closeMenu = {closeMenu}
+      showAll={true}
+      //highlightFirstItem={false}
+      clearOnSelect={false}
+       inputProps={{
+         placeholder: "search...",
+       }}
         inputStyle={{
           width: "200px",
           padding: "5px"
         }}
         highlightedItem={{
-          backgroundColor: "gray"
+          backgroundColor: "orange"
         }}
         wrapperDiv={"inline"}
         listItemStyle={{
@@ -43,7 +40,7 @@ function App() {
           maxHeight: "300px"
         }}
         onSelect={(selectedItem, list) => {
-          console.log(selectedItem)
+          console.log(typeof selectedItem)
           for (let i = 0; i < list.length; i++) {
             if (selectedItem === list[i].name) {
               console.log(list[i])
