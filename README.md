@@ -91,8 +91,8 @@ npm install --save react-autocomplete-input-component
 - ( 'block', 'flex', 'inline-block', 'inline', 'contents' )
 
 ### `disableOutsideClick`
-- false (default) 
-
+- false (default) the dropdown closes when mouse is clicked outside of wrapperDiv
+- true the dropdown only closes when onSelect fires or tab key is pressed
 ### `inputStyle: Object`
 - J.S. Style Object Variable for input
 
@@ -101,6 +101,7 @@ npm install --save react-autocomplete-input-component
 
 ### `highlightedItem: Object`
 - J.S. Style Object Variable for the highlighted item
+- Default color is grey
 
 ### `dropDownStyle: Object`
 - J.S. Style Object Variable for dropdown

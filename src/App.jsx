@@ -5,16 +5,20 @@ import "./index.css"
 
 
 function App() {
-  const [closeMenu, setCloseMenu] = useState()
+  const [isOpen, setIsOpen] = useState(false)
+
+const toggleChildMenu = () => {
+     setIsOpen(prevValue => !prevValue)
+  }
   
   return (
     <div className="App">
-      <button onClick={() => {setCloseMenu(closeMenu ? false : true)}} />
+      <button onClick={toggleChildMenu} />
       <AutoComplete
       list={testData}
       getPropValue={(listItem) => listItem.name}
-      disableOutsideClick={true}
-      closeMenu = {closeMenu}
+      //disableOutsideClick={true}
+      closeMenu = {isOpen}
       showAll={true}
       //highlightFirstItem={false}
       clearOnSelect={false}

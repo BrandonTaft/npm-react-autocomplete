@@ -32,6 +32,7 @@ export default function AutoComplete(
   const itemsRef = useRef([]);
 
   useEffect(() => {
+    console.log(closeMenu)
     let listItems;
     if (Array.isArray(list)) {
       if (list.some(value => { return typeof value == "object" })) {
@@ -63,24 +64,30 @@ export default function AutoComplete(
         const item = listItems[i]
         if (item && typeof item == 'number') {
           trie.current.insert(item.toString())
-      } else if (item) {
-        trie.current.insert(item)
+        } else if (item) {
+          trie.current.insert(item)
+        }
+      }
+    };
+
+    setListItems(listItems)
+
+    if (typeof closeMenu === "boolean") {
+      console.log(suggestedWords.length)
+      if (closeMenu) {
+        setSuggestedWords([])
+      } else if (!closeMenu && suggestedWords.length === 0) {
+        setSuggestedWords([])
+      } else {
+        setSuggestedWords(listItems)
       }
     }
-  };
-    setListItems(listItems)
-    if(closeMenu) {
-setSuggestedWords([])
-    } else {
-      setSuggestedWords([])
-    }
-
   }, [list, getPropValue, highlightFirstItem, dropDownRef, closeMenu]);
 
   const handlePrefix = (e) => {
     const prefix = e.target.value
-    if (listItems && showAll && prefix.length === 0) {
-    setSuggestedWords(listItems)
+    if (listItems && showAll && prefix.length === 0 && !closeMenu) {
+      setSuggestedWords(listItems)
       return
     }
     if (prefix.length > 0) {
@@ -132,7 +139,7 @@ setSuggestedWords([])
           onSelect(suggestedWords[isHighlighted].toString(), list)
         } catch (error) {
           console.error("You must provide a valid function to the onSelect prop", error)
-        }  finally {
+        } finally {
           if (showAll) {
             resetHighlight()
           }
@@ -140,15 +147,15 @@ setSuggestedWords([])
           resetInputValue(suggestedWords[isHighlighted])
         }
       } else {
-          if (inputRef.current.value) {
-            try{
+        if (inputRef.current.value) {
+          try {
             onSelect(inputRef.current.value.toString(), list)
-            } catch(error) {
-              console.error("You must provide a valid function to the `onSelect` prop", error)
-            }
-            resetInputValue(inputRef.current.value)
-            setSuggestedWords([])
+          } catch (error) {
+            console.error("You must provide a valid function to the `onSelect` prop", error)
           }
+          resetInputValue(inputRef.current.value)
+          setSuggestedWords([])
+        }
       }
     }
     if (e.keyCode === 9) {
@@ -171,8 +178,8 @@ setSuggestedWords([])
     }
   }
 
-var collator = new Intl.Collator(undefined, {numeric: true, sensitivity: 'base'});
-const sorted = suggestedWords.sort(collator.compare)
+  var collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+  const sorted = suggestedWords.sort(collator.compare)
   const suggestedWordList = sorted.map((suggestedWord, index) => {
     if (isHighlighted + 1 > suggestedWords.length) {
       setIsHighlighted(0)
@@ -192,11 +199,11 @@ const sorted = suggestedWords.sort(collator.compare)
         : ""
     )
   })
-const handleCloseMenu = () => {
-  if(suggestedWordList.length) {
-    setSuggestedWords([])
+  const handleCloseMenu = () => {
+    if (suggestedWordList.length) {
+      setSuggestedWords([])
+    }
   }
-}
   return (
     <OutsideClickHandler
       display={wrapperDiv ? wrapperDiv : 'block'}
