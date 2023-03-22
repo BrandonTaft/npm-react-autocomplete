@@ -5,10 +5,11 @@ import "./index.css"
 
 
 function App() {
-  const [isOpen, setIsOpen] = useState(false)
+  const [closeMenu, setCloseMenu] = useState()
 
 const toggleChildMenu = () => {
-     setIsOpen(prevValue => !prevValue)
+  
+     setCloseMenu(!closeMenu === true ? true : false)
   }
   
   return (
@@ -18,7 +19,8 @@ const toggleChildMenu = () => {
       list={testData}
       getPropValue={(listItem) => listItem.name}
       //disableOutsideClick={true}
-      closeMenu = {isOpen}
+      closeMenu = {closeMenu}
+      setCloseMenu = { setCloseMenu}
       showAll={true}
       //highlightFirstItem={false}
       clearOnSelect={false}

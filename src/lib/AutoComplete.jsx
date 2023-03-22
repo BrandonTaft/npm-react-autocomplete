@@ -13,6 +13,7 @@ export default function AutoComplete(
     highlightFirstItem = true,
     disableOutsideClick = false,
     closeMenu,
+    setCloseMenu,
     wrapperDiv = 'block',
     inputProps,
     inputStyle,
@@ -32,7 +33,6 @@ export default function AutoComplete(
   const itemsRef = useRef([]);
 
   useEffect(() => {
-    console.log(closeMenu)
     let listItems;
     if (Array.isArray(list)) {
       if (list.some(value => { return typeof value == "object" })) {
@@ -72,22 +72,26 @@ export default function AutoComplete(
 
     setListItems(listItems)
 
-    if (typeof closeMenu === "boolean") {
-      console.log(suggestedWords.length)
-      if (closeMenu) {
+      if (closeMenu === false) {
         setSuggestedWords([])
-      } else if (!closeMenu && suggestedWords.length === 0) {
-        setSuggestedWords([])
-      } else {
+        resetInputValue(inputRef.current.value)
+      } else if(closeMenu === true) {
+        if(showAll === true){
         setSuggestedWords(listItems)
+        } else {
+          setSuggestedWords(trie.current.find(inputRef.current.value))
+        }
       }
-    }
+   
   }, [list, getPropValue, highlightFirstItem, dropDownRef, closeMenu]);
 
   const handlePrefix = (e) => {
     const prefix = e.target.value
-    if (listItems && showAll && prefix.length === 0 && !closeMenu) {
+    if (listItems && showAll && prefix.length === 0) {
       setSuggestedWords(listItems)
+      if(setCloseMenu) {
+      setCloseMenu(true)
+      }
       return
     }
     if (prefix.length > 0) {
@@ -199,17 +203,14 @@ export default function AutoComplete(
         : ""
     )
   })
-  const handleCloseMenu = () => {
-    if (suggestedWordList.length) {
-      setSuggestedWords([])
-    }
-  }
+  
   return (
     <OutsideClickHandler
       display={wrapperDiv ? wrapperDiv : 'block'}
       disabled={disableOutsideClick}
       onOutsideClick={() => {
         setSuggestedWords([])
+        setCloseMenu(false)
         resetHighlight()
       }}
     >
