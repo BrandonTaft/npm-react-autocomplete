@@ -5,28 +5,24 @@ import "./index.css"
 
 
 function App() {
-  const [closeMenu, setCloseMenu] = useState()
+  const [openMenu, setOpenMenu] = useState()
 
-const toggleChildMenu = () => {
-  
-     setCloseMenu(!closeMenu === true ? true : false)
+  const toggleChildMenu = () => {
+    setOpenMenu(openMenu ? false : true)
   }
-  
+
   return (
     <div className="App">
-      <button onClick={toggleChildMenu} />
+      <button className='ignore' style={{ padding: '10px' }} onClick={toggleChildMenu} />
       <AutoComplete
-      list={testData}
-      getPropValue={(listItem) => listItem.name}
-      //disableOutsideClick={true}
-      closeMenu = {closeMenu}
-      setCloseMenu = { setCloseMenu}
-      showAll={true}
-      //highlightFirstItem={false}
-      clearOnSelect={false}
-       inputProps={{
-         placeholder: "search...",
-       }}
+        list={testData}
+        getPropValue={(listItem) => listItem.name}
+        showAll={true}
+        highlightFirstItem={false}
+        clearOnSelect={false}
+        inputProps={{
+          placeholder: "search...",
+        }}
         inputStyle={{
           width: "200px",
           padding: "5px"
@@ -53,6 +49,11 @@ const toggleChildMenu = () => {
             }
           }
         }}
+        //disableOutsideClick={true}
+        changeState={(isOpen) => {
+          setOpenMenu(isOpen)
+        }}
+        openMenu={openMenu}
       />
     </div>
   );

@@ -12,8 +12,9 @@ export default function AutoComplete(
     clearOnSelect = true,
     highlightFirstItem = true,
     disableOutsideClick = false,
-    closeMenu,
-    setCloseMenu,
+    openMenu,
+    setOpenMenu,
+    isOpen = true,
     wrapperDiv = 'block',
     inputProps,
     inputStyle,
@@ -21,7 +22,8 @@ export default function AutoComplete(
     listItemStyle,
     highlightedItem = {
       backgroundColor: "gray"
-    }
+    },
+    changeState
   }
 ) {
   const [isHighlighted, setIsHighlighted] = useState(0)
@@ -72,33 +74,41 @@ export default function AutoComplete(
 
     setListItems(listItems)
 
-      if (closeMenu === false) {
-        setSuggestedWords([])
-        resetInputValue(inputRef.current.value)
-      } else if(closeMenu === true) {
-        if(showAll === true){
+    if (changeState && openMenu === false) {
+      setSuggestedWords([])
+    }
+
+    if (changeState && openMenu === true) {
+      if (showAll === true && !inputRef.current.value) {
         setSuggestedWords(listItems)
-        } else {
-          setSuggestedWords(trie.current.find(inputRef.current.value))
-        }
+      } else {
+        setSuggestedWords(trie.current.find(inputRef.current.value))
       }
-   
-  }, [list, getPropValue, highlightFirstItem, dropDownRef, closeMenu]);
+    }
+
+  }, [list, getPropValue, highlightFirstItem, dropDownRef, openMenu, changeState, showAll]);
 
   const handlePrefix = (e) => {
     const prefix = e.target.value
     if (listItems && showAll && prefix.length === 0) {
       setSuggestedWords(listItems)
-      if(setCloseMenu) {
-      setCloseMenu(true)
+      if (changeState) {
+        changeState(true)
       }
       return
     }
     if (prefix.length > 0) {
       setSuggestedWords(trie.current.find(e.target.value))
+      if (changeState) {
+        changeState(true)
+      }
     } else {
-      setSuggestedWords([])
-      resetHighlight()
+      clearMenu()
+      // setSuggestedWords([])
+      // resetHighlight()
+      // if (changeState) {
+      //   changeState(false)
+      // }
     }
     if (isHighlighted + 1 > suggestedWords.length) {
       setIsHighlighted(0)
@@ -149,6 +159,9 @@ export default function AutoComplete(
           }
           setSuggestedWords([])
           resetInputValue(suggestedWords[isHighlighted])
+          if (changeState) {
+            changeState(false)
+          }
         }
       } else {
         if (inputRef.current.value) {
@@ -159,12 +172,19 @@ export default function AutoComplete(
           }
           resetInputValue(inputRef.current.value)
           setSuggestedWords([])
+          if (changeState) {
+            changeState(false)
+          }
         }
       }
     }
     if (e.keyCode === 9) {
-      resetHighlight()
-      setSuggestedWords([])
+      // setSuggestedWords([])
+      // resetHighlight()
+      // if (changeState) {
+      //   changeState(false)
+      // }
+      clearMenu()
     }
   }
 
@@ -179,6 +199,9 @@ export default function AutoComplete(
       }
       setSuggestedWords([])
       resetInputValue(suggestedWord);
+      if (changeState) {
+        changeState(false)
+      }
     }
   }
 
@@ -203,15 +226,17 @@ export default function AutoComplete(
         : ""
     )
   })
-  
+
   return (
     <OutsideClickHandler
       display={wrapperDiv ? wrapperDiv : 'block'}
       disabled={disableOutsideClick}
-      onOutsideClick={() => {
+      onOutsideClick={(e) => {
         setSuggestedWords([])
-        setCloseMenu(false)
         resetHighlight()
+        if (changeState && e.target.className !== 'ignore') {
+          changeState(false)
+        }
       }}
     >
       <input
@@ -225,7 +250,7 @@ export default function AutoComplete(
         onFocus={handlePrefix}
         autoComplete='off'
       />
-      {suggestedWordList.length ?
+      {suggestedWordList.length && isOpen ?
         <div
           ref={dropDownRef}
           style={dropDownStyle}
@@ -256,4 +281,13 @@ export default function AutoComplete(
       setIsHighlighted(0);
     }
   }
+
+function clearMenu() {
+  setSuggestedWords([])
+  resetHighlight()
+  if (changeState) {
+    changeState(false)
+  }
+}
+
 }
