@@ -12,8 +12,7 @@ export default function AutoComplete(
     clearOnSelect = true,
     highlightFirstItem = true,
     disableOutsideClick = false,
-    openMenu,
-    setOpenMenu,
+    openDropDown,
     isOpen = true,
     wrapperDiv = 'block',
     inputProps,
@@ -23,10 +22,11 @@ export default function AutoComplete(
     highlightedItem = {
       backgroundColor: "gray"
     },
-    changeState
+    changeDropDownState
   }
 ) {
-  const [isHighlighted, setIsHighlighted] = useState(0)
+  
+  const [isHighlighted, setIsHighlighted] = useState(0);
   const [suggestedWords, setSuggestedWords] = useState([]);
   const [listItems, setListItems] = useState();
   const trie = useRef();
@@ -39,17 +39,19 @@ export default function AutoComplete(
     if (Array.isArray(list)) {
       if (list.some(value => { return typeof value == "object" })) {
         if (!getPropValue) {
-          console.error("Missing prop - `getPropValue` is needed to get an object property value from `list`")
-        } else if (list.some(getPropValue)) {
+          console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'")
+        }else{
+          try{
           listItems = list.map(getPropValue)
-        } else {
-          console.error("Check the getPropValue function - the property value doesn't seem to exist")
-        }
+          } catch(error) {
+            console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
+          }
+        } 
       } else {
         listItems = list
       };
     } else {
-      console.error(`Ivalid PropType : The prop "list" has a value of "${typeof list}" - list must be an array`)
+      console.error(`Ivalid PropType : The prop 'list' has a value of '${typeof list}' - list must be an array`)
     };
 
     // If specified, set first item in dropdown to not be auto highlighted
@@ -62,6 +64,7 @@ export default function AutoComplete(
 
     // Insert each word into the data trie
     if (listItems) {
+      console.log("IRAN")
       for (let i = 0; i < listItems.length; i++) {
         const item = listItems[i]
         if (item && typeof item == 'number') {
@@ -74,11 +77,11 @@ export default function AutoComplete(
 
     setListItems(listItems)
 
-    if (changeState && openMenu === false) {
+    if (changeDropDownState && openDropDown === false) {
       setSuggestedWords([])
     }
 
-    if (changeState && openMenu === true) {
+    if (changeDropDownState && openDropDown === true) {
       if (showAll === true && !inputRef.current.value) {
         setSuggestedWords(listItems)
       } else {
@@ -86,28 +89,28 @@ export default function AutoComplete(
       }
     }
 
-  }, [list, getPropValue, highlightFirstItem, dropDownRef, openMenu, changeState, showAll]);
+  }, [list, getPropValue, highlightFirstItem, openDropDown, changeDropDownState, showAll]);
 
   const handlePrefix = (e) => {
     const prefix = e.target.value
     if (listItems && showAll && prefix.length === 0) {
       setSuggestedWords(listItems)
-      if (changeState) {
-        changeState(true)
+      if (changeDropDownState) {
+        changeDropDownState(true)
       }
       return
     }
     if (prefix.length > 0) {
       setSuggestedWords(trie.current.find(e.target.value))
-      if (changeState) {
-        changeState(true)
+      if (changeDropDownState) {
+        changeDropDownState(true)
       }
     } else {
       clearMenu()
       // setSuggestedWords([])
       // resetHighlight()
-      // if (changeState) {
-      //   changeState(false)
+      // if (changeDropDownState) {
+      //   changeDropDownState(false)
       // }
     }
     if (isHighlighted + 1 > suggestedWords.length) {
@@ -152,15 +155,15 @@ export default function AutoComplete(
         try {
           onSelect(suggestedWords[isHighlighted].toString(), list)
         } catch (error) {
-          console.error("You must provide a valid function to the onSelect prop", error)
+          console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
         } finally {
           if (showAll) {
             resetHighlight()
           }
           setSuggestedWords([])
           resetInputValue(suggestedWords[isHighlighted])
-          if (changeState) {
-            changeState(false)
+          if (changeDropDownState) {
+            changeDropDownState(false)
           }
         }
       } else {
@@ -168,12 +171,12 @@ export default function AutoComplete(
           try {
             onSelect(inputRef.current.value.toString(), list)
           } catch (error) {
-            console.error("You must provide a valid function to the `onSelect` prop", error)
+            console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
           }
           resetInputValue(inputRef.current.value)
           setSuggestedWords([])
-          if (changeState) {
-            changeState(false)
+          if (changeDropDownState) {
+            changeDropDownState(false)
           }
         }
       }
@@ -181,8 +184,8 @@ export default function AutoComplete(
     if (e.keyCode === 9) {
       // setSuggestedWords([])
       // resetHighlight()
-      // if (changeState) {
-      //   changeState(false)
+      // if (changeDropDownState) {
+      //   changeDropDownState(false)
       // }
       clearMenu()
     }
@@ -192,15 +195,15 @@ export default function AutoComplete(
     try {
       onSelect(suggestedWord.toString(), list)
     } catch (error) {
-      console.error("You must provide a valid function to the onSelect prop", error)
+      console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
     } finally {
       if (showAll) {
         resetHighlight()
       }
       setSuggestedWords([])
       resetInputValue(suggestedWord);
-      if (changeState) {
-        changeState(false)
+      if (changeDropDownState) {
+        changeDropDownState(false)
       }
     }
   }
@@ -217,6 +220,7 @@ export default function AutoComplete(
           key={index}
           ref={el => itemsRef.current[index] = el}
           id={`suggested-word-${index}`}
+          className={"list-item"}
           style={isHighlighted === index ? { ...highlightedItem, ...listItemStyle } : { ...listItemStyle }}
           onClick={() => { onMouseClick(suggestedWord) }}
           onMouseEnter={() => setIsHighlighted(index)}
@@ -234,8 +238,8 @@ export default function AutoComplete(
       onOutsideClick={(e) => {
         setSuggestedWords([])
         resetHighlight()
-        if (changeState && e.target.className !== 'ignore') {
-          changeState(false)
+        if (changeDropDownState && e.target.className !== 'ignore') {
+          changeDropDownState(false)
         }
       }}
     >
@@ -252,6 +256,7 @@ export default function AutoComplete(
       />
       {suggestedWordList.length && isOpen ?
         <div
+          className={"dropdown-container"}
           ref={dropDownRef}
           style={dropDownStyle}
         >
@@ -285,8 +290,8 @@ export default function AutoComplete(
 function clearMenu() {
   setSuggestedWords([])
   resetHighlight()
-  if (changeState) {
-    changeState(false)
+  if (changeDropDownState) {
+    changeDropDownState(false)
   }
 }
 
