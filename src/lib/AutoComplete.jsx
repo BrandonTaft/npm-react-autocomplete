@@ -64,7 +64,6 @@ export default function AutoComplete(
 
     // Insert each word into the data trie
     if (listItems) {
-      console.log("IRAN")
       for (let i = 0; i < listItems.length; i++) {
         const item = listItems[i]
         if (item && typeof item == 'number') {

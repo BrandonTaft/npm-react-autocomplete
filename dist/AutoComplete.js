@@ -7,10 +7,10 @@ const _default = AutoComplete;
 export { _default as default };
 import "core-js/modules/web.dom-collections.iterator.js";
 import "core-js/modules/es.object.assign.js";
-import { useState, useRef, useEffect, createElement, Fragment } from "react";
+import { useState, useRef, useEffect, createElement } from "react";
 var _domScrollIntoView = _interopRequireDefault(require("dom-scroll-into-view"));
-var _trie = _interopRequireDefault(require("./trie"));
 var _reactOutsideClickHandler = _interopRequireDefault(require("react-outside-click-handler"));
+var _trie = _interopRequireDefault(require("./trie"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 function _extends() { _extends = Object.assign ? Object.assign.bind() : function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; return _extends.apply(this, arguments); }
 function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); enumerableOnly && (symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; })), keys.push.apply(keys, symbols); } return keys; }
@@ -21,56 +21,54 @@ function _toPrimitive(input, hint) { if (typeof input !== "object" || input === 
 function AutoComplete(_ref) {
   let {
     list,
-    showAll,
-    clearOnSelect,
-    inputProps,
     getPropValue,
-    highlightFirstItem,
-    highlightedItem,
     onSelect,
-    wrapperDiv,
-    listItemStyle,
+    showAll = false,
+    clearOnSelect = true,
+    highlightFirstItem = true,
+    disableOutsideClick = false,
+    openDropDown,
+    isOpen = true,
+    wrapperDiv = 'block',
+    inputProps,
     inputStyle,
-    dropDownStyle
+    dropDownStyle,
+    listItemStyle,
+    highlightedItem = {
+      backgroundColor: "gray"
+    },
+    changeDropDownState
   } = _ref;
   const [isHighlighted, setIsHighlighted] = (0, useState)(0);
   const [suggestedWords, setSuggestedWords] = (0, useState)([]);
-  const [listItems, setListItems] = (0, useState)([]);
+  const [listItems, setListItems] = (0, useState)();
   const trie = (0, useRef)();
   const inputRef = (0, useRef)();
   const dropDownRef = (0, useRef)();
   const itemsRef = (0, useRef)([]);
   (0, useEffect)(() => {
     let listItems;
-    try {
-      if (list) {
-        if (list.some(value => {
-          return typeof value == "object";
-        })) {
-          if (!getPropValue) {
-            console.warn("getPropValue is needed to get property value");
-            listItems = list;
-          } else if (list) {
-            listItems = list.map(getPropValue);
-            if (listItems[0] == null) {
-              listItems = list;
-              console.warn("Check the getPropValue function - the property value doesn't seem to exist");
-            }
-          } else {
-            console.warn("List prop is missing!");
-          }
+    if (Array.isArray(list)) {
+      if (list.some(value => {
+        return typeof value == "object";
+      })) {
+        if (!getPropValue) {
+          console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'");
         } else {
-          listItems = list;
+          try {
+            listItems = list.map(getPropValue);
+          } catch (error) {
+            console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error);
+          }
         }
       } else {
-        list = [];
+        listItems = list;
       }
-      setListItems(listItems);
-    } catch (error) {
-      throw Object.assign(new Error("Check the list prop - list must be an array"), {
-        error: Error
-      });
+      ;
+    } else {
+      console.error("Ivalid PropType : The prop 'list' has a value of '".concat(typeof list, "' - list must be an array"));
     }
+    ;
 
     // If specified, set first item in dropdown to not be auto highlighted
     if (highlightFirstItem === false) {
@@ -84,35 +82,60 @@ function AutoComplete(_ref) {
     if (listItems) {
       for (let i = 0; i < listItems.length; i++) {
         const item = listItems[i];
-        if (item) trie.current.insert(item);
+        if (item && typeof item == 'number') {
+          trie.current.insert(item.toString());
+        } else if (item) {
+          trie.current.insert(item);
+        }
       }
     }
-  }, [list, getPropValue, highlightFirstItem, dropDownRef]);
+    ;
+    setListItems(listItems);
+    if (changeDropDownState && openDropDown === false) {
+      setSuggestedWords([]);
+    }
+    if (changeDropDownState && openDropDown === true) {
+      if (showAll === true && !inputRef.current.value) {
+        setSuggestedWords(listItems);
+      } else {
+        setSuggestedWords(trie.current.find(inputRef.current.value));
+      }
+    }
+  }, [list, getPropValue, highlightFirstItem, openDropDown, changeDropDownState, showAll]);
   const handlePrefix = e => {
-    if (!list) console.warn("You must pass a valid array to the list prop");
     const prefix = e.target.value;
-    if (showAll && prefix.length === 0) {
-      setSuggestedWords(listItems.sort());
+    if (listItems && showAll && prefix.length === 0) {
+      setSuggestedWords(listItems);
+      if (changeDropDownState) {
+        changeDropDownState(true);
+      }
       return;
     }
     if (prefix.length > 0) {
       setSuggestedWords(trie.current.find(e.target.value));
-    } else {
-      setSuggestedWords([]);
-      if (highlightFirstItem === false) {
-        setIsHighlighted(-1);
-      } else {
-        setIsHighlighted(0);
+      if (changeDropDownState) {
+        changeDropDownState(true);
       }
+    } else {
+      clearMenu();
+      // setSuggestedWords([])
+      // resetHighlight()
+      // if (changeDropDownState) {
+      //   changeDropDownState(false)
+      // }
     }
+
     if (isHighlighted + 1 > suggestedWords.length) {
       setIsHighlighted(0);
     }
   };
   const handleKeyDown = e => {
     if (e.keyCode === 40) {
-      if (isHighlighted === suggestedWords.length - 1) {
+      if (!itemsRef.current[isHighlighted + 1]) {
         setIsHighlighted(0);
+        (0, _domScrollIntoView.default)(itemsRef.current[0], dropDownRef.current, {
+          onlyScrollIfNeeded: true
+        });
       }
       e.preventDefault();
       if (itemsRef.current[isHighlighted + 1]) {
@@ -133,84 +156,91 @@ function AutoComplete(_ref) {
     }
     ;
     if (e.keyCode === 13) {
-      if (list) {
+      if (list && suggestedWords[isHighlighted]) {
         try {
-          onSelect(suggestedWords[isHighlighted], list);
-          if (clearOnSelect == null) {
-            inputRef.current.value = "";
-          } else {
-            inputRef.current.value = suggestedWords[isHighlighted];
-          }
+          onSelect(suggestedWords[isHighlighted].toString(), list);
         } catch (error) {
-          throw Object.assign(new Error("You must provide a function to the onSelect prop"), {
-            error: Error
-          });
+          console.error("You must provide a valid function to the 'onSelect' prop", '\n', error);
         } finally {
+          if (showAll) {
+            resetHighlight();
+          }
           setSuggestedWords([]);
-          if (clearOnSelect == null) {
-            inputRef.current.value = "";
-          } else {
-            if (!suggestedWords[isHighlighted]) {
-              inputRef.current.value = "";
-            } else {
-              inputRef.current.value = suggestedWords[isHighlighted];
-            }
+          resetInputValue(suggestedWords[isHighlighted]);
+          if (changeDropDownState) {
+            changeDropDownState(false);
           }
         }
       } else {
-        try {
-          onSelect(inputRef.current.value);
-        } catch (error) {
-          throw Object.assign(new Error("You must provide a function to the onSelect prop"), {
-            error: Error
-          });
-        } finally {
-          if (clearOnSelect == null) inputRef.current.value = "";
+        if (inputRef.current.value) {
+          try {
+            onSelect(inputRef.current.value.toString(), list);
+          } catch (error) {
+            console.error("You must provide a valid function to the 'onSelect' prop", '\n', error);
+          }
+          resetInputValue(inputRef.current.value);
+          setSuggestedWords([]);
+          if (changeDropDownState) {
+            changeDropDownState(false);
+          }
         }
       }
-      ;
+    }
+    if (e.keyCode === 9) {
+      // setSuggestedWords([])
+      // resetHighlight()
+      // if (changeDropDownState) {
+      //   changeDropDownState(false)
+      // }
+      clearMenu();
     }
   };
   const onMouseClick = suggestedWord => {
-    setSuggestedWords([]);
     try {
-      onSelect(suggestedWord, list);
-      if (clearOnSelect == null) {
-        inputRef.current.value = "";
-      } else {
-        inputRef.current.value = suggestedWord;
-      }
+      onSelect(suggestedWord.toString(), list);
     } catch (error) {
-      throw Object.assign(new Error("You must provide a function to the onSelect prop"), {
-        error: Error
-      });
+      console.error("You must provide a valid function to the 'onSelect' prop", '\n', error);
     } finally {
-      if (clearOnSelect == null) {
-        inputRef.current.value = "";
-      } else {
-        inputRef.current.value = suggestedWord;
+      if (showAll) {
+        resetHighlight();
+      }
+      setSuggestedWords([]);
+      resetInputValue(suggestedWord);
+      if (changeDropDownState) {
+        changeDropDownState(false);
       }
     }
   };
-  const suggestedWordList = suggestedWords.map((suggestedWord, index) => {
+  var collator = new Intl.Collator(undefined, {
+    numeric: true,
+    sensitivity: 'base'
+  });
+  const sorted = suggestedWords.sort(collator.compare);
+  const suggestedWordList = sorted.map((suggestedWord, index) => {
     if (isHighlighted + 1 > suggestedWords.length) {
       setIsHighlighted(0);
     }
-    if (suggestedWord) return /*#__PURE__*/createElement("div", {
+    return suggestedWord ? /*#__PURE__*/createElement("div", {
       key: index,
       ref: el => itemsRef.current[index] = el,
       id: "suggested-word-".concat(index),
+      className: "list-item",
       style: isHighlighted === index ? _objectSpread(_objectSpread({}, highlightedItem), listItemStyle) : _objectSpread({}, listItemStyle),
       onClick: () => {
         onMouseClick(suggestedWord);
       },
       onMouseEnter: () => setIsHighlighted(index)
-    }, suggestedWord);
+    }, suggestedWord) : "";
   });
   return /*#__PURE__*/createElement(_reactOutsideClickHandler.default, {
     display: wrapperDiv ? wrapperDiv : 'block',
-    onOutsideClick: () => {
+    disabled: disableOutsideClick,
+    onOutsideClick: e => {
       setSuggestedWords([]);
+      resetHighlight();
+      if (changeDropDownState && e.target.className !== 'ignore') {
+        changeDropDownState(false);
+      }
     }
   }, /*#__PURE__*/createElement("input", _extends({}, inputProps, {
     style: inputStyle,
@@ -221,8 +251,34 @@ function AutoComplete(_ref) {
     onKeyDown: handleKeyDown,
     onFocus: handlePrefix,
     autoComplete: "off"
-  })), suggestedWordList.length ? /*#__PURE__*/createElement("div", {
+  })), suggestedWordList.length && isOpen ? /*#__PURE__*/createElement("div", {
+    className: "dropdown-container",
     ref: dropDownRef,
     style: dropDownStyle
   }, suggestedWordList) : null);
+  function resetInputValue(suggestedWord) {
+    if (clearOnSelect) {
+      inputRef.current.value = "";
+    } else {
+      if (!suggestedWord) {
+        inputRef.current.value = "";
+      } else {
+        inputRef.current.value = suggestedWord;
+      }
+    }
+  }
+  function resetHighlight() {
+    if (highlightFirstItem === false) {
+      setIsHighlighted(-1);
+    } else {
+      setIsHighlighted(0);
+    }
+  }
+  function clearMenu() {
+    setSuggestedWords([]);
+    resetHighlight();
+    if (changeDropDownState) {
+      changeDropDownState(false);
+    }
+  }
 }
