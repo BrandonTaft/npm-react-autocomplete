@@ -12,7 +12,6 @@ export default function AutoComplete(
     clearOnSelect = true,
     highlightFirstItem = true,
     disableOutsideClick = false,
-    openDropDown,
     isOpen = true,
     wrapperDiv = 'block',
     inputProps,
@@ -22,14 +21,16 @@ export default function AutoComplete(
     highlightedItem = {
       backgroundColor: "gray"
     },
+    openDropDown,
     changeDropDownState
   }
 ) {
-  
+
   const [isHighlighted, setIsHighlighted] = useState(0);
   const [suggestedWords, setSuggestedWords] = useState([]);
   const [listItems, setListItems] = useState();
   const trie = useRef();
+  const cacheRef = useRef()
   const inputRef = useRef();
   const dropDownRef = useRef();
   const itemsRef = useRef([]);
@@ -40,13 +41,13 @@ export default function AutoComplete(
       if (list.some(value => { return typeof value == "object" })) {
         if (!getPropValue) {
           console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'")
-        }else{
-          try{
-          listItems = list.map(getPropValue)
-          } catch(error) {
+        } else {
+          try {
+            listItems = list.map(getPropValue)
+          } catch (error) {
             console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
           }
-        } 
+        }
       } else {
         listItems = list
       };
@@ -63,7 +64,9 @@ export default function AutoComplete(
     trie.current = new Trie();
 
     // Insert each word into the data trie
-    if (listItems) {
+
+    if (listItems && list !== cacheRef.current) {
+      cacheRef.current = list;
       for (let i = 0; i < listItems.length; i++) {
         const item = listItems[i]
         if (item && typeof item == 'number') {
@@ -87,7 +90,6 @@ export default function AutoComplete(
         setSuggestedWords(trie.current.find(inputRef.current.value))
       }
     }
-
   }, [list, getPropValue, highlightFirstItem, openDropDown, changeDropDownState, showAll]);
 
   const handlePrefix = (e) => {
@@ -119,7 +121,8 @@ export default function AutoComplete(
 
   const handleKeyDown = (e) => {
     if (e.keyCode === 40) {
-      if (!itemsRef.current[isHighlighted + 1]) {
+      if (!itemsRef.current[isHighlighted + 1] && itemsRef.current[0]) {
+        console.log("RRR")
         setIsHighlighted(0)
         scrollIntoView(
           itemsRef.current[0],
@@ -128,7 +131,7 @@ export default function AutoComplete(
         )
       }
       e.preventDefault()
-      if (itemsRef.current[isHighlighted + 1]) {
+      if (itemsRef.current[isHighlighted + 1] !== null) {
         setIsHighlighted(isHighlighted + 1)
         scrollIntoView(
           itemsRef.current[isHighlighted + 1],
@@ -286,12 +289,12 @@ export default function AutoComplete(
     }
   }
 
-function clearMenu() {
-  setSuggestedWords([])
-  resetHighlight()
-  if (changeDropDownState) {
-    changeDropDownState(false)
+  function clearMenu() {
+    setSuggestedWords([])
+    resetHighlight()
+    if (changeDropDownState) {
+      changeDropDownState(false)
+    }
   }
-}
 
 }

@@ -112,7 +112,7 @@ npm install --save react-autocomplete-input-component
 - `false` is passed in to close the dropdown
 
 ### `changeDropDownState: Function`
-- Function used to update the parent on state of the dropdown
+- Function used to update the parent with the current state of the dropdown
 
 ```jsx
   const [isDropDownOpen, setIsDropDownOpen] = useState()

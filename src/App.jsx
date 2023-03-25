@@ -33,7 +33,7 @@ function App() {
         clearOnSelect={false}
         inputProps={{
           placeholder: "search...",
-          onClick: (e) => { e.target.value = "" }
+    
         }}
         inputStyle={{
           width: "200px",
