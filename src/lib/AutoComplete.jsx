@@ -57,9 +57,9 @@ export default function AutoComplete(
         console.error(`Ivalid PropType : The prop 'list' has a value of '${typeof list}' - list must be an array`)
       };
 
-      // Initialize root node and store in the trie ref
-      // Then Insert each word in items array into the trie ref
-      // Then store original list in cacheRef to use to detect list prop changes
+      // Initialize root node and store in the 'trie' ref
+      // Then Insert each word in items array into the 'trie' ref
+      // Then store original list in cacheRef to use to detect 'list' prop changes
       trie.current = new Trie();
       if (items) {
         for (let i = 0; i < items.length; i++) {
@@ -99,17 +99,11 @@ export default function AutoComplete(
   const handlePrefix = (e) => {
     const prefix = e.target.value
     if (listItems && showAll && prefix.length === 0) {
-      setSuggestedWords(listItems)
-      if (updateIsOpen) {
-        updateIsOpen(true)
-      }
+      openDropDown(listItems)
       return
     }
     if (prefix.length > 0) {
-      setSuggestedWords(trie.current.find(e.target.value))
-      if (updateIsOpen) {
-        updateIsOpen(true)
-      }
+      openDropDown(trie.current.find(e.target.value))
     } else {
       closeDropDown()
     }
@@ -119,6 +113,8 @@ export default function AutoComplete(
   };
 
   const handleKeyDown = (e) => {
+    // Down Arrow - sets the next index in the 'suggestedWordsList' as the highlighted index
+    // If the highlighted index is the last index it resets the highlighted index back to 0
     if (e.keyCode === 40) {
       if (!itemsRef.current[isHighlighted + 1] && itemsRef.current[0]) {
         setIsHighlighted(0)
@@ -129,7 +125,7 @@ export default function AutoComplete(
         )
       }
       e.preventDefault()
-      if (itemsRef.current[isHighlighted + 1] !== null) {
+      if (itemsRef.current[isHighlighted + 1]) {
         setIsHighlighted(isHighlighted + 1)
         scrollIntoView(
           itemsRef.current[isHighlighted + 1],
@@ -139,6 +135,7 @@ export default function AutoComplete(
       }
     }
 
+    //Up Arrow - sets the highlighted index as the one before the current index
     if (e.keyCode === 38) {
       e.preventDefault()
       if (itemsRef.current[isHighlighted - 1]) {
@@ -150,6 +147,9 @@ export default function AutoComplete(
         )
       }
     };
+    
+    // Enter key - Passes highlighted item in to the 'onselect' function and closes the dropdown
+    // If there is not a highlighted item it will pass the inputs value into the 'onSelect' function
     if (e.keyCode === 13) {
       if (list && suggestedWords[isHighlighted]) {
         try {
@@ -157,14 +157,8 @@ export default function AutoComplete(
         } catch (error) {
           console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
         } finally {
-          if (showAll) {
-            resetHighlight()
-          }
-          setSuggestedWords([])
+          closeDropDown()
           resetInputValue(suggestedWords[isHighlighted])
-          if (updateIsOpen) {
-            updateIsOpen(false)
-          }
         }
       } else {
         if (inputRef.current.value) {
@@ -172,37 +166,33 @@ export default function AutoComplete(
             onSelect(inputRef.current.value.toString(), list)
           } catch (error) {
             console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
-          }
+          } finally {
+          closeDropDown()
           resetInputValue(inputRef.current.value)
-          setSuggestedWords([])
-          if (updateIsOpen) {
-            updateIsOpen(false)
           }
         }
       }
     }
+    // Tab key closes the dropdown 
     if (e.keyCode === 9) {
       closeDropDown()
     }
   }
 
+  // Runs the function passed in to the onSelect prop and then closes the dropdown
   const onMouseClick = (suggestedWord) => {
     try {
       onSelect(suggestedWord.toString(), list)
     } catch (error) {
       console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
     } finally {
-      if (showAll) {
-        resetHighlight()
-      }
-      setSuggestedWords([])
+      closeDropDown()
       resetInputValue(suggestedWord);
-      if (updateIsOpen) {
-        updateIsOpen(false)
-      }
+
     }
   }
 
+  // Creates a new Collator object and uses its compare method to sort alphanumeric arrays
   var collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
   const sorted = suggestedWords.sort(collator.compare)
   const suggestedWordList = sorted.map((suggestedWord, index) => {
@@ -287,9 +277,18 @@ export default function AutoComplete(
     }
   }
 
+  // Opens Dropdown by setting suggestedWords state with words passed in
+  // If 'updateIsOpen' prop was set it will update to true 
+  function openDropDown(words) {
+    setSuggestedWords(words)
+    if (updateIsOpen) {
+      updateIsOpen(true)
+    }
+  }
+
   // Closes Dropdown by setting suggestedWords to empty array
   // Resets highlighted index to what is specified by 'highlightFirstItem' prop 
-  // If 'updateIsOpen' was passed in it updates parent state to false 
+  // If 'updateIsOpen' prop was set, it will update to false 
   function closeDropDown() {
     setSuggestedWords([])
     resetHighlight()

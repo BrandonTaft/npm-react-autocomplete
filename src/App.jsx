@@ -33,9 +33,9 @@ function App() {
         clearOnSelect={false}
         inputProps={{
           placeholder: "search...",
-          onMouseDown: (e) => {
-             e.target.value = ""
-            }
+          // onMouseDown: (e) => {
+          //   e.target.value = ""
+          // }
         }}
         inputStyle={{
           width: "200px",
@@ -67,7 +67,7 @@ function App() {
         updateIsOpen={(updatedState) => {
           setOpenDropDown(updatedState)
         }}
-       isOpen={openDropDown}
+        isOpen={openDropDown}
       />
     </div>
   );
