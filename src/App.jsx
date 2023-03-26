@@ -5,11 +5,11 @@ import "./index.css"
 
 
 function App() {
-  const [isDropDownOpen, setIsDropDownOpen] = useState()
+  const [openDropDown, setOpenDropDown] = useState()
   const x = useRef()
 
   const toggleDropDown = () => {
-    setIsDropDownOpen(isDropDownOpen ? false : true)
+    setOpenDropDown(openDropDown ? false : true)
     // x.current ? x.current = false : x.current = true
   }
   return (
@@ -33,7 +33,9 @@ function App() {
         clearOnSelect={false}
         inputProps={{
           placeholder: "search...",
-    
+          onMouseDown: (e) => {
+             e.target.value = ""
+            }
         }}
         inputStyle={{
           width: "200px",
@@ -62,10 +64,10 @@ function App() {
           }
         }}
         //disableOutsideClick={true}
-        changeDropDownState={(isOpen) => {
-          setIsDropDownOpen(isOpen)
+        updateIsOpen={(updatedState) => {
+          setOpenDropDown(updatedState)
         }}
-        openDropDown={isDropDownOpen}
+       isOpen={openDropDown}
       />
     </div>
   );

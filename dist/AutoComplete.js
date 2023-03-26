@@ -27,7 +27,6 @@ function AutoComplete(_ref) {
     clearOnSelect = true,
     highlightFirstItem = true,
     disableOutsideClick = false,
-    openDropDown,
     isOpen = true,
     wrapperDiv = 'block',
     inputProps,
@@ -37,12 +36,14 @@ function AutoComplete(_ref) {
     highlightedItem = {
       backgroundColor: "gray"
     },
+    openDropDown,
     changeDropDownState
   } = _ref;
   const [isHighlighted, setIsHighlighted] = (0, useState)(0);
   const [suggestedWords, setSuggestedWords] = (0, useState)([]);
   const [listItems, setListItems] = (0, useState)();
   const trie = (0, useRef)();
+  const cacheRef = (0, useRef)();
   const inputRef = (0, useRef)();
   const dropDownRef = (0, useRef)();
   const itemsRef = (0, useRef)([]);
@@ -79,7 +80,9 @@ function AutoComplete(_ref) {
     trie.current = new _trie.default();
 
     // Insert each word into the data trie
-    if (listItems) {
+
+    if (listItems && list !== cacheRef.current) {
+      cacheRef.current = list;
       for (let i = 0; i < listItems.length; i++) {
         const item = listItems[i];
         if (item && typeof item == 'number') {
@@ -131,14 +134,15 @@ function AutoComplete(_ref) {
   };
   const handleKeyDown = e => {
     if (e.keyCode === 40) {
-      if (!itemsRef.current[isHighlighted + 1]) {
+      if (!itemsRef.current[isHighlighted + 1] && itemsRef.current[0]) {
+        console.log("RRR");
         setIsHighlighted(0);
         (0, _domScrollIntoView.default)(itemsRef.current[0], dropDownRef.current, {
           onlyScrollIfNeeded: true
         });
       }
       e.preventDefault();
-      if (itemsRef.current[isHighlighted + 1]) {
+      if (itemsRef.current[isHighlighted + 1] !== null) {
         setIsHighlighted(isHighlighted + 1);
         (0, _domScrollIntoView.default)(itemsRef.current[isHighlighted + 1], dropDownRef.current, {
           onlyScrollIfNeeded: true

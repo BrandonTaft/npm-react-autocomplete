@@ -72,18 +72,18 @@ npm install --save react-autocomplete-input-component
 ### `clearOnSelect: Boolean` (Optional)
 - `true` (default) the input will clear when an item is selected
 - `false` value selected will become the input value
-- `onClick` can be used in `inputProps` to clear the input
+- `onMouseDown` can be used in `inputProps` to clear the input
 
 ### `inputProps: Object`
 - Sets HTML text input attributes with some exceptions
 - Type and Autocomplete are unable to be overridden
 - Some Event handlers such as onClick can be used
-- onMouseDown, onChange, onKeyDown, onFocus cannot be overridden
+- onClick, onChange, onKeyDown, onFocus cannot be overridden
 
 ```jsx
   inputProps={{
     placeholder: "search...",
-    onClick:(e) => {e.target.value = ""}
+    onMouseDown:(e) => {e.target.value = ""}
   }}
 ```
 
@@ -103,33 +103,35 @@ npm install --save react-autocomplete-input-component
 ### `disableOutsideClick : Boolean` 
 - `false` (default) the dropdown closes when mouse is clicked outside of wrapperDiv
 - `true` the dropdown only closes when onSelect fires or tab key is pressed
-- `!!! NOTE` to control the dropdown with `changeDropDownState` and keep this enabled,
+- `!!! NOTE` to control the dropdown with `updateIsOpen` and keep this enabled,
   the element controlling the event should have a `className` of `ignore`
 
-### `openDropDown : Boolean`
-- This prop is used to set the state of the dropdown in the `AutoComplete` component
+### `isOpen : Boolean`
+- This prop is used to set the position of the dropdown in the `AutoComplete` component
+- It is only necessary when using `updateIsOpen` to control the dropdown
 - `true` is passed in to open the dropdown
 - `false` is passed in to close the dropdown
 
-### `changeDropDownState: Function`
-- Function used to update the parent with the current state of the dropdown
+### `updateIsOpen: Function`
+- Function used to update the parent with the current position of the dropdown
+- Runs when dropdown opens by entering text or closes by clicking outside of the element 
 
 ```jsx
-  const [isDropDownOpen, setIsDropDownOpen] = useState()
+  const [openDropDown, setOpenDropDown] = useState()
 
   const toggleDropDown = () => {
-    setIsDropDownOpen(isDropDownOpen ? false : true)
+    setOpenDropDown(openDropDown ? false : true)
   }
 
 return(
 <>
   <button className='ignore' onClick={toggleDropDown} />
   <AutoComplete
-    changeDropDownState={(isOpen) => {
-    setIsDropDownOpen(isOpen)
+    updateIsOpen={(updatedState) => {
+      setOpenDropDown(updatedState)
     }}
 
-    openDropDown={isDropDownOpen}
+    isOpen={openDropDown}
   />
 </>
 )

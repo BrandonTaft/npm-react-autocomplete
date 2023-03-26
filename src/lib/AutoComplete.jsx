@@ -12,7 +12,6 @@ export default function AutoComplete(
     clearOnSelect = true,
     highlightFirstItem = true,
     disableOutsideClick = false,
-    isOpen = true,
     wrapperDiv = 'block',
     inputProps,
     inputStyle,
@@ -21,98 +20,98 @@ export default function AutoComplete(
     highlightedItem = {
       backgroundColor: "gray"
     },
-    openDropDown,
-    changeDropDownState
+    isOpen,
+    updateIsOpen
   }
 ) {
-
   const [isHighlighted, setIsHighlighted] = useState(0);
   const [suggestedWords, setSuggestedWords] = useState([]);
   const [listItems, setListItems] = useState();
   const trie = useRef();
-  const cacheRef = useRef()
+  const cacheRef = useRef();
   const inputRef = useRef();
   const dropDownRef = useRef();
   const itemsRef = useRef([]);
 
   useEffect(() => {
-    let listItems;
-    if (Array.isArray(list)) {
-      if (list.some(value => { return typeof value == "object" })) {
-        if (!getPropValue) {
-          console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'")
+    // If list is not already stored in the trie - check for nested objects
+    // If there are no nested objects, create a new array called items with the values in the list array
+    // If there are nested objects, use 'getPropvalue' to extract property values and set them in items array
+    if (JSON.stringify(cacheRef.current) !== JSON.stringify(list)) {
+      let items;
+      if (Array.isArray(list)) {
+        if (list.some(value => { return typeof value == "object" })) {
+          if (!getPropValue) {
+            console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'")
+          } else {
+            try {
+              items = list.map(getPropValue)
+            } catch (error) {
+              console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
+            }
+          }
         } else {
-          try {
-            listItems = list.map(getPropValue)
-          } catch (error) {
-            console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
+          items = list
+        };
+      } else {
+        console.error(`Ivalid PropType : The prop 'list' has a value of '${typeof list}' - list must be an array`)
+      };
+
+      // Initialize root node and store in the trie ref
+      // Then Insert each word in items array into the trie ref
+      // Then store original list in cacheRef to use to detect list prop changes
+      trie.current = new Trie();
+      if (items) {
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i]
+          if (item && typeof item == 'number') {
+            trie.current.insert(item.toString())
+          } else if (item) {
+            trie.current.insert(item)
           }
         }
-      } else {
-        listItems = list
       };
-    } else {
-      console.error(`Ivalid PropType : The prop 'list' has a value of '${typeof list}' - list must be an array`)
-    };
+      cacheRef.current = list
+      setListItems(items)
+    }
 
     // If specified, set first item in dropdown to not be auto highlighted
     if (highlightFirstItem === false) {
       setIsHighlighted(-1)
     }
 
-    // Initialize root node and store in ref.current
-    trie.current = new Trie();
-
-    // Insert each word into the data trie
-
-    if (listItems && list !== cacheRef.current) {
-      cacheRef.current = list;
-      for (let i = 0; i < listItems.length; i++) {
-        const item = listItems[i]
-        if (item && typeof item == 'number') {
-          trie.current.insert(item.toString())
-        } else if (item) {
-          trie.current.insert(item)
-        }
-      }
-    };
-
-    setListItems(listItems)
-
-    if (changeDropDownState && openDropDown === false) {
+    // It the updateIsOpen prop is passed in - 
+    // Close dropdown if isOpen is false
+    // Open dropdown if isOpen is true
+    if (updateIsOpen && isOpen === false) {
       setSuggestedWords([])
     }
-
-    if (changeDropDownState && openDropDown === true) {
+    if (updateIsOpen && isOpen === true) {
       if (showAll === true && !inputRef.current.value) {
         setSuggestedWords(listItems)
       } else {
         setSuggestedWords(trie.current.find(inputRef.current.value))
       }
     }
-  }, [list, getPropValue, highlightFirstItem, openDropDown, changeDropDownState, showAll]);
+  }, [list, getPropValue, highlightFirstItem, listItems, isOpen, updateIsOpen, showAll]);
+
 
   const handlePrefix = (e) => {
     const prefix = e.target.value
     if (listItems && showAll && prefix.length === 0) {
       setSuggestedWords(listItems)
-      if (changeDropDownState) {
-        changeDropDownState(true)
+      if (updateIsOpen) {
+        updateIsOpen(true)
       }
       return
     }
     if (prefix.length > 0) {
       setSuggestedWords(trie.current.find(e.target.value))
-      if (changeDropDownState) {
-        changeDropDownState(true)
+      if (updateIsOpen) {
+        updateIsOpen(true)
       }
     } else {
-      clearMenu()
-      // setSuggestedWords([])
-      // resetHighlight()
-      // if (changeDropDownState) {
-      //   changeDropDownState(false)
-      // }
+      closeDropDown()
     }
     if (isHighlighted + 1 > suggestedWords.length) {
       setIsHighlighted(0)
@@ -122,7 +121,6 @@ export default function AutoComplete(
   const handleKeyDown = (e) => {
     if (e.keyCode === 40) {
       if (!itemsRef.current[isHighlighted + 1] && itemsRef.current[0]) {
-        console.log("RRR")
         setIsHighlighted(0)
         scrollIntoView(
           itemsRef.current[0],
@@ -164,8 +162,8 @@ export default function AutoComplete(
           }
           setSuggestedWords([])
           resetInputValue(suggestedWords[isHighlighted])
-          if (changeDropDownState) {
-            changeDropDownState(false)
+          if (updateIsOpen) {
+            updateIsOpen(false)
           }
         }
       } else {
@@ -177,19 +175,14 @@ export default function AutoComplete(
           }
           resetInputValue(inputRef.current.value)
           setSuggestedWords([])
-          if (changeDropDownState) {
-            changeDropDownState(false)
+          if (updateIsOpen) {
+            updateIsOpen(false)
           }
         }
       }
     }
     if (e.keyCode === 9) {
-      // setSuggestedWords([])
-      // resetHighlight()
-      // if (changeDropDownState) {
-      //   changeDropDownState(false)
-      // }
-      clearMenu()
+      closeDropDown()
     }
   }
 
@@ -204,8 +197,8 @@ export default function AutoComplete(
       }
       setSuggestedWords([])
       resetInputValue(suggestedWord);
-      if (changeDropDownState) {
-        changeDropDownState(false)
+      if (updateIsOpen) {
+        updateIsOpen(false)
       }
     }
   }
@@ -240,8 +233,8 @@ export default function AutoComplete(
       onOutsideClick={(e) => {
         setSuggestedWords([])
         resetHighlight()
-        if (changeDropDownState && e.target.className !== 'ignore') {
-          changeDropDownState(false)
+        if (updateIsOpen && e.target.className !== 'ignore') {
+          updateIsOpen(false)
         }
       }}
     >
@@ -250,13 +243,14 @@ export default function AutoComplete(
         style={inputStyle}
         ref={inputRef}
         type="text"
-        onMouseDown={handlePrefix}
+        onClick={handlePrefix}
         onChange={handlePrefix}
         onKeyDown={handleKeyDown}
         onFocus={handlePrefix}
         autoComplete='off'
       />
-      {suggestedWordList.length && isOpen ?
+      {suggestedWordList.length
+        ?
         <div
           className={"dropdown-container"}
           ref={dropDownRef}
@@ -269,6 +263,9 @@ export default function AutoComplete(
     </OutsideClickHandler>
   )
 
+  // Sets the value of the input to be what is specified in 'clearOnSelect' prop
+  // When onSelect runs it will clear the input if 'clearOnSelect' is set to true
+  // If clearOnSelect is set to false it will set the input value to the word passed in
   function resetInputValue(suggestedWord) {
     if (clearOnSelect) {
       inputRef.current.value = "";
@@ -281,6 +278,7 @@ export default function AutoComplete(
     }
   }
 
+  // Resets the highlighted index to what is specified by 'highlightFirstItem' prop
   function resetHighlight() {
     if (highlightFirstItem === false) {
       setIsHighlighted(-1);
@@ -289,11 +287,14 @@ export default function AutoComplete(
     }
   }
 
-  function clearMenu() {
+  // Closes Dropdown by setting suggestedWords to empty array
+  // Resets highlighted index to what is specified by 'highlightFirstItem' prop 
+  // If 'updateIsOpen' was passed in it updates parent state to false 
+  function closeDropDown() {
     setSuggestedWords([])
     resetHighlight()
-    if (changeDropDownState) {
-      changeDropDownState(false)
+    if (updateIsOpen) {
+      updateIsOpen(false)
     }
   }
 
