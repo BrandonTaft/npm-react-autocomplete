@@ -95,11 +95,6 @@ npm install --save react-autocomplete-input-component
 - `true` (default) - automatically highlights first item in dropdown
 - `false` - Press arrow key or hover with mouse to highlight
 
-### `wrapperDiv: String` (Optional)
-- Default ('block') the component is wrapped in a div display: 'block'
-- wrapperDiv prop accepts one of five strings
-- ( 'block', 'flex', 'inline-block', 'inline', 'contents' )
-
 ### `disableOutsideClick : Boolean` 
 - `false` (default) the dropdown closes when mouse is clicked outside of wrapperDiv
 - `true` the dropdown only closes when onSelect fires or tab key is pressed

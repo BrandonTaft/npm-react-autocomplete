@@ -15,7 +15,7 @@ require("core-js/modules/es.regexp.to-string.js");
 require("core-js/modules/es.array.sort.js");
 var _react = _interopRequireWildcard(require("react"));
 var _domScrollIntoView = _interopRequireDefault(require("dom-scroll-into-view"));
-var _reactOutsideClickHandler = _interopRequireDefault(require("react-outside-click-handler"));
+var _Wrapper = _interopRequireDefault(require("./Wrapper"));
 var _trie = _interopRequireDefault(require("./trie"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
@@ -36,6 +36,7 @@ function AutoComplete(_ref) {
     highlightFirstItem = true,
     disableOutsideClick = false,
     wrapperDiv = 'block',
+    wrapperStyle,
     inputProps,
     inputStyle,
     dropDownStyle,
@@ -74,6 +75,7 @@ function AutoComplete(_ref) {
             }
           }
         } else {
+          cacheRef.current = list;
           items = list;
         }
         ;
@@ -97,7 +99,6 @@ function AutoComplete(_ref) {
         }
       }
       ;
-      cacheRef.current = list;
       setListItems(items);
     }
 
@@ -119,6 +120,7 @@ function AutoComplete(_ref) {
         setSuggestedWords(trie.current.find(inputRef.current.value));
       }
     }
+    cacheRef.current = list;
   }, [list, getPropValue, highlightFirstItem, listItems, isOpen, updateIsOpen, showAll]);
   const handlePrefix = e => {
     const prefix = e.target.value;
@@ -231,15 +233,13 @@ function AutoComplete(_ref) {
       onMouseEnter: () => setIsHighlighted(index)
     }, suggestedWord) : "";
   });
-  return /*#__PURE__*/_react.default.createElement(_reactOutsideClickHandler.default, {
-    display: wrapperDiv ? wrapperDiv : 'block',
+  return /*#__PURE__*/_react.default.createElement(_Wrapper.default, {
     disabled: disableOutsideClick,
+    display: wrapperDiv,
+    wrapperStyle: wrapperStyle,
+    className: "wrapper",
     onOutsideClick: e => {
-      setSuggestedWords([]);
-      resetHighlight();
-      if (updateIsOpen && e.target.className !== 'ignore') {
-        updateIsOpen(false);
-      }
+      closeDropDown();
     }
   }, /*#__PURE__*/_react.default.createElement("input", _extends({}, inputProps, {
     style: inputStyle,
