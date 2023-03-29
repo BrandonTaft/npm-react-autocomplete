@@ -1,6 +1,7 @@
+import React from 'react';
 import { useState, useEffect, useRef } from "react";
 import scrollIntoView from 'dom-scroll-into-view';
-import OutsideClickHandler from 'react-outside-click-handler';
+import Wrapper from './Wrapper';
 import Trie from "./trie";
 
 export default function AutoComplete(
@@ -13,6 +14,7 @@ export default function AutoComplete(
     highlightFirstItem = true,
     disableOutsideClick = false,
     wrapperDiv = 'block',
+    wrapperStyle,
     inputProps,
     inputStyle,
     dropDownStyle,
@@ -34,6 +36,7 @@ export default function AutoComplete(
   const itemsRef = useRef([]);
 
   useEffect(() => {
+
     // If list is not already stored in the trie - check for nested objects
     // If there are no nested objects, create a new array called items with the values in the list array
     // If there are nested objects, use 'getPropvalue' to extract property values and set them in items array
@@ -51,6 +54,7 @@ export default function AutoComplete(
             }
           }
         } else {
+          cacheRef.current = list
           items = list
         };
       } else {
@@ -71,7 +75,7 @@ export default function AutoComplete(
           }
         }
       };
-      cacheRef.current = list
+
       setListItems(items)
     }
 
@@ -93,6 +97,7 @@ export default function AutoComplete(
         setSuggestedWords(trie.current.find(inputRef.current.value))
       }
     }
+    cacheRef.current = list
   }, [list, getPropValue, highlightFirstItem, listItems, isOpen, updateIsOpen, showAll]);
 
 
@@ -147,7 +152,7 @@ export default function AutoComplete(
         )
       }
     };
-    
+
     // Enter key - Passes highlighted item in to the 'onselect' function and closes the dropdown
     // If there is not a highlighted item it will pass the inputs value into the 'onSelect' function
     if (e.keyCode === 13) {
@@ -167,8 +172,8 @@ export default function AutoComplete(
           } catch (error) {
             console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
           } finally {
-          closeDropDown()
-          resetInputValue(inputRef.current.value)
+            closeDropDown()
+            resetInputValue(inputRef.current.value)
           }
         }
       }
@@ -217,17 +222,14 @@ export default function AutoComplete(
   })
 
   return (
-    <OutsideClickHandler
-      display={wrapperDiv ? wrapperDiv : 'block'}
+    <Wrapper
       disabled={disableOutsideClick}
+      display={wrapperDiv}
+      wrapperStyle={wrapperStyle}
+      className={"wrapper"}
       onOutsideClick={(e) => {
-        setSuggestedWords([])
-        resetHighlight()
-        if (updateIsOpen && e.target.className !== 'ignore') {
-          updateIsOpen(false)
-        }
-      }}
-    >
+        closeDropDown()
+      }}>
       <input
         {...inputProps}
         style={inputStyle}
@@ -250,7 +252,7 @@ export default function AutoComplete(
         </div>
         :
         null}
-    </OutsideClickHandler>
+    </Wrapper>
   )
 
   // Sets the value of the input to be what is specified in 'clearOnSelect' prop

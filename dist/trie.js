@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = void 0;
+require("core-js/modules/es.array.unshift.js");
 require("core-js/modules/es.array.sort.js");
 class TrieNode {
   constructor(letter) {

@@ -103,7 +103,7 @@ npm install --save react-autocomplete-input-component
 ### `disableOutsideClick : Boolean` 
 - `false` (default) the dropdown closes when mouse is clicked outside of wrapperDiv
 - `true` the dropdown only closes when onSelect fires or tab key is pressed
-- `!!! NOTE` to control the dropdown with `updateIsOpen` and keep this enabled,
+- `NOTE!!!` to control the dropdown with `updateIsOpen` and keep this enabled,
   the element controlling the event should have a `className` of `ignore`
 
 ### `isOpen : Boolean`
@@ -136,15 +136,17 @@ return(
 </>
 )
 ```
+### `wrapperStyle: Object`
+- J.S. Style Object Variable for the `div` wrapping the whole component
 
 ### `inputStyle: Object`
-- J.S. Style Object Variable for the input element
+- J.S. Style Object Variable for the `input` element
 
 ### `listItemStyle: Object`
-- J.S. Style Object Variable for each item `div` in the dropdown
+- J.S. Style Object Variable for each `item div` in the dropdown
 
 ### `highlightedItem: Object`
-- J.S. Style Object Variable for the highlighted item
+- J.S. Style Object Variable for the `highlighted item`
 - Default color is `grey`
 
 ### `dropDownStyle: Object`
