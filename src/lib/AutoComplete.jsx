@@ -26,36 +26,41 @@ export default function AutoComplete(
     updateIsOpen
   }
 ) {
-  const [isHighlighted, setIsHighlighted] = useState(0);
+  const [isHighlighted, setIsHighlighted] = useState(highlightFirstItem ? 0 : -1);
   const [suggestedWords, setSuggestedWords] = useState([]);
-  const [listItems, setListItems] = useState();
+  const previousList = useRef();
+  const listItems = useRef()
   const trie = useRef();
-  const cacheRef = useRef();
   const inputRef = useRef();
   const dropDownRef = useRef();
   const itemsRef = useRef([]);
 
-  useEffect(() => {
 
+  console.log("APP")
+
+
+  useEffect(() => {
+    console.log("USEEFFECT")
     // If list is not already stored in the trie - check for nested objects
     // If there are no nested objects, create a new array called items with the values in the list array
     // If there are nested objects, use 'getPropvalue' to extract property values and set them in items array
-    if (JSON.stringify(cacheRef.current) !== JSON.stringify(list)) {
-      let items;
+    if (JSON.stringify(previousList.current) !== JSON.stringify(list)) {
+      previousList.current = Array.from(list)
+      console.log("TRIE")
+      //let items;
       if (Array.isArray(list)) {
         if (list.some(value => { return typeof value == "object" })) {
           if (!getPropValue) {
             console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'")
           } else {
             try {
-              items = list.map(getPropValue)
+              listItems.current = list.map(getPropValue)
             } catch (error) {
               console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
             }
           }
         } else {
-          cacheRef.current = list
-          items = list
+          listItems.current = Array.from(list)
         };
       } else {
         console.error(`Ivalid PropType : The prop 'list' has a value of '${typeof list}' - list must be an array`)
@@ -65,9 +70,10 @@ export default function AutoComplete(
       // Then Insert each word in items array into the 'trie' ref
       // Then store original list in cacheRef to use to detect 'list' prop changes
       trie.current = new Trie();
-      if (items) {
-        for (let i = 0; i < items.length; i++) {
-          const item = items[i]
+      if (listItems.current) {
+        console.log("RAN")
+        for (let i = 0; i < listItems.current.length; i++) {
+          const item = listItems.current[i]
           if (item && typeof item == 'number') {
             trie.current.insert(item.toString())
           } else if (item) {
@@ -75,15 +81,7 @@ export default function AutoComplete(
           }
         }
       };
-
-      setListItems(items)
     }
-
-    // If specified, set first item in dropdown to not be auto highlighted
-    if (highlightFirstItem === false) {
-      setIsHighlighted(-1)
-    }
-
     // It the updateIsOpen prop is passed in - 
     // Close dropdown if isOpen is false
     // Open dropdown if isOpen is true
@@ -92,19 +90,20 @@ export default function AutoComplete(
     }
     if (updateIsOpen && isOpen === true) {
       if (showAll === true && !inputRef.current.value) {
-        setSuggestedWords(listItems)
+        setSuggestedWords(listItems.current)
       } else {
         setSuggestedWords(trie.current.find(inputRef.current.value))
       }
     }
-    cacheRef.current = list
-  }, [list, getPropValue, highlightFirstItem, listItems, isOpen, updateIsOpen, showAll]);
+
+  }, [list, getPropValue, isOpen, updateIsOpen, showAll]);
+
 
 
   const handlePrefix = (e) => {
     const prefix = e.target.value
-    if (listItems && showAll && prefix.length === 0) {
-      openDropDown(listItems)
+    if (listItems.current && showAll && prefix.length === 0) {
+      openDropDown(listItems.current)
       return
     }
     if (prefix.length > 0) {
@@ -292,11 +291,12 @@ export default function AutoComplete(
   // Resets highlighted index to what is specified by 'highlightFirstItem' prop 
   // If 'updateIsOpen' prop was set, it will update to false 
   function closeDropDown() {
-    setSuggestedWords([])
-    resetHighlight()
-    if (updateIsOpen) {
-      updateIsOpen(false)
+    if (suggestedWords.length) {
+      setSuggestedWords([])
+      resetHighlight()
     }
+      if (updateIsOpen) {
+        updateIsOpen(false)
+      }
   }
-
 }
