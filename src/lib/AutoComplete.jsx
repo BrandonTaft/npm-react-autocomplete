@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useReducer } from "react";
 import scrollIntoView from 'dom-scroll-into-view';
 import Wrapper from './Wrapper';
 import Trie from "./trie";
@@ -18,7 +18,7 @@ export default function AutoComplete(
     inputProps,
     inputStyle,
     dropDownStyle,
-    listItemStyle,
+    filteredItemstyle,
     highlightedItem = {
       backgroundColor: "gray"
     },
@@ -26,14 +26,66 @@ export default function AutoComplete(
     updateIsOpen
   }
 ) {
-  const [isHighlighted, setIsHighlighted] = useState(highlightFirstItem ? 0 : -1);
-  const [suggestedWords, setSuggestedWords] = useState([]);
-  const previousList = useRef();
-  const listItems = useRef()
+  
+  const cachedList = useRef();
+  const filteredItems = useRef()
   const trie = useRef();
   const inputRef = useRef();
   const dropDownRef = useRef();
   const itemsRef = useRef([]);
+  const initialState = {
+    matchingItems: [],
+    highlightedIndex: highlightFirstItem ? 0 : -1,
+    open: true
+  }
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { matchingItems, highlightedIndex, open } = state;
+
+  function reducer(state, action) {
+    console.log(state)
+    switch (action.type) {
+      case "OPEN": {
+        return ({
+          matchingItems: action.payload,
+          highlightedIndex: highlightFirstItem ? 0 : -1
+        })
+      }
+      case "CLOSE": {
+        if (highlightFirstItem === false) {
+          return ({
+            matchingItems: [],
+            highlightedIndex: -1
+          })
+        } else {
+          return ({
+            matchingItems: [],
+            highlightedIndex: 0
+          })
+        }
+      }
+      case "DOWN": {
+        return ({
+          ...state,
+          highlightedIndex: state.highlightedIndex + 1
+        })
+      }
+      case "UP": {
+        return ({
+          ...state,
+          highlightedIndex: state.highlightedIndex - 1
+        })
+      }
+      case "RESET": {
+        return ({
+          ...state,
+          highlightedIndex: action.payload
+        })
+      }
+      default:
+        return state;
+    }
+  };
+
 
 
   console.log("APP")
@@ -44,84 +96,96 @@ export default function AutoComplete(
     // If list is not already stored in the trie - check for nested objects
     // If there are no nested objects, create a new array called items with the values in the list array
     // If there are nested objects, use 'getPropvalue' to extract property values and set them in items array
-    if (JSON.stringify(previousList.current) !== JSON.stringify(list)) {
-      previousList.current = Array.from(list)
+    if (JSON.stringify(cachedList.current) !== JSON.stringify(list)) {
+      cachedList.current = Array.from(list)
       console.log("TRIE")
-      //let items;
       if (Array.isArray(list)) {
         if (list.some(value => { return typeof value == "object" })) {
           if (!getPropValue) {
             console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'")
           } else {
             try {
-              listItems.current = list.map(getPropValue)
+              filteredItems.current = list.map(getPropValue)
             } catch (error) {
               console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
-            }
-          }
+            };
+          };
         } else {
-          listItems.current = Array.from(list)
+          filteredItems.current = Array.from(list)
         };
       } else {
         console.error(`Ivalid PropType : The prop 'list' has a value of '${typeof list}' - list must be an array`)
       };
-
       // Initialize root node and store in the 'trie' ref
-      // Then Insert each word in items array into the 'trie' ref
-      // Then store original list in cacheRef to use to detect 'list' prop changes
+      // Then insert each word in filteredItems array into the 'trie'
       trie.current = new Trie();
-      if (listItems.current) {
-        console.log("RAN")
-        for (let i = 0; i < listItems.current.length; i++) {
-          const item = listItems.current[i]
+      if (filteredItems.current) {
+        for (let i = 0; i < filteredItems.current.length; i++) {
+          const item = filteredItems.current[i]
           if (item && typeof item == 'number') {
             trie.current.insert(item.toString())
           } else if (item) {
             trie.current.insert(item)
-          }
-        }
+          };
+        };
       };
+
     }
     // It the updateIsOpen prop is passed in - 
     // Close dropdown if isOpen is false
     // Open dropdown if isOpen is true
     if (updateIsOpen && isOpen === false) {
-      setSuggestedWords([])
-    }
-    if (updateIsOpen && isOpen === true) {
+      console.log("DROPPy")
+      dispatch({ type: "CLOSE" });
+      if (updateIsOpen) {
+        updateIsOpen(false)
+      }
+    } else if (updateIsOpen && isOpen === true) {
+      if (updateIsOpen) {
+        updateIsOpen(true)
+      }
       if (showAll === true && !inputRef.current.value) {
-        setSuggestedWords(listItems.current)
+        dispatch({ type: "OPEN", payload: filteredItems.current });
+        console.log("DROPPy")
       } else {
-        setSuggestedWords(trie.current.find(inputRef.current.value))
+        console.log([inputRef.current.value])
+        dispatch({ type: "OPEN", payload: [inputRef.current.value] });
       }
     }
 
   }, [list, getPropValue, isOpen, updateIsOpen, showAll]);
 
-
-
   const handlePrefix = (e) => {
     const prefix = e.target.value
-    if (listItems.current && showAll && prefix.length === 0) {
-      openDropDown(listItems.current)
+    if (filteredItems.current && showAll && prefix.length === 0) {
+      dispatch({ type: "OPEN", payload: filteredItems.current });
+      if (updateIsOpen) {
+        updateIsOpen(true)
+      }
       return
     }
     if (prefix.length > 0) {
-      openDropDown(trie.current.find(e.target.value))
+      dispatch({ type: "OPEN", payload: trie.current.find(e.target.value) });
+      if (updateIsOpen) {
+        updateIsOpen(true)
+      }
     } else {
-      closeDropDown()
+      dispatch({ type: "CLOSE" });
+      if (updateIsOpen) {
+        updateIsOpen(false)
+      }
     }
-    if (isHighlighted + 1 > suggestedWords.length) {
-      setIsHighlighted(0)
+    if (highlightedIndex + 1 > matchingItems.length) {
+      dispatch({ type: "RESET", payload: 0 });
     }
   };
 
   const handleKeyDown = (e) => {
-    // Down Arrow - sets the next index in the 'suggestedWordsList' as the highlighted index
+    // Down Arrow - sets the next index in the 'matchingItemsList' as the highlighted index
     // If the highlighted index is the last index it resets the highlighted index back to 0
     if (e.keyCode === 40) {
-      if (!itemsRef.current[isHighlighted + 1] && itemsRef.current[0]) {
-        setIsHighlighted(0)
+      if (!itemsRef.current[highlightedIndex + 1] && itemsRef.current[0]) {
+        dispatch({ type: "RESET", payload: 0 });
         scrollIntoView(
           itemsRef.current[0],
           dropDownRef.current,
@@ -129,10 +193,10 @@ export default function AutoComplete(
         )
       }
       e.preventDefault()
-      if (itemsRef.current[isHighlighted + 1]) {
-        setIsHighlighted(isHighlighted + 1)
+      if (itemsRef.current[highlightedIndex + 1]) {
+        dispatch({ type: "DOWN" });
         scrollIntoView(
-          itemsRef.current[isHighlighted + 1],
+          itemsRef.current[highlightedIndex + 1],
           dropDownRef.current,
           { onlyScrollIfNeeded: true }
         )
@@ -142,10 +206,10 @@ export default function AutoComplete(
     //Up Arrow - sets the highlighted index as the one before the current index
     if (e.keyCode === 38) {
       e.preventDefault()
-      if (itemsRef.current[isHighlighted - 1]) {
-        setIsHighlighted(isHighlighted - 1)
+      if (itemsRef.current[highlightedIndex - 1]) {
+        dispatch({ type: "UP" });
         scrollIntoView(
-          itemsRef.current[isHighlighted - 1],
+          itemsRef.current[highlightedIndex - 1],
           dropDownRef.current,
           { onlyScrollIfNeeded: true }
         )
@@ -155,14 +219,17 @@ export default function AutoComplete(
     // Enter key - Passes highlighted item in to the 'onselect' function and closes the dropdown
     // If there is not a highlighted item it will pass the inputs value into the 'onSelect' function
     if (e.keyCode === 13) {
-      if (list && suggestedWords[isHighlighted]) {
+      if (list && matchingItems[highlightedIndex]) {
         try {
-          onSelect(suggestedWords[isHighlighted].toString(), list)
+          onSelect(matchingItems[highlightedIndex].toString(), list)
         } catch (error) {
           console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
         } finally {
-          closeDropDown()
-          resetInputValue(suggestedWords[isHighlighted])
+          dispatch({ type: "CLOSE" });
+          if (updateIsOpen) {
+            updateIsOpen(false)
+          }
+          resetInputValue(matchingItems[highlightedIndex])
         }
       } else {
         if (inputRef.current.value) {
@@ -171,7 +238,10 @@ export default function AutoComplete(
           } catch (error) {
             console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
           } finally {
-            closeDropDown()
+            dispatch({ type: "CLOSE" });
+            if (updateIsOpen) {
+              updateIsOpen(false)
+            }
             resetInputValue(inputRef.current.value)
           }
         }
@@ -179,42 +249,48 @@ export default function AutoComplete(
     }
     // Tab key closes the dropdown 
     if (e.keyCode === 9) {
-      closeDropDown()
+      dispatch({ type: "CLOSE" });
+      if (updateIsOpen) {
+        updateIsOpen(false)
+      }
     }
   }
 
   // Runs the function passed in to the onSelect prop and then closes the dropdown
-  const onMouseClick = (suggestedWord) => {
+  const onMouseClick = (matchingItem) => {
     try {
-      onSelect(suggestedWord.toString(), list)
+      onSelect(matchingItem.toString(), list)
     } catch (error) {
       console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
     } finally {
-      closeDropDown()
-      resetInputValue(suggestedWord);
+      dispatch({ type: "CLOSE" });
+      if (updateIsOpen) {
+        updateIsOpen(false)
+      }
+      resetInputValue(matchingItem);
 
     }
   }
 
   // Creates a new Collator object and uses its compare method to sort alphanumeric arrays
   var collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-  const sorted = suggestedWords.sort(collator.compare)
-  const suggestedWordList = sorted.map((suggestedWord, index) => {
-    if (isHighlighted + 1 > suggestedWords.length) {
-      setIsHighlighted(0)
+  const sorted = matchingItems.sort(collator.compare)
+  const matchingItemsList = sorted.map((matchingItem, index) => {
+    if (highlightedIndex + 1 > matchingItems.length) {
+      dispatch({ type: "RESET", payload: 0 });
     }
     return (
-      suggestedWord ?
+      matchingItem ?
         <div
           key={index}
           ref={el => itemsRef.current[index] = el}
           id={`suggested-word-${index}`}
           className={"list-item"}
-          style={isHighlighted === index ? { ...highlightedItem, ...listItemStyle } : { ...listItemStyle }}
-          onClick={() => { onMouseClick(suggestedWord) }}
-          onMouseEnter={() => setIsHighlighted(index)}
+          style={highlightedIndex === index ? { ...highlightedItem, ...filteredItemstyle } : { ...filteredItemstyle }}
+          onClick={() => { onMouseClick(matchingItem) }}
+          onMouseEnter={() => dispatch({ type: "RESET", payload: index })}
         >
-          {suggestedWord}
+          {matchingItem}
         </div>
         : ""
     )
@@ -227,7 +303,12 @@ export default function AutoComplete(
       wrapperStyle={wrapperStyle}
       className={"wrapper"}
       onOutsideClick={(e) => {
-        closeDropDown()
+        if (matchingItems.length) {
+          dispatch({ type: "CLOSE" });
+        }
+        if (updateIsOpen) {
+          updateIsOpen(false)
+        }
       }}>
       <input
         {...inputProps}
@@ -240,14 +321,14 @@ export default function AutoComplete(
         onFocus={handlePrefix}
         autoComplete='off'
       />
-      {suggestedWordList.length
+      {matchingItemsList.length
         ?
         <div
           className={"dropdown-container"}
           ref={dropDownRef}
           style={dropDownStyle}
         >
-          {suggestedWordList}
+          {matchingItemsList}
         </div>
         :
         null}
@@ -257,46 +338,15 @@ export default function AutoComplete(
   // Sets the value of the input to be what is specified in 'clearOnSelect' prop
   // When onSelect runs it will clear the input if 'clearOnSelect' is set to true
   // If clearOnSelect is set to false it will set the input value to the word passed in
-  function resetInputValue(suggestedWord) {
+  function resetInputValue(matchingItem) {
     if (clearOnSelect) {
       inputRef.current.value = "";
     } else {
-      if (!suggestedWord) {
+      if (!matchingItem) {
         inputRef.current.value = ""
       } else {
-        inputRef.current.value = suggestedWord;
+        inputRef.current.value = matchingItem;
       }
     }
-  }
-
-  // Resets the highlighted index to what is specified by 'highlightFirstItem' prop
-  function resetHighlight() {
-    if (highlightFirstItem === false) {
-      setIsHighlighted(-1);
-    } else {
-      setIsHighlighted(0);
-    }
-  }
-
-  // Opens Dropdown by setting suggestedWords state with words passed in
-  // If 'updateIsOpen' prop was set it will update to true 
-  function openDropDown(words) {
-    setSuggestedWords(words)
-    if (updateIsOpen) {
-      updateIsOpen(true)
-    }
-  }
-
-  // Closes Dropdown by setting suggestedWords to empty array
-  // Resets highlighted index to what is specified by 'highlightFirstItem' prop 
-  // If 'updateIsOpen' prop was set, it will update to false 
-  function closeDropDown() {
-    if (suggestedWords.length) {
-      setSuggestedWords([])
-      resetHighlight()
-    }
-      if (updateIsOpen) {
-        updateIsOpen(false)
-      }
   }
 }

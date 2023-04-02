@@ -13,8 +13,8 @@ function App() {
     <div className="App">
       <button className='ignore' style={{ padding: '10px' }} onClick={toggleDropDown} />
       <AutoComplete
-      //list={[33,1,55,5,111,11,333,44]}
-      list={testData}
+      list={[33,1,55,5,111,11,333,44]}
+     // list={testData}
         getPropValue={(listItem) => listItem.name}
         showAll={true}
         highlightFirstItem={true}
