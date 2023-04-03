@@ -1,5 +1,5 @@
 import React from 'react';
-import { useState, useEffect, useRef, useReducer } from "react";
+import { useEffect, useRef, useReducer } from "react";
 import scrollIntoView from 'dom-scroll-into-view';
 import Wrapper from './Wrapper';
 import Trie from "./trie";
@@ -26,7 +26,7 @@ export default function AutoComplete(
     updateIsOpen
   }
 ) {
-  
+
   const cachedList = useRef();
   const filteredItems = useRef()
   const trie = useRef();
@@ -42,12 +42,11 @@ export default function AutoComplete(
   const { matchingItems, highlightedIndex, open } = state;
 
   function reducer(state, action) {
-    console.log(state)
     switch (action.type) {
       case "OPEN": {
         return ({
+          ...state,
           matchingItems: action.payload,
-          highlightedIndex: highlightFirstItem ? 0 : -1
         })
       }
       case "CLOSE": {
@@ -86,19 +85,12 @@ export default function AutoComplete(
     }
   };
 
-
-
-  console.log("APP")
-
-
   useEffect(() => {
-    console.log("USEEFFECT")
-    // If list is not already stored in the trie - check for nested objects
-    // If there are no nested objects, create a new array called items with the values in the list array
-    // If there are nested objects, use 'getPropvalue' to extract property values and set them in items array
+    // If list is not already stored in the trie - store original list in cachedList ref
+    // If there are no nested objects, create a new array and store it in filterItems ref
+    // If there are nested objects, use 'getPropvalue' to extract property values and set them in filterItems ref
     if (JSON.stringify(cachedList.current) !== JSON.stringify(list)) {
       cachedList.current = Array.from(list)
-      console.log("TRIE")
       if (Array.isArray(list)) {
         if (list.some(value => { return typeof value == "object" })) {
           if (!getPropValue) {
@@ -134,24 +126,13 @@ export default function AutoComplete(
     // It the updateIsOpen prop is passed in - 
     // Close dropdown if isOpen is false
     // Open dropdown if isOpen is true
-    if (updateIsOpen && isOpen === false) {
-      console.log("DROPPy")
+    if (updateIsOpen && !isOpen) {
       dispatch({ type: "CLOSE" });
-      if (updateIsOpen) {
-        updateIsOpen(false)
+    } else if (updateIsOpen && isOpen) {
+      if ((showAll) || (!showAll && inputRef.current.value)) {
+        dispatch({ type: "OPEN", payload: trie.current.find(inputRef.current.value) });
       }
-    } else if (updateIsOpen && isOpen === true) {
-      if (updateIsOpen) {
-        updateIsOpen(true)
-      }
-      if (showAll === true && !inputRef.current.value) {
-        dispatch({ type: "OPEN", payload: filteredItems.current });
-        console.log("DROPPy")
-      } else {
-        console.log([inputRef.current.value])
-        dispatch({ type: "OPEN", payload: [inputRef.current.value] });
-      }
-    }
+    };
 
   }, [list, getPropValue, isOpen, updateIsOpen, showAll]);
 
@@ -159,21 +140,15 @@ export default function AutoComplete(
     const prefix = e.target.value
     if (filteredItems.current && showAll && prefix.length === 0) {
       dispatch({ type: "OPEN", payload: filteredItems.current });
-      if (updateIsOpen) {
-        updateIsOpen(true)
-      }
+      handleUpdateIsOpen(true)
       return
     }
     if (prefix.length > 0) {
       dispatch({ type: "OPEN", payload: trie.current.find(e.target.value) });
-      if (updateIsOpen) {
-        updateIsOpen(true)
-      }
-    } else {
+      handleUpdateIsOpen(true)
+    } else if (matchingItems.length) {
       dispatch({ type: "CLOSE" });
-      if (updateIsOpen) {
-        updateIsOpen(false)
-      }
+      handleUpdateIsOpen(false)
     }
     if (highlightedIndex + 1 > matchingItems.length) {
       dispatch({ type: "RESET", payload: 0 });
@@ -226,9 +201,7 @@ export default function AutoComplete(
           console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
         } finally {
           dispatch({ type: "CLOSE" });
-          if (updateIsOpen) {
-            updateIsOpen(false)
-          }
+          handleUpdateIsOpen(false)
           resetInputValue(matchingItems[highlightedIndex])
         }
       } else {
@@ -239,9 +212,7 @@ export default function AutoComplete(
             console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
           } finally {
             dispatch({ type: "CLOSE" });
-            if (updateIsOpen) {
-              updateIsOpen(false)
-            }
+            handleUpdateIsOpen(false)
             resetInputValue(inputRef.current.value)
           }
         }
@@ -250,9 +221,7 @@ export default function AutoComplete(
     // Tab key closes the dropdown 
     if (e.keyCode === 9) {
       dispatch({ type: "CLOSE" });
-      if (updateIsOpen) {
-        updateIsOpen(false)
-      }
+      handleUpdateIsOpen(false)
     }
   }
 
@@ -264,9 +233,7 @@ export default function AutoComplete(
       console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
     } finally {
       dispatch({ type: "CLOSE" });
-      if (updateIsOpen) {
-        updateIsOpen(false)
-      }
+      handleUpdateIsOpen(false)
       resetInputValue(matchingItem);
 
     }
@@ -306,9 +273,7 @@ export default function AutoComplete(
         if (matchingItems.length) {
           dispatch({ type: "CLOSE" });
         }
-        if (updateIsOpen) {
-          updateIsOpen(false)
-        }
+        handleUpdateIsOpen(false)
       }}>
       <input
         {...inputProps}
@@ -349,4 +314,11 @@ export default function AutoComplete(
       }
     }
   }
+// If "updateIsOpen" is passed in update it when  dropdown is opened or closed
+  function handleUpdateIsOpen(isItOpen) {
+    if (updateIsOpen) {
+      updateIsOpen(isItOpen)
+    }
+  }
+
 }

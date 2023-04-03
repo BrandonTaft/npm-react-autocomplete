@@ -62,6 +62,7 @@ npm install --save react-autocomplete-input-component
 
 ### `getPropValue: Function` (Optional)
 - Only needed if `list` contains objects
+- Defines a callback function passed to Array.map
 - Sets the object property value to be extracted and displayed in dropdown
 
 ### `onSelect: Function`

@@ -282,7 +282,7 @@
   },
   {
     "id": "df1dd97d-e382-48b8-87b7-5ac785a1829b",
-    "name": "Jack D",
+    "nam": {"names":"Jack D"},
     "age": 28
   },
   {
