@@ -39,7 +39,7 @@ export default function AutoComplete(
     open: true
   }
   const [state, dispatch] = useReducer(reducer, initialState);
-  const { matchingItems, highlightedIndex, open } = state;
+  const { matchingItems, highlightedIndex } = state;
 
   function reducer(state, action) {
     switch (action.type) {

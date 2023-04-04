@@ -7,8 +7,6 @@ import { AutoComplete } from 'react-autocomplete-input-component';
 <AutoComplete
         getPropValue={(listItem) => listItem.name}
         showAll={true}
-        highlightFirstItem={false}
-        clearOnSelect={false}
         inputProps={{
           placeholder: "search..."
         }}
@@ -17,14 +15,9 @@ import { AutoComplete } from 'react-autocomplete-input-component';
           { name: 'Tommy', id: 3445 },
           { name: 'Thomas', id: 3663 }
         ]}
-        inputStyle={{
-          width: "200px",
-          padding: "5px"
-        }}
         highlightedItem={{
           backgroundColor: "gray"
         }}
-        wrapperDiv={ "flex" }
         listItemStyle={{
           cursor: "pointer",
           padding: "5px"
