@@ -61,8 +61,7 @@ function AutoComplete(_ref) {
   const [state, dispatch] = (0, _react.useReducer)(reducer, initialState);
   const {
     matchingItems,
-    highlightedIndex,
-    open
+    highlightedIndex
   } = state;
   function reducer(state, action) {
     switch (action.type) {
