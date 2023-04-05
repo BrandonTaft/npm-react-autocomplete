@@ -28,15 +28,14 @@ export default function AutoComplete(
 ) {
 
   const cachedList = useRef();
-  const filteredItems = useRef()
+  const filteredItems = useRef();
   const trie = useRef();
   const inputRef = useRef();
   const dropDownRef = useRef();
   const itemsRef = useRef([]);
   const initialState = {
     matchingItems: [],
-    highlightedIndex: highlightFirstItem ? 0 : -1,
-    open: true
+    highlightedIndex: highlightFirstItem ? 0 : -1
   }
   const [state, dispatch] = useReducer(reducer, initialState);
   const { matchingItems, highlightedIndex } = state;
@@ -276,10 +275,10 @@ export default function AutoComplete(
         handleUpdateIsOpen(false)
       }}>
       <input
-        {...inputProps}
         style={inputStyle}
         ref={inputRef}
-        type="text"
+        type="search"
+        {...inputProps}
         onClick={handlePrefix}
         onChange={handlePrefix}
         onKeyDown={handleKeyDown}

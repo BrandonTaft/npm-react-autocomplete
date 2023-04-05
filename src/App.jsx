@@ -21,9 +21,9 @@ function App() {
         clearOnSelect={false}
         inputProps={{
           placeholder: "search...",
-          onMouseDown: (e) => {
-            e.target.value = ""
-          }
+          // onMouseDown: (e) => {
+          //   e.target.value = ""
+          // }
         }}
         inputStyle={{
           width: "200px",
