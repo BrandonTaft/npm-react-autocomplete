@@ -77,7 +77,9 @@ npm install --save react-autocomplete-input-component
 ```jsx
   inputProps={{
     placeholder: "search...",
-    onMouseDown:(e) => {e.target.value = ""}
+    onMouseOver: () => {
+            setState(true)
+          }
   }}
 ```
 
@@ -90,7 +92,7 @@ npm install --save react-autocomplete-input-component
 - `false` - Press arrow key or hover with mouse to highlight
 
 ### `disableOutsideClick : Boolean` 
-- `false` (default) the dropdown closes when mouse is clicked outside of wrapperDiv
+- `false` (default) the dropdown closes when mouse is clicked outside of the auto-complete wrapper div
 - `true` the dropdown only closes when onSelect fires or tab key is pressed
 - `NOTE!!!` to control the dropdown with `updateIsOpen` and keep this enabled,
   the element controlling the event should have a `className` of `ignore`
@@ -127,19 +129,24 @@ return(
 ```
 ### `wrapperStyle: Object`
 - J.S. Style Object Variable for the `div` wrapping the whole component
+- CSS can also be used with the class name `autocomplete-wrapper`
 
 ### `inputStyle: Object`
 - J.S. Style Object Variable for the `input` element
-
-### `listItemStyle: Object`
-- J.S. Style Object Variable for each `item div` in the dropdown
-
-### `highlightedItem: Object`
-- J.S. Style Object Variable for the `highlighted item`
-- Default color is `grey`
+- CSS can also be used with the class name `autocomplete-input`
 
 ### `dropDownStyle: Object`
 - J.S. Style Object Variable for the dropdown container `div`
+- CSS can also be used with the class name `dropdown-container`
+
+### `listItemStyle: Object`
+- J.S. Style Object Variable for each `item div` in the dropdown
+- CSS can also be used with the class name `dropdown-item`
+
+### `highlightedItem: Object`
+- J.S. Style Object Variable for the `highlighted item`
+- CSS can also be used with the class name `highlighted-item`
+- Default color is `grey`
 
 
 

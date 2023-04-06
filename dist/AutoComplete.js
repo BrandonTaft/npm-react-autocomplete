@@ -40,7 +40,7 @@ function AutoComplete(_ref) {
     inputProps,
     inputStyle,
     dropDownStyle,
-    filteredItemstyle,
+    listItemStyle,
     highlightedItem = {
       backgroundColor: "gray"
     },
@@ -55,8 +55,7 @@ function AutoComplete(_ref) {
   const itemsRef = (0, _react.useRef)([]);
   const initialState = {
     matchingItems: [],
-    highlightedIndex: highlightFirstItem ? 0 : -1,
-    open: true
+    highlightedIndex: highlightFirstItem ? 0 : -1
   };
   const [state, dispatch] = (0, _react.useReducer)(reducer, initialState);
   const {
@@ -309,9 +308,8 @@ function AutoComplete(_ref) {
     return matchingItem ? /*#__PURE__*/_react.default.createElement("div", {
       key: index,
       ref: el => itemsRef.current[index] = el,
-      id: "suggested-word-".concat(index),
-      className: "list-item",
-      style: highlightedIndex === index ? _objectSpread(_objectSpread({}, highlightedItem), filteredItemstyle) : _objectSpread({}, filteredItemstyle),
+      className: highlightedIndex === index ? "dropdown-item highlited-item" : "dropdown-item",
+      style: highlightedIndex === index ? _objectSpread(_objectSpread({}, highlightedItem), listItemStyle) : _objectSpread({}, listItemStyle),
       onClick: () => {
         onMouseClick(matchingItem);
       },
@@ -322,10 +320,10 @@ function AutoComplete(_ref) {
     }, matchingItem) : "";
   });
   return /*#__PURE__*/_react.default.createElement(_Wrapper.default, {
+    className: "autocomplete-wrapper",
     disabled: disableOutsideClick,
     display: wrapperDiv,
     wrapperStyle: wrapperStyle,
-    className: "wrapper",
     onOutsideClick: e => {
       if (matchingItems.length) {
         dispatch({
@@ -334,10 +332,12 @@ function AutoComplete(_ref) {
       }
       handleUpdateIsOpen(false);
     }
-  }, /*#__PURE__*/_react.default.createElement("input", _extends({}, inputProps, {
+  }, /*#__PURE__*/_react.default.createElement("input", _extends({
+    className: "autocomplete-input",
     style: inputStyle,
     ref: inputRef,
-    type: "text",
+    type: "search"
+  }, inputProps, {
     onClick: handlePrefix,
     onChange: handlePrefix,
     onKeyDown: handleKeyDown,

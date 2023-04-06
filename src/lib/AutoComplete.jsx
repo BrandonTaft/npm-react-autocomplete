@@ -18,7 +18,7 @@ export default function AutoComplete(
     inputProps,
     inputStyle,
     dropDownStyle,
-    filteredItemstyle,
+    listItemStyle,
     highlightedItem = {
       backgroundColor: "gray"
     },
@@ -158,7 +158,8 @@ export default function AutoComplete(
     // Down Arrow - sets the next index in the 'matchingItemsList' as the highlighted index
     // If the highlighted index is the last index it resets the highlighted index back to 0
     if (e.keyCode === 40) {
-      if (!itemsRef.current[highlightedIndex + 1] && itemsRef.current[0]) {
+      console.log(itemsRef.current[0])
+      if (!itemsRef.current[highlightedIndex + 1] && itemsRef.current[0] !== undefined) {
         dispatch({ type: "RESET", payload: 0 });
         scrollIntoView(
           itemsRef.current[0],
@@ -246,13 +247,12 @@ export default function AutoComplete(
       dispatch({ type: "RESET", payload: 0 });
     }
     return (
-      matchingItem ?
+      matchingItem !== undefined ?
         <div
           key={index}
           ref={el => itemsRef.current[index] = el}
-          id={`suggested-word-${index}`}
-          className={"list-item"}
-          style={highlightedIndex === index ? { ...highlightedItem, ...filteredItemstyle } : { ...filteredItemstyle }}
+          className={highlightedIndex === index ? "dropdown-item highlited-item" : "dropdown-item"}
+          style={highlightedIndex === index ? { ...highlightedItem, ...listItemStyle } : { ...listItemStyle }}
           onClick={() => { onMouseClick(matchingItem) }}
           onMouseEnter={() => dispatch({ type: "RESET", payload: index })}
         >
@@ -264,10 +264,10 @@ export default function AutoComplete(
 
   return (
     <Wrapper
+      className="autocomplete-wrapper"
       disabled={disableOutsideClick}
       display={wrapperDiv}
       wrapperStyle={wrapperStyle}
-      className={"wrapper"}
       onOutsideClick={(e) => {
         if (matchingItems.length) {
           dispatch({ type: "CLOSE" });
@@ -275,6 +275,7 @@ export default function AutoComplete(
         handleUpdateIsOpen(false)
       }}>
       <input
+        className="autocomplete-input"
         style={inputStyle}
         ref={inputRef}
         type="search"
@@ -288,7 +289,7 @@ export default function AutoComplete(
       {matchingItemsList.length
         ?
         <div
-          className={"dropdown-container"}
+          className="dropdown-container"
           ref={dropDownRef}
           style={dropDownStyle}
         >
@@ -313,7 +314,7 @@ export default function AutoComplete(
       }
     }
   }
-// If "updateIsOpen" is passed in update it when  dropdown is opened or closed
+  // If "updateIsOpen" is passed in update it when  dropdown is opened or closed
   function handleUpdateIsOpen(isItOpen) {
     if (updateIsOpen) {
       updateIsOpen(isItOpen)
