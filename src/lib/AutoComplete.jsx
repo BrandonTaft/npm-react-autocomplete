@@ -19,11 +19,12 @@ export default function AutoComplete(
     inputStyle,
     dropDownStyle,
     listItemStyle,
-    highlightedItem = {
+    highlightedItemStyle = {
       backgroundColor: "gray"
     },
     isOpen,
-    updateIsOpen
+    updateIsOpen,
+    handleHighlightedItem
   }
 ) {
 
@@ -128,12 +129,22 @@ export default function AutoComplete(
     if (updateIsOpen && !isOpen) {
       dispatch({ type: "CLOSE" });
     } else if (updateIsOpen && isOpen) {
-      if ((showAll) || (!showAll && inputRef.current.value)) {
+      if (showAll && !inputRef.current.value) {
+        dispatch({ type: "OPEN", payload: filteredItems.current });
+      } else if (showAll && inputRef.current.value) {
+        dispatch({ type: "OPEN", payload: trie.current.find(inputRef.current.value) });
+      } else if (!showAll && inputRef.current.value) {
         dispatch({ type: "OPEN", payload: trie.current.find(inputRef.current.value) });
       }
     };
 
   }, [list, getPropValue, isOpen, updateIsOpen, showAll]);
+
+  useEffect(() => {
+    if(itemsRef.current[highlightedIndex] && handleHighlightedItem){
+      handleHighlightedItem(itemsRef.current[highlightedIndex], list)
+    }
+  }, [highlightedIndex, handleHighlightedItem, list])
 
   const handlePrefix = (e) => {
     const prefix = e.target.value
@@ -158,7 +169,6 @@ export default function AutoComplete(
     // Down Arrow - sets the next index in the 'matchingItemsList' as the highlighted index
     // If the highlighted index is the last index it resets the highlighted index back to 0
     if (e.keyCode === 40) {
-      console.log(itemsRef.current[0])
       if (!itemsRef.current[highlightedIndex + 1] && itemsRef.current[0] !== undefined) {
         dispatch({ type: "RESET", payload: 0 });
         scrollIntoView(
@@ -252,7 +262,7 @@ export default function AutoComplete(
           key={index}
           ref={el => itemsRef.current[index] = el}
           className={highlightedIndex === index ? "dropdown-item highlited-item" : "dropdown-item"}
-          style={highlightedIndex === index ? { ...highlightedItem, ...listItemStyle } : { ...listItemStyle }}
+          style={highlightedIndex === index ? { ...highlightedItemStyle, ...listItemStyle } : { ...listItemStyle }}
           onClick={() => { onMouseClick(matchingItem) }}
           onMouseEnter={() => dispatch({ type: "RESET", payload: index })}
         >

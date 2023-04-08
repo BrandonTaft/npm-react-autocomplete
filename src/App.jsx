@@ -5,19 +5,25 @@ import "./index.css"
 
 
 function App() {
-  const [openDropDown, setOpenDropDown] = useState()
+  const [tooltTip, setToolTip] = useState();
+  const[preview, setPreview] = useState();
+  const [openDropDown, setOpenDropDown] = useState();
   const toggleDropDown = (() => {
     setOpenDropDown(openDropDown ? false : true)
   })
+
   return (
     <div className="App">
+      <div>
+        {preview}
+      </div>
       <button className='ignore' style={{ padding: '10px' }} onClick={toggleDropDown} />
       <AutoComplete
-     list={[0,33,1,55,5,111,11,333,44]}
-      //list={testData}
-      getPropValue={(listName) => listName.name}
-     showAll={true}
-      highlightFirstItem={false}
+        list={[0, 33, 1, 55, 5, 111, 11, 333, 44]}
+        //list={testData}
+        getPropValue={(listName) => listName.name}
+        showAll={true}
+        highlightFirstItem={false}
         clearOnSelect={false}
         inputProps={{
           placeholder: "search...",
@@ -29,11 +35,12 @@ function App() {
           width: "200px",
           padding: "5px"
         }}
-        highlightedItem={{
-          backgroundColor: "orange"
+        highlightedItemStyle={{
+          backgroundColor: "orange",
+          color: "blue"
         }}
         wrapperDiv={"inline"}
-        wrapperStyle={{width:'100px'}}
+        wrapperStyle={{ width: '100px' }}
         listItemStyle={{
           cursor: "pointer",
           padding: "5px"
@@ -52,12 +59,20 @@ function App() {
             }
           }
         }}
-        //disableOutsideClick={true}
-        updateIsOpen={(updatedState) => {
-          setOpenDropDown(updatedState)
+
+
+        handleHighlightedItem={(highlightedItem, list) => {
+          highlightedItem.classList.add("red")
+          setPreview(highlightedItem.innerText)
+          console.log(highlightedItem.getBoundingClientRect())
         }}
-        isOpen={openDropDown}
+      //disableOutsideClick={true}
+      // updateIsOpen={(updatedState) => {
+      //   setOpenDropDown(updatedState)
+      // }}
+      // isOpen={openDropDown}
       />
+
     </div>
   );
 }

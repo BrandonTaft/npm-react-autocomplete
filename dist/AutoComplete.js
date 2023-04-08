@@ -161,7 +161,17 @@ function AutoComplete(_ref) {
         type: "CLOSE"
       });
     } else if (updateIsOpen && isOpen) {
-      if (showAll || !showAll && inputRef.current.value) {
+      if (showAll && !inputRef.current.value) {
+        dispatch({
+          type: "OPEN",
+          payload: filteredItems.current
+        });
+      } else if (showAll && inputRef.current.value) {
+        dispatch({
+          type: "OPEN",
+          payload: trie.current.find(inputRef.current.value)
+        });
+      } else if (!showAll && inputRef.current.value) {
         dispatch({
           type: "OPEN",
           payload: trie.current.find(inputRef.current.value)
@@ -203,7 +213,8 @@ function AutoComplete(_ref) {
     // Down Arrow - sets the next index in the 'matchingItemsList' as the highlighted index
     // If the highlighted index is the last index it resets the highlighted index back to 0
     if (e.keyCode === 40) {
-      if (!itemsRef.current[highlightedIndex + 1] && itemsRef.current[0]) {
+      console.log(itemsRef.current[0]);
+      if (!itemsRef.current[highlightedIndex + 1] && itemsRef.current[0] !== undefined) {
         dispatch({
           type: "RESET",
           payload: 0
@@ -305,7 +316,7 @@ function AutoComplete(_ref) {
         payload: 0
       });
     }
-    return matchingItem ? /*#__PURE__*/_react.default.createElement("div", {
+    return matchingItem != undefined ? /*#__PURE__*/_react.default.createElement("div", {
       key: index,
       ref: el => itemsRef.current[index] = el,
       className: highlightedIndex === index ? "dropdown-item highlited-item" : "dropdown-item",

@@ -15,7 +15,7 @@ import { AutoComplete } from 'react-autocomplete-input-component';
           { name: 'Tommy', id: 3445 },
           { name: 'Thomas', id: 3663 }
         ]}
-        highlightedItem={{
+        highlightedItemStyle={{
           backgroundColor: "gray"
         }}
         listItemStyle={{
@@ -91,6 +91,27 @@ npm install --save react-autocomplete-input-component
 - `true` (default) - automatically highlights first item in dropdown
 - `false` - Press arrow key or hover with mouse to highlight
 
+### `handleHighlightedItem: Function` (Optional)
+- Function that is ran when the `highlighted item` changes
+- The `highlighted item` is passed in as an `***HTMLDivElement***`
+- The original `list` array is also passed in as the second argument
+
+```jsx
+  const[preview, setPreview] = useState();
+
+return(
+<>
+  <div>{preview}</div>
+  <AutoComplete
+    handleHighlightedItem={(highlightedItem, list) => {
+    highlightedItem.style.color = "red"
+    setPreview(highlightedItem.innerText)
+  }}
+  />
+</>
+)
+```
+
 ### `disableOutsideClick : Boolean` 
 - `false` (default) the dropdown closes when mouse is clicked outside of the auto-complete wrapper div
 - `true` the dropdown only closes when onSelect fires or tab key is pressed
@@ -127,6 +148,7 @@ return(
 </>
 )
 ```
+
 ### `wrapperStyle: Object`
 - J.S. Style Object Variable for the `div` wrapping the whole component
 - CSS can also be used with the class name `autocomplete-wrapper`
@@ -143,10 +165,12 @@ return(
 - J.S. Style Object Variable for each `item div` in the dropdown
 - CSS can also be used with the class name `dropdown-item`
 
-### `highlightedItem: Object`
+### `highlightedItemStyle: Object`
 - J.S. Style Object Variable for the `highlighted item`
 - CSS can also be used with the class name `highlighted-item`
 - Default color is `grey`
+
+
 
 
 
