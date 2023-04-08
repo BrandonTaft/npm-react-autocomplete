@@ -64,7 +64,6 @@ function App() {
         handleHighlightedItem={(highlightedItem, list) => {
           highlightedItem.classList.add("red")
           setPreview(highlightedItem.innerText)
-          console.log(highlightedItem.getBoundingClientRect())
         }}
       //disableOutsideClick={true}
       // updateIsOpen={(updatedState) => {

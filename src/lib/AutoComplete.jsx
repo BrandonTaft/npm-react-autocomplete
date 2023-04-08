@@ -141,10 +141,11 @@ export default function AutoComplete(
   }, [list, getPropValue, isOpen, updateIsOpen, showAll]);
 
   useEffect(() => {
+    console.log("IRAN")
     if(itemsRef.current[highlightedIndex] && handleHighlightedItem){
       handleHighlightedItem(itemsRef.current[highlightedIndex], list)
     }
-  }, [highlightedIndex, handleHighlightedItem, list])
+  }, [highlightedIndex, handleHighlightedItem, list, matchingItems])
 
   const handlePrefix = (e) => {
     const prefix = e.target.value

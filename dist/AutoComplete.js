@@ -41,11 +41,12 @@ function AutoComplete(_ref) {
     inputStyle,
     dropDownStyle,
     listItemStyle,
-    highlightedItem = {
+    highlightedItemStyle = {
       backgroundColor: "gray"
     },
     isOpen,
-    updateIsOpen
+    updateIsOpen,
+    handleHighlightedItem
   } = _ref;
   const cachedList = (0, _react.useRef)();
   const filteredItems = (0, _react.useRef)();
@@ -180,6 +181,11 @@ function AutoComplete(_ref) {
     }
     ;
   }, [list, getPropValue, isOpen, updateIsOpen, showAll]);
+  (0, _react.useEffect)(() => {
+    if (itemsRef.current[highlightedIndex] && handleHighlightedItem) {
+      handleHighlightedItem(itemsRef.current[highlightedIndex], list);
+    }
+  }, [highlightedIndex, handleHighlightedItem, list]);
   const handlePrefix = e => {
     const prefix = e.target.value;
     if (filteredItems.current && showAll && prefix.length === 0) {
@@ -213,7 +219,6 @@ function AutoComplete(_ref) {
     // Down Arrow - sets the next index in the 'matchingItemsList' as the highlighted index
     // If the highlighted index is the last index it resets the highlighted index back to 0
     if (e.keyCode === 40) {
-      console.log(itemsRef.current[0]);
       if (!itemsRef.current[highlightedIndex + 1] && itemsRef.current[0] !== undefined) {
         dispatch({
           type: "RESET",
@@ -316,11 +321,11 @@ function AutoComplete(_ref) {
         payload: 0
       });
     }
-    return matchingItem != undefined ? /*#__PURE__*/_react.default.createElement("div", {
+    return matchingItem !== undefined ? /*#__PURE__*/_react.default.createElement("div", {
       key: index,
       ref: el => itemsRef.current[index] = el,
       className: highlightedIndex === index ? "dropdown-item highlited-item" : "dropdown-item",
-      style: highlightedIndex === index ? _objectSpread(_objectSpread({}, highlightedItem), listItemStyle) : _objectSpread({}, listItemStyle),
+      style: highlightedIndex === index ? _objectSpread(_objectSpread({}, highlightedItemStyle), listItemStyle) : _objectSpread({}, listItemStyle),
       onClick: () => {
         onMouseClick(matchingItem);
       },
