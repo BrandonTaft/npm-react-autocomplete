@@ -26,12 +26,8 @@ import { AutoComplete } from 'react-autocomplete-input-component';
           backgroundColor: "antiquewhite",
           width: "215px"
         }}
-        onSelect={(selectedItem, list) => {
-          for (let i = 0; i < list.length; i++) {
-            if (selectedItem === list[i].name) {
-              console.log(list[i])
-            }
-          }
+        onSelect={(selectedItem, originalIndex) => {
+          console.log(selectedItem)
         }}
       />
 
@@ -59,8 +55,9 @@ npm install --save react-autocomplete-input-component
 - Sets the object property value to be extracted and displayed in dropdown
 
 ### `onSelect: Function`
-- Function that will run when list item is selected
-- Has access to the item selected and the original list array
+- Function that will run when an item is selected from the dropdown
+- The item string or object is passed in as the first argument
+- The 2nd argument is the item's original index from the array passed in to the `list` prop
 - If the selected item is a number it will be returned as a string
 
 ### `clearOnSelect: Boolean` (Optional)
@@ -93,8 +90,8 @@ npm install --save react-autocomplete-input-component
 
 ### `handleHighlightedItem: Function` (Optional)
 - Function that is ran when the `highlighted item` changes
-- The `highlighted item` is passed in as an `***HTMLDivElement***`
-- The original `list` array is also passed in as the second argument
+- The 1st argument is the `highlighted item` passed in as an `***HTMLDivElement***`
+- The 2nd argument is the item string or object from the original list prop 
 
 ```jsx
   const[preview, setPreview] = useState();

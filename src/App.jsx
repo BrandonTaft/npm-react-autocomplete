@@ -5,8 +5,7 @@ import "./index.css"
 
 
 function App() {
-  const [tooltTip, setToolTip] = useState();
-  const[preview, setPreview] = useState();
+  const [preview, setPreview] = useState("")
   const [openDropDown, setOpenDropDown] = useState();
   const toggleDropDown = (() => {
     setOpenDropDown(openDropDown ? false : true)
@@ -14,6 +13,7 @@ function App() {
 
   return (
     <div className="App">
+      {preview.name}
       <button className='ignore' style={{ padding: '10px' }} onClick={toggleDropDown} />
       <AutoComplete
         //list={[0, 33, 1, 55, 5, 111, 11, 333, 44]}
@@ -50,14 +50,14 @@ function App() {
           maxHeight: "300px"
         }}
         onSelect={(selectedItem, originalIndex) => {
-          console.log(selectedItem)
+          setPreview(selectedItem)
           console.log(originalIndex)
         }}
 
 
-        handleHighlightedItem={(highlightedItem, list) => {
-          highlightedItem.classList.add("red")
-          setPreview(highlightedItem.innerText)
+        handleHighlightedItem={(highlightedElement, highlightedItem) => {
+          highlightedElement.style.color= ("red")
+          setPreview(highlightedItem)
         }}
       //disableOutsideClick={true}
       // updateIsOpen={(updatedState) => {

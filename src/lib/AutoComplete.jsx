@@ -142,7 +142,7 @@ export default function AutoComplete(
 
   useEffect(() => {
     if (itemsRef.current[highlightedIndex] && handleHighlightedItem) {
-      handleHighlightedItem(itemsRef.current[highlightedIndex], list)
+      handleHighlightedItem(itemsRef.current[highlightedIndex], list[matchingItems[highlightedIndex].originalIndex])
     }
     
   }, [highlightedIndex, handleHighlightedItem, list, matchingItems])
@@ -284,14 +284,15 @@ export default function AutoComplete(
 
   const scrollMe = () => {
     if(itemsRef.current){
+      let itemHeight = itemsRef.current[highlightedIndex].getBoundingClientRect().height
       let containerTop = Math.round(dropDownRef.current.getBoundingClientRect().top)
       let itemTop = Math.round(itemsRef.current[highlightedIndex].getBoundingClientRect().top)
       let height = Math.round(dropDownRef.current.getBoundingClientRect().height)
       let bottom = containerTop + height
-      if(containerTop > itemTop){
+      if(containerTop + (itemHeight / 5) > itemTop){
         dispatch({ type: "DOWN" });
       }
-      if(itemTop > bottom){
+      if(itemTop > bottom - itemHeight){
         dispatch({ type: "UP" });
       }
       }
