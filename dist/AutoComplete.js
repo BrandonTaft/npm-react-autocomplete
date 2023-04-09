@@ -185,7 +185,7 @@ function AutoComplete(_ref) {
     if (itemsRef.current[highlightedIndex] && handleHighlightedItem) {
       handleHighlightedItem(itemsRef.current[highlightedIndex], list);
     }
-  }, [highlightedIndex, handleHighlightedItem, list]);
+  }, [highlightedIndex, handleHighlightedItem, list, matchingItems]);
   const handlePrefix = e => {
     const prefix = e.target.value;
     if (filteredItems.current && showAll && prefix.length === 0) {

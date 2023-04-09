@@ -1,10 +1,11 @@
 
 class TrieNode {
-    constructor(letter) {
+    constructor(letter, originalIndex) {
         this.letter = letter;
         this.previousLetter = null;
         this.nextLetters = {};
         this.end = false;
+        this.originalIndex = originalIndex;
 
         this.getWord = function () {
             let output = [];
@@ -13,7 +14,11 @@ class TrieNode {
                 output.unshift(node.letter);
                 node = node.previousLetter;
             }
-            return output.join('');
+            const originalObject = {
+                value: output.join(''),
+                originalIndex: this.originalIndex
+            }
+            return originalObject;
         };
     }
 }
@@ -22,7 +27,7 @@ export default class Trie {
     constructor() {
         this.root = new TrieNode(null);
         // inserts a word into the trie.
-        this.insert = function (word) {
+        this.insert = function (word, originalIndex) {
             // start at the root
             let node = this.root;
             // for every character in the word
@@ -38,9 +43,46 @@ export default class Trie {
                 node = node.nextLetters[word[i]];
                 // check to see if we are on the last character.
                 if (i === word.length - 1) {
+                     //Store the index from the original array
+                     node.originalIndex = originalIndex;
                     // if so, set the end flag to true.
                     node.end = true;
                 }
+            }
+        };
+
+        
+        // returns every word with given prefix
+        this.find = function (value) {
+            let prefix = value.toLowerCase()
+            let node = this.root;
+            let output = [];
+            // for every character in the prefix
+            for (let i = 0; i < prefix.length; i++) {
+                // make sure prefix has any possible words available
+                if (node.nextLetters[prefix[i]]) {
+                    node = node.nextLetters[prefix[i]];
+                } else if (node.nextLetters[prefix[i].toUpperCase()]) {
+                    node = node.nextLetters[prefix[i].toUpperCase()];
+                } else {
+                    // if there are none then return it.
+                    return output ;
+                }
+            }
+            // find all words in the node that match
+            findAllWords(node, output);
+            return output.sort();
+        };
+
+        // find all words in the given node.
+        const findAllWords = (node, arr) => {
+            // base case, if node is at a word, push to output
+            if (node.end) {
+                arr.unshift(node.getWord());
+            }
+            // iterate through nextLetters, and find all possible matches with that prefix
+            for (let child in node.nextLetters) {
+                findAllWords(node.nextLetters[child], arr);
             }
         };
 
@@ -60,41 +102,6 @@ export default class Trie {
             }
             // return true if word is at node end
             return node.end;
-        };
-
-        // returns every word with given prefix
-        this.find = function (value) {
-            let prefix = value.toLowerCase()
-            let node = this.root;
-            let output = [];
-            // for every character in the prefix
-            for (let i = 0; i < prefix.length; i++) {
-                // make sure prefix has any possible words available
-                if (node.nextLetters[prefix[i]]) {
-                    node = node.nextLetters[prefix[i]];
-                } else if (node.nextLetters[prefix[i].toUpperCase()]) {
-                    node = node.nextLetters[prefix[i].toUpperCase()];
-                } else {
-                    // if there are none then return it.
-                    return output ;
-                }
-            }
-
-            // find all words in the node that match
-            findAllWords(node, output);
-            return output.sort();
-        };
-
-        // find all words in the given node.
-        const findAllWords = (node, arr) => {
-            // base case, if node is at a word, push to output
-            if (node.end) {
-                arr.unshift(node.getWord());
-            }
-            // iterate through nextLetters, and find all possible matches with that prefix
-            for (let child in node.nextLetters) {
-                findAllWords(node.nextLetters[child], arr);
-            }
         };
 
         // removes the given word

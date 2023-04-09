@@ -74,7 +74,7 @@ export default function AutoComplete(
           highlightedIndex: state.highlightedIndex - 1
         })
       }
-      case "RESET": {
+      case "UPDATE": {
         return ({
           ...state,
           highlightedIndex: action.payload
@@ -97,6 +97,7 @@ export default function AutoComplete(
             console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'")
           } else {
             try {
+
               filteredItems.current = list.map(getPropValue)
             } catch (error) {
               console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
@@ -109,15 +110,15 @@ export default function AutoComplete(
         console.error(`Ivalid PropType : The prop 'list' has a value of '${typeof list}' - list must be an array`)
       };
       // Initialize root node and store in the 'trie' ref
-      // Then insert each word in filteredItems array into the 'trie'
+      // Then insert each word in filteredItems array and its index into the 'trie'
       trie.current = new Trie();
       if (filteredItems.current) {
         for (let i = 0; i < filteredItems.current.length; i++) {
           const item = filteredItems.current[i]
           if (item && typeof item == 'number') {
-            trie.current.insert(item.toString())
+            trie.current.insert(item.toString(), i)
           } else if (item) {
-            trie.current.insert(item)
+            trie.current.insert(item, i)
           };
         };
       };
@@ -130,27 +131,33 @@ export default function AutoComplete(
       dispatch({ type: "CLOSE" });
     } else if (updateIsOpen && isOpen) {
       if (showAll && !inputRef.current.value) {
-        dispatch({ type: "OPEN", payload: filteredItems.current });
+        dispatch({ type: "OPEN", payload: filteredItems.current.map((item, index) => ({ value: item, originalIndex: index })) });
       } else if (showAll && inputRef.current.value) {
         dispatch({ type: "OPEN", payload: trie.current.find(inputRef.current.value) });
       } else if (!showAll && inputRef.current.value) {
         dispatch({ type: "OPEN", payload: trie.current.find(inputRef.current.value) });
       }
     };
-
   }, [list, getPropValue, isOpen, updateIsOpen, showAll]);
 
   useEffect(() => {
-    console.log("IRAN")
-    if(itemsRef.current[highlightedIndex] && handleHighlightedItem){
+    if (itemsRef.current[highlightedIndex] && handleHighlightedItem) {
       handleHighlightedItem(itemsRef.current[highlightedIndex], list)
     }
+    
   }, [highlightedIndex, handleHighlightedItem, list, matchingItems])
 
   const handlePrefix = (e) => {
-    const prefix = e.target.value
+      const prefix = e.target.value
     if (filteredItems.current && showAll && prefix.length === 0) {
-      dispatch({ type: "OPEN", payload: filteredItems.current });
+      dispatch({
+        type: "OPEN", payload: filteredItems.current.map((item, index) => (
+          {
+            value: item,
+            originalIndex: index
+          }
+        ))
+      });
       handleUpdateIsOpen(true)
       return
     }
@@ -162,7 +169,7 @@ export default function AutoComplete(
       handleUpdateIsOpen(false)
     }
     if (highlightedIndex + 1 > matchingItems.length) {
-      dispatch({ type: "RESET", payload: 0 });
+      dispatch({ type: "UPDATE", payload: 0 });
     }
   };
 
@@ -171,7 +178,7 @@ export default function AutoComplete(
     // If the highlighted index is the last index it resets the highlighted index back to 0
     if (e.keyCode === 40) {
       if (!itemsRef.current[highlightedIndex + 1] && itemsRef.current[0] !== undefined) {
-        dispatch({ type: "RESET", payload: 0 });
+        dispatch({ type: "UPDATE", payload: 0 });
         scrollIntoView(
           itemsRef.current[0],
           dropDownRef.current,
@@ -207,13 +214,13 @@ export default function AutoComplete(
     if (e.keyCode === 13) {
       if (list && matchingItems[highlightedIndex]) {
         try {
-          onSelect(matchingItems[highlightedIndex].toString(), list)
+          onSelect(list[matchingItems[highlightedIndex].originalIndex], matchingItems[highlightedIndex].originalIndex)
         } catch (error) {
           console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
         } finally {
           dispatch({ type: "CLOSE" });
           handleUpdateIsOpen(false)
-          resetInputValue(matchingItems[highlightedIndex])
+          resetInputValue(matchingItems[highlightedIndex].value)
         }
       } else {
         if (inputRef.current.value) {
@@ -237,9 +244,9 @@ export default function AutoComplete(
   }
 
   // Runs the function passed in to the onSelect prop and then closes the dropdown
-  const onMouseClick = (matchingItem) => {
+  const onMouseClick = (index, matchingItem) => {
     try {
-      onSelect(matchingItem.toString(), list)
+      onSelect(list[index], index)
     } catch (error) {
       console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
     } finally {
@@ -252,26 +259,43 @@ export default function AutoComplete(
 
   // Creates a new Collator object and uses its compare method to sort alphanumeric arrays
   var collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-  const sorted = matchingItems.sort(collator.compare)
+  const sorted = matchingItems.sort(function (a, b) {
+    return collator.compare(a.value, b.value)
+  });
   const matchingItemsList = sorted.map((matchingItem, index) => {
     if (highlightedIndex + 1 > matchingItems.length) {
-      dispatch({ type: "RESET", payload: 0 });
+      dispatch({ type: "UPDATE", payload: 0 });
     }
     return (
-      matchingItem !== undefined ?
+      matchingItem.value !== undefined ?
         <div
-          key={index}
+          key={matchingItem.originalIndex}
           ref={el => itemsRef.current[index] = el}
           className={highlightedIndex === index ? "dropdown-item highlited-item" : "dropdown-item"}
           style={highlightedIndex === index ? { ...highlightedItemStyle, ...listItemStyle } : { ...listItemStyle }}
-          onClick={() => { onMouseClick(matchingItem) }}
-          onMouseEnter={() => dispatch({ type: "RESET", payload: index })}
+          onClick={() => { onMouseClick(matchingItem.originalIndex, matchingItem.value) }}
+          onMouseEnter={() => dispatch({ type: "UPDATE", payload: index })}
         >
-          {matchingItem}
+          {matchingItem.value}
         </div>
-        : ""
+        : null
     )
   })
+
+  const scrollMe = () => {
+    if(itemsRef.current){
+      let containerTop = Math.round(dropDownRef.current.getBoundingClientRect().top)
+      let itemTop = Math.round(itemsRef.current[highlightedIndex].getBoundingClientRect().top)
+      let height = Math.round(dropDownRef.current.getBoundingClientRect().height)
+      let bottom = containerTop + height
+      if(containerTop > itemTop){
+        dispatch({ type: "DOWN" });
+      }
+      if(itemTop > bottom){
+        dispatch({ type: "UP" });
+      }
+      }
+  }
 
   return (
     <Wrapper
@@ -303,6 +327,7 @@ export default function AutoComplete(
           className="dropdown-container"
           ref={dropDownRef}
           style={dropDownStyle}
+          onScroll={scrollMe}
         >
           {matchingItemsList}
         </div>

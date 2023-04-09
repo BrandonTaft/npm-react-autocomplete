@@ -14,16 +14,14 @@ function App() {
 
   return (
     <div className="App">
-      <div>
-        {preview}
-      </div>
       <button className='ignore' style={{ padding: '10px' }} onClick={toggleDropDown} />
       <AutoComplete
-        list={[0, 33, 1, 55, 5, 111, 11, 333, 44]}
-        //list={testData}
+        //list={[0, 33, 1, 55, 5, 111, 11, 333, 44]}
+        list={testData}
+        //list={['very', 'apple', 'every', 'tom', 'fort', 'but', 'put', 'putty']}
         getPropValue={(listName) => listName.name}
         showAll={true}
-        highlightFirstItem={false}
+        //highlightFirstItem={false}
         clearOnSelect={false}
         inputProps={{
           placeholder: "search...",
@@ -51,13 +49,9 @@ function App() {
           overflowY: "auto",
           maxHeight: "300px"
         }}
-        onSelect={(selectedItem, list) => {
-          console.log(typeof selectedItem)
-          for (let i = 0; i < list.length; i++) {
-            if (selectedItem === list[i].name) {
-              console.log(list[i])
-            }
-          }
+        onSelect={(selectedItem, originalIndex) => {
+          console.log(selectedItem)
+          console.log(originalIndex)
         }}
 
 
