@@ -97,7 +97,7 @@ function AutoComplete(_ref) {
             highlightedIndex: state.highlightedIndex - 1
           });
         }
-      case "RESET":
+      case "UPDATE":
         {
           return _objectSpread(_objectSpread({}, state), {}, {
             highlightedIndex: action.payload
@@ -138,15 +138,15 @@ function AutoComplete(_ref) {
       }
       ;
       // Initialize root node and store in the 'trie' ref
-      // Then insert each word in filteredItems array into the 'trie'
+      // Then insert each word in filteredItems array and its index into the 'trie'
       trie.current = new _trie.default();
       if (filteredItems.current) {
         for (let i = 0; i < filteredItems.current.length; i++) {
           const item = filteredItems.current[i];
           if (item && typeof item == 'number') {
-            trie.current.insert(item.toString());
+            trie.current.insert(item.toString(), i);
           } else if (item) {
-            trie.current.insert(item);
+            trie.current.insert(item, i);
           }
           ;
         }
@@ -165,7 +165,10 @@ function AutoComplete(_ref) {
       if (showAll && !inputRef.current.value) {
         dispatch({
           type: "OPEN",
-          payload: filteredItems.current
+          payload: filteredItems.current.map((item, index) => ({
+            value: item,
+            originalIndex: index
+          }))
         });
       } else if (showAll && inputRef.current.value) {
         dispatch({
@@ -183,7 +186,7 @@ function AutoComplete(_ref) {
   }, [list, getPropValue, isOpen, updateIsOpen, showAll]);
   (0, _react.useEffect)(() => {
     if (itemsRef.current[highlightedIndex] && handleHighlightedItem) {
-      handleHighlightedItem(itemsRef.current[highlightedIndex], list);
+      handleHighlightedItem(itemsRef.current[highlightedIndex], list[matchingItems[highlightedIndex].originalIndex]);
     }
   }, [highlightedIndex, handleHighlightedItem, list, matchingItems]);
   const handlePrefix = e => {
@@ -191,7 +194,10 @@ function AutoComplete(_ref) {
     if (filteredItems.current && showAll && prefix.length === 0) {
       dispatch({
         type: "OPEN",
-        payload: filteredItems.current
+        payload: filteredItems.current.map((item, index) => ({
+          value: item,
+          originalIndex: index
+        }))
       });
       handleUpdateIsOpen(true);
       return;
@@ -210,7 +216,7 @@ function AutoComplete(_ref) {
     }
     if (highlightedIndex + 1 > matchingItems.length) {
       dispatch({
-        type: "RESET",
+        type: "UPDATE",
         payload: 0
       });
     }
@@ -221,7 +227,7 @@ function AutoComplete(_ref) {
     if (e.keyCode === 40) {
       if (!itemsRef.current[highlightedIndex + 1] && itemsRef.current[0] !== undefined) {
         dispatch({
-          type: "RESET",
+          type: "UPDATE",
           payload: 0
         });
         (0, _domScrollIntoView.default)(itemsRef.current[0], dropDownRef.current, {
@@ -258,7 +264,7 @@ function AutoComplete(_ref) {
     if (e.keyCode === 13) {
       if (list && matchingItems[highlightedIndex]) {
         try {
-          onSelect(matchingItems[highlightedIndex].toString(), list);
+          onSelect(list[matchingItems[highlightedIndex].originalIndex], matchingItems[highlightedIndex].originalIndex);
         } catch (error) {
           console.error("You must provide a valid function to the 'onSelect' prop", '\n', error);
         } finally {
@@ -266,7 +272,7 @@ function AutoComplete(_ref) {
             type: "CLOSE"
           });
           handleUpdateIsOpen(false);
-          resetInputValue(matchingItems[highlightedIndex]);
+          resetInputValue(matchingItems[highlightedIndex].value);
         }
       } else {
         if (inputRef.current.value) {
@@ -294,9 +300,9 @@ function AutoComplete(_ref) {
   };
 
   // Runs the function passed in to the onSelect prop and then closes the dropdown
-  const onMouseClick = matchingItem => {
+  const onMouseClick = (index, matchingItem) => {
     try {
-      onSelect(matchingItem.toString(), list);
+      onSelect(list[index], index);
     } catch (error) {
       console.error("You must provide a valid function to the 'onSelect' prop", '\n', error);
     } finally {
@@ -313,28 +319,49 @@ function AutoComplete(_ref) {
     numeric: true,
     sensitivity: 'base'
   });
-  const sorted = matchingItems.sort(collator.compare);
+  const sorted = matchingItems.sort(function (a, b) {
+    return collator.compare(a.value, b.value);
+  });
   const matchingItemsList = sorted.map((matchingItem, index) => {
     if (highlightedIndex + 1 > matchingItems.length) {
       dispatch({
-        type: "RESET",
+        type: "UPDATE",
         payload: 0
       });
     }
-    return matchingItem !== undefined ? /*#__PURE__*/_react.default.createElement("div", {
-      key: index,
+    return matchingItem.value !== undefined ? /*#__PURE__*/_react.default.createElement("div", {
+      key: matchingItem.originalIndex,
       ref: el => itemsRef.current[index] = el,
       className: highlightedIndex === index ? "dropdown-item highlited-item" : "dropdown-item",
       style: highlightedIndex === index ? _objectSpread(_objectSpread({}, highlightedItemStyle), listItemStyle) : _objectSpread({}, listItemStyle),
       onClick: () => {
-        onMouseClick(matchingItem);
+        onMouseClick(matchingItem.originalIndex, matchingItem.value);
       },
       onMouseEnter: () => dispatch({
-        type: "RESET",
+        type: "UPDATE",
         payload: index
       })
-    }, matchingItem) : "";
+    }, matchingItem.value) : null;
   });
+  const scrollMe = () => {
+    if (itemsRef.current) {
+      let itemHeight = itemsRef.current[highlightedIndex].getBoundingClientRect().height;
+      let containerTop = Math.round(dropDownRef.current.getBoundingClientRect().top);
+      let itemTop = Math.round(itemsRef.current[highlightedIndex].getBoundingClientRect().top);
+      let height = Math.round(dropDownRef.current.getBoundingClientRect().height);
+      let bottom = containerTop + height;
+      if (containerTop + itemHeight / 5 > itemTop) {
+        dispatch({
+          type: "DOWN"
+        });
+      }
+      if (itemTop > bottom - itemHeight) {
+        dispatch({
+          type: "UP"
+        });
+      }
+    }
+  };
   return /*#__PURE__*/_react.default.createElement(_Wrapper.default, {
     className: "autocomplete-wrapper",
     disabled: disableOutsideClick,
@@ -362,7 +389,8 @@ function AutoComplete(_ref) {
   })), matchingItemsList.length ? /*#__PURE__*/_react.default.createElement("div", {
     className: "dropdown-container",
     ref: dropDownRef,
-    style: dropDownStyle
+    style: dropDownStyle,
+    onScroll: scrollMe
   }, matchingItemsList) : null);
 
   // Sets the value of the input to be what is specified in 'clearOnSelect' prop

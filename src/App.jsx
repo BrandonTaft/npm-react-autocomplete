@@ -34,7 +34,7 @@ function App() {
           padding: "5px"
         }}
         highlightedItemStyle={{
-          backgroundColor: "orange",
+          backgroundColor: "dodgerBlue",
           color: "blue"
         }}
         wrapperDiv={"inline"}
@@ -49,21 +49,20 @@ function App() {
           overflowY: "auto",
           maxHeight: "300px"
         }}
-        onSelect={(selectedItem, originalIndex) => {
+        onSelect={(selectedElement, selectedItem, originalIndex) => {
           setPreview(selectedItem)
-          console.log(originalIndex)
+          console.log(selectedElement)
+          console.log(selectedItem, originalIndex)
         }}
-
-
         handleHighlightedItem={(highlightedElement, highlightedItem) => {
-          highlightedElement.style.color= ("red")
+          highlightedElement.style.color = ("red")
           setPreview(highlightedItem)
         }}
       //disableOutsideClick={true}
-      // updateIsOpen={(updatedState) => {
-      //   setOpenDropDown(updatedState)
-      // }}
-      // isOpen={openDropDown}
+      updateIsOpen={(updatedState) => {
+        setOpenDropDown(updatedState)
+      }}
+      isOpen={openDropDown}
       />
 
     </div>

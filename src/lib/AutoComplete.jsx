@@ -130,6 +130,7 @@ export default function AutoComplete(
     if (updateIsOpen && !isOpen) {
       dispatch({ type: "CLOSE" });
     } else if (updateIsOpen && isOpen) {
+      if(inputRef.current) {inputRef.current.focus()}
       if (showAll && !inputRef.current.value) {
         dispatch({ type: "OPEN", payload: filteredItems.current.map((item, index) => ({ value: item, originalIndex: index })) });
       } else if (showAll && inputRef.current.value) {
@@ -214,7 +215,11 @@ export default function AutoComplete(
     if (e.keyCode === 13) {
       if (list && matchingItems[highlightedIndex]) {
         try {
-          onSelect(list[matchingItems[highlightedIndex].originalIndex], matchingItems[highlightedIndex].originalIndex)
+          onSelect(
+            list[matchingItems[highlightedIndex].originalIndex],
+            itemsRef.current[highlightedIndex],
+            matchingItems[highlightedIndex].originalIndex
+          )
         } catch (error) {
           console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
         } finally {
@@ -244,9 +249,9 @@ export default function AutoComplete(
   }
 
   // Runs the function passed in to the onSelect prop and then closes the dropdown
-  const onMouseClick = (index, matchingItem) => {
+  const onMouseClick = (index, selectedElement, matchingItem) => {
     try {
-      onSelect(list[index], index)
+      onSelect(list[index], selectedElement, index)
     } catch (error) {
       console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
     } finally {
@@ -273,7 +278,7 @@ export default function AutoComplete(
           ref={el => itemsRef.current[index] = el}
           className={highlightedIndex === index ? "dropdown-item highlited-item" : "dropdown-item"}
           style={highlightedIndex === index ? { ...highlightedItemStyle, ...listItemStyle } : { ...listItemStyle }}
-          onClick={() => { onMouseClick(matchingItem.originalIndex, matchingItem.value) }}
+          onClick={() => { onMouseClick(matchingItem.originalIndex, itemsRef.current[index],  matchingItem.value) }}
           onMouseEnter={() => dispatch({ type: "UPDATE", payload: index })}
         >
           {matchingItem.value}
@@ -289,11 +294,23 @@ export default function AutoComplete(
       let itemTop = Math.round(itemsRef.current[highlightedIndex].getBoundingClientRect().top)
       let height = Math.round(dropDownRef.current.getBoundingClientRect().height)
       let bottom = containerTop + height
-      if(containerTop + (itemHeight / 5) > itemTop){
+      if(containerTop > itemTop){
         dispatch({ type: "DOWN" });
+        scrollIntoView(
+          itemsRef.current[highlightedIndex],
+          dropDownRef.current,
+          { alignWithTop: true,
+            onlyScrollIfNeeded: true }
+        )
       }
-      if(itemTop > bottom - itemHeight){
+      if(bottom < itemTop + (itemHeight / 1.2)){
         dispatch({ type: "UP" });
+        scrollIntoView(
+          itemsRef.current[highlightedIndex],
+          dropDownRef.current,
+          { alignWithTop: false,
+            onlyScrollIfNeeded: true }
+        )
       }
       }
   }

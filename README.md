@@ -16,7 +16,7 @@ import { AutoComplete } from 'react-autocomplete-input-component';
           { name: 'Thomas', id: 3663 }
         ]}
         highlightedItemStyle={{
-          backgroundColor: "gray"
+          backgroundColor: "dodgerBlue"
         }}
         listItemStyle={{
           cursor: "pointer",
@@ -26,8 +26,14 @@ import { AutoComplete } from 'react-autocomplete-input-component';
           backgroundColor: "antiquewhite",
           width: "215px"
         }}
-        onSelect={(selectedItem, originalIndex) => {
+        handleHighlightedItem={(highlightedElement, highlightedItem) => {
+          highlightedElement.style.color= ("red")
+          setPreview(highlightedItem)
+        }}
+        onSelect={(selectedItem, selectedElement, originalIndex) => {
           console.log(selectedItem)
+          console.log(selectedElement)
+          console.log(originalIndex)
         }}
       />
 
@@ -56,16 +62,17 @@ npm install --save react-autocomplete-input-component
 
 ### `onSelect: Function`
 - Function that will run when an item is selected from the dropdown
-- The item string or object is passed in as the first argument
-- The 2nd argument is the item's original index from the array passed in to the `list` prop
-- If the selected item is a number it will be returned as a string
+- The 1st argument is the `selected item` passed in as an `***HTMLDivElement***`
+- The 2nd argument is the item string or object from the original `list` prop 
+- The 3rd argument is the item's original index from the original `list` prop
+- If the selected item is a number it will be returned as a `string`
 
 ### `clearOnSelect: Boolean` (Optional)
 - `true` (default) the input will clear when an item is selected
 - `false` value selected will become the input value
 - `onMouseDown` can be used in `inputProps` to clear the input
 
-### `inputProps: Object`
+### `inputProps: Object` (Optional)
 - Sets HTML text input attributes with some exceptions
 - Type and Autocomplete are unable to be overridden
 - Some Event handlers such as onClick can be used
@@ -80,14 +87,6 @@ npm install --save react-autocomplete-input-component
   }}
 ```
 
-### `showAll: Boolean` (Optional)
-- `false` (default) dropdown doesn't appear until input value matches an item's prefix
-- `true` - If the input is focused and empty the dropdown displays all list items
-
-### `highlightFirstItem: Boolean` (Optional)
-- `true` (default) - automatically highlights first item in dropdown
-- `false` - Press arrow key or hover with mouse to highlight
-
 ### `handleHighlightedItem: Function` (Optional)
 - Function that is ran when the `highlighted item` changes
 - The 1st argument is the `highlighted item` passed in as an `***HTMLDivElement***`
@@ -100,28 +99,36 @@ return(
 <>
   <div>{preview}</div>
   <AutoComplete
-    handleHighlightedItem={(highlightedItem, list) => {
-    highlightedItem.style.color = "red"
-    setPreview(highlightedItem.innerText)
-  }}
+    handleHighlightedItem={(highlightedElement, highlightedItem) => {
+      highlightedElement.style.color= ("red")
+      setPreview(highlightedItem)
+    }}
   />
 </>
 )
 ```
 
-### `disableOutsideClick : Boolean` 
+### `highlightFirstItem: Boolean` (Optional)
+- `true` (default) - automatically highlights first item in dropdown
+- `false` - Press arrow key or hover with mouse to highlight
+
+### `showAll: Boolean` (Optional)
+- `false` (default) dropdown doesn't appear until input value matches an item's prefix
+- `true` - If the input is focused and empty the dropdown displays all list items
+
+### `disableOutsideClick : Boolean` (Optional)
 - `false` (default) the dropdown closes when mouse is clicked outside of the auto-complete wrapper div
 - `true` the dropdown only closes when onSelect fires or tab key is pressed
 - `NOTE!!!` to control the dropdown with `updateIsOpen` and keep this enabled,
   the element controlling the event should have a `className` of `ignore`
 
-### `isOpen : Boolean`
+### `isOpen : Boolean` (Optional)
 - This prop is used to set the position of the dropdown in the `AutoComplete` component
 - It is only necessary when using `updateIsOpen` to control the dropdown
 - `true` is passed in to open the dropdown
 - `false` is passed in to close the dropdown
 
-### `updateIsOpen: Function`
+### `updateIsOpen: Function` (Optional)
 - Function used to update the parent with the current position of the dropdown
 - Runs when dropdown opens by entering text or closes by clicking outside of the element 
 
@@ -146,23 +153,23 @@ return(
 )
 ```
 
-### `wrapperStyle: Object`
+### `wrapperStyle: Object` (Optional)
 - J.S. Style Object Variable for the `div` wrapping the whole component
 - CSS can also be used with the class name `autocomplete-wrapper`
 
-### `inputStyle: Object`
+### `inputStyle: Object` (Optional)
 - J.S. Style Object Variable for the `input` element
 - CSS can also be used with the class name `autocomplete-input`
 
-### `dropDownStyle: Object`
+### `dropDownStyle: Object` (Optional)
 - J.S. Style Object Variable for the dropdown container `div`
 - CSS can also be used with the class name `dropdown-container`
 
-### `listItemStyle: Object`
+### `listItemStyle: Object` (Optional)
 - J.S. Style Object Variable for each `item div` in the dropdown
 - CSS can also be used with the class name `dropdown-item`
 
-### `highlightedItemStyle: Object`
+### `highlightedItemStyle: Object` (Optional)
 - J.S. Style Object Variable for the `highlighted item`
 - CSS can also be used with the class name `highlighted-item`
 - Default color is `grey`
