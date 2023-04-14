@@ -13,42 +13,42 @@ function App() {
 
   return (
     <div className="App">
-      {preview.name}
+      {/* {preview.name} */}
       <button className='ignore' style={{ padding: '10px' }} onClick={toggleDropDown} />
       <AutoComplete
         //list={[0, 33, 1, 55, 5, 111, 11, 333, 44]}
-        list={testData}
-        //list={['very', 'apple', 'every', 'tom', 'fort', 'but', 'put', 'putty']}
-        getPropValue={(listName) => listName.name}
+       // list={testData}
+        list={['very', 'apple', 'every', 'tom', 'fort', 'but', 'put', 'putty']}
+       getPropValue={(listName) => listName.id}
         showAll={true}
         //highlightFirstItem={false}
         clearOnSelect={false}
         inputProps={{
           placeholder: "search...",
-          onMouseOver: () => {
-            setOpenDropDown(true)
-          }
+          // onMouseOver: () => {
+          //   setOpenDropDown(true)
+          // }
         }}
-        inputStyle={{
-          width: "200px",
-          padding: "5px"
-        }}
-        highlightedItemStyle={{
-          backgroundColor: "dodgerBlue",
-          color: "blue"
-        }}
-        wrapperDiv={"inline"}
-        wrapperStyle={{ width: '100px' }}
-        listItemStyle={{
-          cursor: "pointer",
-          padding: "5px"
-        }}
-        dropDownStyle={{
-          backgroundColor: "antiquewhite",
-          width: "215px",
-          overflowY: "auto",
-          maxHeight: "300px"
-        }}
+        // inputStyle={{
+        //   width: "200px",
+        //   padding: "5px"
+        // }}
+        // highlightedItemStyle={{
+        //   backgroundColor: "dodgerBlue",
+        //   color: "blue"
+        // }}
+        // wrapperDiv={"inline"}
+        // wrapperStyle={{ width: '100px' }}
+        // listItemStyle={{
+        //   cursor: "pointer",
+        //   padding: "5px"
+        // }}
+        // dropDownStyle={{
+        //   backgroundColor: "antiquewhite",
+        //   width: "215px",
+        //   overflowY: "auto",
+        //   maxHeight: "300px"
+        // }}
         onSelect={(selectedElement, selectedItem, originalIndex) => {
           setPreview(selectedItem)
           console.log(selectedElement)
@@ -59,9 +59,9 @@ function App() {
           setPreview(highlightedItem)
         }}
       //disableOutsideClick={true}
-      updateIsOpen={(updatedState) => {
-        setOpenDropDown(updatedState)
-      }}
+      // updateIsOpen={(updatedState) => {
+      //   setOpenDropDown(updatedState)
+      // }}
       isOpen={openDropDown}
       />
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useEffect, useRef, useReducer } from "react";
+import { useEffect, useState, useRef, useReducer, useCallback } from "react";
 import scrollIntoView from 'dom-scroll-into-view';
 import Wrapper from './Wrapper';
 import Trie from "./trie";
@@ -27,8 +27,9 @@ export default function AutoComplete(
     handleHighlightedItem
   }
 ) {
-
+  const x = useRef()
   const cachedList = useRef();
+  const cachedProp = useRef()
   const filteredItems = useRef();
   const trie = useRef();
   const inputRef = useRef();
@@ -84,72 +85,167 @@ export default function AutoComplete(
         return state;
     }
   };
-
-  useEffect(() => {
-    // If list is not already stored in the trie - store original list in cachedList ref
-    // If there are no nested objects, create a new array and store it in filterItems ref
-    // If there are nested objects, use 'getPropvalue' to extract property values and set them in filterItems ref
-    if (JSON.stringify(cachedList.current) !== JSON.stringify(list)) {
-      cachedList.current = Array.from(list)
+  list = Array.from(list)
+  const getFilteredList = useCallback(() => {  
+      if(getPropValue && x.current && x.current.toString() === getPropValue.toString()){
+        if (JSON.stringify(cachedList.current) === JSON.stringify(filteredItems.current)) {
+        console.log("IDIDNOTHING")
+        return
+      }
+    }
+    
       if (Array.isArray(list)) {
+        console.log("TEST")
         if (list.some(value => { return typeof value == "object" })) {
-          if (!getPropValue) {
+          if(getPropValue) {
+                try {
+                  filteredItems.current = list.map(getPropValue)
+                  x.current = getPropValue
+                } catch (error) {
+                  console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
+                };
+          } else if (!getPropValue) {
             console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'")
-          } else {
-            try {
-
-              filteredItems.current = list.map(getPropValue)
-            } catch (error) {
-              console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
-            };
-          };
+          } 
         } else {
           filteredItems.current = Array.from(list)
-        };
+          if(getPropValue) {
+            x.current = getPropValue
+          }
+        }
       } else {
-        console.error(`Ivalid PropType : The prop 'list' has a value of '${typeof list}' - list must be an array`)
-      };
-      // Initialize root node and store in the 'trie' ref
-      // Then insert each word in filteredItems array and its index into the 'trie'
-      trie.current = new Trie();
-      if (filteredItems.current) {
-        for (let i = 0; i < filteredItems.current.length; i++) {
-          const item = filteredItems.current[i]
-          if (item && typeof item == 'number') {
-            trie.current.insert(item.toString(), i)
-          } else if (item) {
-            trie.current.insert(item, i)
-          };
+          console.error(`Ivalid PropType : The prop 'list' has a value of '${typeof list}' - list must be an array`)
+        };
+    
+    if (JSON.stringify(cachedList.current) !== JSON.stringify(filteredItems.current)) {
+    cachedList.current = filteredItems.current
+    trie.current = new Trie();
+    if (filteredItems.current) {
+      for (let i = 0; i < filteredItems.current.length; i++) {
+        const item = filteredItems.current[i]
+        if (item && typeof item == 'number') {
+          trie.current.insert(item.toString(), i)
+        } else if (item) {
+          trie.current.insert(item, i)
         };
       };
-
-    }
-    // It the updateIsOpen prop is passed in - 
-    // Close dropdown if isOpen is false
-    // Open dropdown if isOpen is true
-    if (updateIsOpen && !isOpen) {
-      dispatch({ type: "CLOSE" });
-    } else if (updateIsOpen && isOpen) {
-      if(inputRef.current) {inputRef.current.focus()}
-      if (showAll && !inputRef.current.value) {
-        dispatch({ type: "OPEN", payload: filteredItems.current.map((item, index) => ({ value: item, originalIndex: index })) });
-      } else if (showAll && inputRef.current.value) {
-        dispatch({ type: "OPEN", payload: trie.current.find(inputRef.current.value) });
-      } else if (!showAll && inputRef.current.value) {
-        dispatch({ type: "OPEN", payload: trie.current.find(inputRef.current.value) });
-      }
     };
-  }, [list, getPropValue, isOpen, updateIsOpen, showAll]);
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
+    // if (Array.isArray(list)) {
+      // if (list.some(value => { return typeof value == "object" })) {
+        // if (getPropValue && x.current || getPropValue && !x.current) {
+        //   console.log("IRAN")
+        //   if(x.current){
+        //   if (x.current.toString() !== getPropValue.toString()) {
+        //     console.log("IRAN222")
+        //       try {
+        //         filteredItems.current = list.map(getPropValue)
+        //         x.current = getPropValue
+        //       } catch (error) {
+        //         console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
+        //       };
+        //     }  else {
+        //       console.log("IDIDNOTHING")
+        //       return
+        //     }
+        //   } else {
+        //     console.log("IRAN222")
+        //     try {
+        //       filteredItems.current = list.map(getPropValue)
+        //       x.current = getPropValue
+        //     } catch (error) {
+        //       console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
+        //     };
+        //   }  
+        //  } 
+        //else if (!getPropValue) {
+        //     console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'")
+        //   } 
+      // } else {
+      //   filteredItems.current = Array.from(list)
+      // }
+    // } else {
+    //   console.error(`Ivalid PropType : The prop 'list' has a value of '${typeof list}' - list must be an array`)
+    // };
+  }, [getPropValue, list])
+
+
+
+
+
+
 
   useEffect(() => {
+    console.log("USEEFFECt RAN")
+    getFilteredList()
+
+    // Initialize root node and store in the 'trie' ref
+    // Then insert each word in filteredItems array and its index into the 'trie'
+    // if (JSON.stringify(cachedList.current) !== JSON.stringify(filteredItems.current)) {
+    //   cachedList.current = filteredItems.current
+    //   console.log("callback ran")
+    //   trie.current = new Trie();
+    //   if (filteredItems.current) {
+    //     for (let i = 0; i < filteredItems.current.length; i++) {
+    //       const item = filteredItems.current[i]
+    //       if (item && typeof item == 'number') {
+    //         trie.current.insert(item.toString(), i)
+    //       } else if (item) {
+    //         trie.current.insert(item, i)
+    //       };
+    //     };
+    //   };
+    // };
+  }, [getFilteredList, list]);
+
+  // useEffect(()=>{
+  //   console.log("EF2")
+  //   // It the updateIsOpen prop is passed in - 
+  //   // Close dropdown if isOpen is false
+  //   // Open dropdown if isOpen is true
+  //   if (updateIsOpen && !isOpen) {
+  //     dispatch({ type: "CLOSE" });
+  //   } else if (updateIsOpen && isOpen) {
+  //     if(inputRef.current) {inputRef.current.focus()}
+  //     if (showAll && !inputRef.current.value) {
+  //       dispatch({ type: "OPEN", payload: filteredItems.current.map((item, index) => ({ value: item, originalIndex: index })) });
+  //     } else if (showAll && inputRef.current.value) {
+  //       dispatch({ type: "OPEN", payload: trie.current.find(inputRef.current.value) });
+  //     } else if (!showAll && inputRef.current.value) {
+  //       dispatch({ type: "OPEN", payload: trie.current.find(inputRef.current.value) });
+  //     }
+  //   };
+  //  }, [updateIsOpen, isOpen, showAll])
+
+  useEffect(() => {
+    console.log("highliterrrr")
     if (itemsRef.current[highlightedIndex] && handleHighlightedItem) {
       handleHighlightedItem(itemsRef.current[highlightedIndex], list[matchingItems[highlightedIndex].originalIndex])
     }
-    
-  }, [highlightedIndex, handleHighlightedItem, list, matchingItems])
+
+  }, [handleHighlightedItem, highlightedIndex])
 
   const handlePrefix = (e) => {
-      const prefix = e.target.value
+    const prefix = e.target.value
     if (filteredItems.current && showAll && prefix.length === 0) {
       dispatch({
         type: "OPEN", payload: filteredItems.current.map((item, index) => (
@@ -278,7 +374,7 @@ export default function AutoComplete(
           ref={el => itemsRef.current[index] = el}
           className={highlightedIndex === index ? "dropdown-item highlited-item" : "dropdown-item"}
           style={highlightedIndex === index ? { ...highlightedItemStyle, ...listItemStyle } : { ...listItemStyle }}
-          onClick={() => { onMouseClick(matchingItem.originalIndex, itemsRef.current[index],  matchingItem.value) }}
+          onClick={() => { onMouseClick(matchingItem.originalIndex, itemsRef.current[index], matchingItem.value) }}
           onMouseEnter={() => dispatch({ type: "UPDATE", payload: index })}
         >
           {matchingItem.value}
@@ -288,31 +384,35 @@ export default function AutoComplete(
   })
 
   const scrollMe = () => {
-    if(itemsRef.current){
+    if (itemsRef.current) {
       let itemHeight = itemsRef.current[highlightedIndex].getBoundingClientRect().height
       let containerTop = Math.round(dropDownRef.current.getBoundingClientRect().top)
       let itemTop = Math.round(itemsRef.current[highlightedIndex].getBoundingClientRect().top)
       let height = Math.round(dropDownRef.current.getBoundingClientRect().height)
       let bottom = containerTop + height
-      if(containerTop > itemTop){
+      if (containerTop > itemTop) {
         dispatch({ type: "DOWN" });
         scrollIntoView(
           itemsRef.current[highlightedIndex],
           dropDownRef.current,
-          { alignWithTop: true,
-            onlyScrollIfNeeded: true }
+          {
+            alignWithTop: true,
+            onlyScrollIfNeeded: true
+          }
         )
       }
-      if(bottom < itemTop + (itemHeight / 1.2)){
+      if (bottom < itemTop + (itemHeight / 1.2)) {
         dispatch({ type: "UP" });
         scrollIntoView(
           itemsRef.current[highlightedIndex],
           dropDownRef.current,
-          { alignWithTop: false,
-            onlyScrollIfNeeded: true }
+          {
+            alignWithTop: false,
+            onlyScrollIfNeeded: true
+          }
         )
       }
-      }
+    }
   }
 
   return (
