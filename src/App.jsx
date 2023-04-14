@@ -17,8 +17,8 @@ function App() {
       <button className='ignore' style={{ padding: '10px' }} onClick={toggleDropDown} />
       <AutoComplete
         //list={[0, 33, 1, 55, 5, 111, 11, 333, 44]}
-       // list={testData}
-        list={['very', 'apple', 'every', 'tom', 'fort', 'but', 'put', 'putty']}
+        list={testData}
+        //list={['very', 'apple', 'every', 'tom', 'fort', 'but', 'put', 'putty']}
        getPropValue={(listName) => listName.id}
         showAll={true}
         //highlightFirstItem={false}
