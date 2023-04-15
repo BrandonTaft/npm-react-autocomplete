@@ -29,12 +29,13 @@ export default function AutoComplete(
 ) {
   const cachedList = useRef();
   const cachedFunction = useRef()
-  const filteredItems = useRef();
+  // const filteredItems = useRef();
   const trie = useRef();
   const inputRef = useRef();
   const dropDownRef = useRef();
   const itemsRef = useRef([]);
-  const [filtered, setFiltered] = useState()
+  const [filteredItems, setFilteredItems] = useState()
+  const [cachedFunc, setCachedFunc] = useState(() => {})
   const initialState = {
     matchingItems: [],
     highlightedIndex: highlightFirstItem ? 0 : -1
@@ -87,102 +88,154 @@ export default function AutoComplete(
   };
 
 
-  const getFilteredList = useCallback(() => {
-    // If list hasn't changed and it doesn't have objects inside - Do nothing
-    // If it does have objects  and the getPropValue function hasn't changed - Do nothing
-    // If getPropValue is new or has changed - use it then create new Trie
-    console.log("CHECKED IF NEW LIST")
+  // const getFilteredList = useCallback(() => {
+  //   // If list hasn't changed and it doesn't have objects inside - Do nothing
+  //   // If it does have objects  and the getPropValue function hasn't changed - Do nothing
+  //   // If getPropValue is new or has changed - use it then create new Trie
+  //   console.log("CHECKED IF NEW LIST")
+  //   if (cachedList.current && JSON.stringify(cachedList.current) === JSON.stringify(list)) {
+  //     console.log("CHECKED FOR OBJECTS")
+  //     if (list.some(value => { return typeof value == "object" })) {
+  //       console.log("CHECKED FOR GETPROPVALUE")
+  //       if (getPropValue) {
+  //         if (cachedFunction.current && cachedFunction.current.toString() === getPropValue.toString()) {
+  //           console.log(" GETPROPVALUE WAS THE SAME - NOTHING ELSE")
+  //           return
+  //         } else {
+  //           try {
+  //             console.log("CREATED FILTEREDLIST WITH GETPROPVALUE AND CACHED GETPROPVALUE")
+  //             setCachedFunc(list.map(getPropValue))
+  //             cachedFunction.current = getPropValue
+  //           } catch (error) {
+  //             console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
+  //           };
+  //           if(list){
+  //             cachedList.current = Array.from(list)
+  //             }
+  //         }
+  //       } else if (!getPropValue) {
+  //         console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'")
+  //       }
+  //     } else {
+  //       console.log("SAME LIST NO OBJECTS")
+  //       return
+  //     }
+
+  //   } else {
+  //     console.log("LISTS WERE DIFFERENT ")
+  //     if (Array.isArray(list)) {
+  //       console.log("CHECKED FOR OBJECTS")
+  //       if (list.some(value => { return typeof value == "object" })) {
+  //         console.log("CHECKED FOR GETPROPVALUE")
+  //         if (getPropValue) {
+  //           console.log("CREATED FILTEREDLIST WITH GETPROPVALUE AND CACHED GETPROPVALUE")
+  //           try {
+  //             setCachedFunc(list.map(getPropValue))
+  //             cachedFunction.current = getPropValue
+  //           } catch (error) {
+  //             console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
+  //           };
+  //         } else if (!getPropValue) {
+  //           console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'")
+  //           return
+  //         }
+  //       } else {
+  //         setFilteredItems(Array.from(list))
+  //       }
+  //     } else {
+  //       console.error(`Ivalid PropType : The prop 'list' has a value of '${typeof list}' - list must be an array`)
+  //       return
+  //     };
+  //     if(list){
+  //       cachedList.current = Array.from(list)
+  //       }
+  //   }
+  // }, [getPropValue, list])
+
+  useEffect(() => {
     if (cachedList.current && JSON.stringify(cachedList.current) === JSON.stringify(list)) {
+      if (!list.some(value => { return typeof value == "object" })) {
+        console.log("same list no objects")
+        return
+      } else {
+        if (getPropValue) {
+            if (cachedFunction.current && cachedFunction.current.toString() === getPropValue.toString()) {
+              console.log(" GETPROPVALUE WAS THE SAME - NOTHING ELSE")
+              return
+            } else {
+              try {
+                console.log("CREATED FILTEREDLIST WITH GETPROPVALUE AND CACHED GETPROPVALUE")
+                setCachedFunc(list.map(getPropValue))
+                cachedFunction.current = getPropValue
+              } catch (error) {
+                console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
+              };
+            }
+        } else if (!getPropValue) {
+            console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'")
+            return
+          }
+      }
+    } else if (Array.isArray(list)) {
       console.log("CHECKED FOR OBJECTS")
       if (list.some(value => { return typeof value == "object" })) {
         console.log("CHECKED FOR GETPROPVALUE")
         if (getPropValue) {
-          if (cachedFunction.current && cachedFunction.current.toString() === getPropValue.toString()) {
-            console.log(" GETPROPVALUE WAS THE SAME - NOTHING ELSE")
-            return
-          } else {
-            try {
-              console.log("CREATED FILTEREDLIST WITH GETPROPVALUE AND CACHED GETPROPVALUE")
-              // filteredItems.current = list.map(getPropValue)
-              setFiltered(list.map(getPropValue))
-              cachedFunction.current = getPropValue
-            } catch (error) {
-              console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
-            };
-            console.log("RAN STOREDATA FUNCTION")
-            //storeData()
-          }
+          console.log("CREATED FILTEREDLIST WITH GETPROPVALUE AND CACHED GETPROPVALUE")
+          try {
+            setCachedFunc(list.map(getPropValue))
+            cachedFunction.current = getPropValue
+          } catch (error) {
+            console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
+          };
         } else if (!getPropValue) {
           console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'")
+          return
         }
       } else {
-        console.log("SAME LIST NO OBJECTS")
-        return
+        setFilteredItems(Array.from(list))
       }
-
     } else {
-      console.log("LISTS WERE DIFFERENT OR LIST WERE SAME WITH NEW GETPROPVALUE - CREATED NEW TRIE")
-      if (Array.isArray(list)) {
-        console.log("CHECKED FOR OBJECTS")
-        if (list.some(value => { return typeof value == "object" })) {
-          console.log("CHECKED FOR GETPROPVALUE")
-          if (getPropValue) {
-            console.log("CREATED FILTEREDLIST WITH GETPROPVALUE AND CACHED GETPROPVALUE")
-            try {
-               // filteredItems.current = list.map(getPropValue)
-               setFiltered(list.map(getPropValue))
-              cachedFunction.current = getPropValue
-            } catch (error) {
-              console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
-            };
-          } else if (!getPropValue) {
-            console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'")
-            return
-          }
-        } else {
-          // filteredItems.current = Array.from(list)
-          setFiltered(Array.from(list))
-          if (getPropValue) {
-            cachedFunction.current = getPropValue
-          }
-        }
-      } else {
-        console.error(`Ivalid PropType : The prop 'list' has a value of '${typeof list}' - list must be an array`)
-        return
-      };
-      console.log("RAN STOREDATA FUNCTION")
-      //storeData()
-    }
-  }, [getPropValue, list])
+      console.error(`Ivalid PropType : The prop 'list' has a value of '${typeof list}' - list must be an array`)
+      return
+    };
+    if(list){
+      cachedList.current = Array.from(list)
+      }
+  },[list, getPropValue])
 
-useEffect(()=>{
-  storeData()
-},[filtered])
-
-
-
-
-  const storeData = () => {
-    console.log("STOREDATA - RAN STOREDATA FUNCTION TO CREATE NEW TRIE")
-    cachedList.current = Array.from(list)
-    trie.current = new Trie();
-    if (filtered) {
-      for (let i = 0; i < filtered.length; i++) {
-        const item = filtered[i]
-        if (item && typeof item == 'number') {
-          trie.current.insert(item.toString(), i)
-        } else if (item) {
-          trie.current.insert(item, i)
+useEffect(() => {
+ 
+  
+    
+  if (cachedList.current.some(value => { return typeof value == "object" })) {
+    console.log("get prop value changed")
+        try {
+          setFilteredItems(cachedFunc)
+        } catch (error) {
+          console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
         };
+      }
+  
+}, [cachedFunc])
+
+
+//Store filteredList in trie
+useEffect(()=>{
+  console.log("STOREDATA - RAN STOREDATA FUNCTION TO CREATE NEW TRIE")
+  trie.current = new Trie();
+  if (filteredItems) {
+    for (let i = 0; i < filteredItems.length; i++) {
+      const item = filteredItems[i]
+      if (item && typeof item == 'number') {
+        trie.current.insert(item.toString(), i)
+      } else if (item) {
+        trie.current.insert(item, i)
       };
     };
-  }
+  };
+},[filteredItems])
 
-
-  useEffect(() => {
-    console.log("USEEFFECt RAN")
-    getFilteredList()
-  }, [getFilteredList, list]);
 
   // useEffect(()=>{
   //   console.log("EF2")
@@ -194,7 +247,7 @@ useEffect(()=>{
   //   } else if (updateIsOpen && isOpen) {
   //     if(inputRef.current) {inputRef.current.focus()}
   //     if (showAll && !inputRef.current.value) {
-  //       dispatch({ type: "OPEN", payload: filteredItems.current.map((item, index) => ({ value: item, originalIndex: index })) });
+  //       dispatch({ type: "OPEN", payload: filteredItems.map((item, index) => ({ value: item, originalIndex: index })) });
   //     } else if (showAll && inputRef.current.value) {
   //       dispatch({ type: "OPEN", payload: trie.current.find(inputRef.current.value) });
   //     } else if (!showAll && inputRef.current.value) {
@@ -209,13 +262,13 @@ useEffect(()=>{
       handleHighlightedItem(itemsRef.current[highlightedIndex], list[matchingItems[highlightedIndex].originalIndex])
     }
 
-  }, [handleHighlightedItem, highlightedIndex])
+  }, [handleHighlightedItem, highlightedIndex, matchingItems, list])
 
   const handlePrefix = (e) => {
     const prefix = e.target.value
-    if (filtered && showAll && prefix.length === 0) {
+    if (filteredItems && showAll && prefix.length === 0) {
       dispatch({
-        type: "OPEN", payload: filtered.map((item, index) => (
+        type: "OPEN", payload: filteredItems.map((item, index) => (
           {
             value: item,
             originalIndex: index

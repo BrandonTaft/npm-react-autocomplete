@@ -18,8 +18,8 @@ function App() {
       <AutoComplete
         //list={[0, 33, 1, 55, 5, 111, 11, 333, 44]}
         list={testData}
-        //list={['very', 'apple', 'every', 'tom', 'fort', 'but', 'put', 'putty']}
-       getPropValue={(listName) => listName.id}
+       // list={['very', 'apple', 'every', 'tom', 'fort', 'but', 'put', 'putty']}
+       getPropValue={(listName) => listName.name}
         showAll={true}
         //highlightFirstItem={false}
         clearOnSelect={false}
