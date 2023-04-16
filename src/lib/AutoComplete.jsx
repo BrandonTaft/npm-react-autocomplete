@@ -1,49 +1,45 @@
 import React from 'react';
-import { useEffect, useState, useRef, useReducer, useCallback } from "react";
+import { useEffect, useState, useRef, useReducer } from "react";
 import scrollIntoView from 'dom-scroll-into-view';
 import Wrapper from './Wrapper';
 import Trie from "./trie";
 
-export default function AutoComplete(
-  {
-    list,
-    getPropValue,
-    onSelect,
-    showAll = false,
-    clearOnSelect = true,
-    highlightFirstItem = true,
-    disableOutsideClick = false,
-    wrapperDiv = 'block',
-    wrapperStyle,
-    inputProps,
-    inputStyle,
-    dropDownStyle,
-    listItemStyle,
-    highlightedItemStyle = {
-      backgroundColor: "gray"
-    },
-    isOpen,
-    updateIsOpen,
-    handleHighlightedItem
-  }
-) {
-  const cachedList = useRef();
-  const cachedFunction = useRef()
-  // const filteredItems = useRef();
+export default function AutoComplete({
+  list,
+  getPropValue,
+  onSelect,
+  showAll = false,
+  clearOnSelect = true,
+  highlightFirstItem = true,
+  disableOutsideClick = false,
+  wrapperDiv = 'block',
+  wrapperStyle,
+  inputProps,
+  inputStyle,
+  dropDownStyle,
+  listItemStyle,
+  highlightedItemStyle = {
+    backgroundColor: "dodgerBlue"
+  },
+  isOpen,
+  updateIsOpen,
+  handleHighlightedItem
+}) {
+  const getPropValueRef = useRef();
+  const updateRef = useRef();
   const trie = useRef();
   const inputRef = useRef();
   const dropDownRef = useRef();
   const itemsRef = useRef([]);
-  const [filteredItems, setFilteredItems] = useState()
-  const [cachedFunc, setCachedFunc] = useState(() => {})
+  const [savedList, setSavedList] = useState([]);
+  const [savedFunction, setSavedFunction] = useState()
   const initialState = {
+    filterItems: [],
     matchingItems: [],
     highlightedIndex: highlightFirstItem ? 0 : -1
-  }
-  const [state, dispatch] = useReducer(reducer, initialState);
-  const { matchingItems, highlightedIndex } = state;
+  };
 
-  function reducer(state, action) {
+  const reducer = (state, action) => {
     switch (action.type) {
       case "OPEN": {
         return ({
@@ -54,11 +50,13 @@ export default function AutoComplete(
       case "CLOSE": {
         if (highlightFirstItem === false) {
           return ({
+            ...state,
             matchingItems: [],
             highlightedIndex: -1
           })
         } else {
           return ({
+            ...state,
             matchingItems: [],
             highlightedIndex: 0
           })
@@ -82,188 +80,103 @@ export default function AutoComplete(
           highlightedIndex: action.payload
         })
       }
+      case "FILTER": {
+        return ({
+          ...state,
+          filteredItems: action.payload
+        })
+      }
       default:
         return state;
     }
   };
 
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const { filteredItems, matchingItems, highlightedIndex } = state;
+  updateRef.current = updateIsOpen;
 
-  // const getFilteredList = useCallback(() => {
-  //   // If list hasn't changed and it doesn't have objects inside - Do nothing
-  //   // If it does have objects  and the getPropValue function hasn't changed - Do nothing
-  //   // If getPropValue is new or has changed - use it then create new Trie
-  //   console.log("CHECKED IF NEW LIST")
-  //   if (cachedList.current && JSON.stringify(cachedList.current) === JSON.stringify(list)) {
-  //     console.log("CHECKED FOR OBJECTS")
-  //     if (list.some(value => { return typeof value == "object" })) {
-  //       console.log("CHECKED FOR GETPROPVALUE")
-  //       if (getPropValue) {
-  //         if (cachedFunction.current && cachedFunction.current.toString() === getPropValue.toString()) {
-  //           console.log(" GETPROPVALUE WAS THE SAME - NOTHING ELSE")
-  //           return
-  //         } else {
-  //           try {
-  //             console.log("CREATED FILTEREDLIST WITH GETPROPVALUE AND CACHED GETPROPVALUE")
-  //             setCachedFunc(list.map(getPropValue))
-  //             cachedFunction.current = getPropValue
-  //           } catch (error) {
-  //             console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
-  //           };
-  //           if(list){
-  //             cachedList.current = Array.from(list)
-  //             }
-  //         }
-  //       } else if (!getPropValue) {
-  //         console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'")
-  //       }
-  //     } else {
-  //       console.log("SAME LIST NO OBJECTS")
-  //       return
-  //     }
+  // Shallow check for new `list`
+  // If `list` is new - store it in the `savedList` state
+  if (JSON.stringify(list) !== JSON.stringify(savedList)) {
+    setSavedList(list)
+  }
 
-  //   } else {
-  //     console.log("LISTS WERE DIFFERENT ")
-  //     if (Array.isArray(list)) {
-  //       console.log("CHECKED FOR OBJECTS")
-  //       if (list.some(value => { return typeof value == "object" })) {
-  //         console.log("CHECKED FOR GETPROPVALUE")
-  //         if (getPropValue) {
-  //           console.log("CREATED FILTEREDLIST WITH GETPROPVALUE AND CACHED GETPROPVALUE")
-  //           try {
-  //             setCachedFunc(list.map(getPropValue))
-  //             cachedFunction.current = getPropValue
-  //           } catch (error) {
-  //             console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
-  //           };
-  //         } else if (!getPropValue) {
-  //           console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'")
-  //           return
-  //         }
-  //       } else {
-  //         setFilteredItems(Array.from(list))
-  //       }
-  //     } else {
-  //       console.error(`Ivalid PropType : The prop 'list' has a value of '${typeof list}' - list must be an array`)
-  //       return
-  //     };
-  //     if(list){
-  //       cachedList.current = Array.from(list)
-  //       }
-  //   }
-  // }, [getPropValue, list])
+  // If `getPropValue` is new - 
+  // Store it as a string in the `savedFunction` state for shallow comparison
+  // Then store the `getPropValue` function in the `getPropValueRef` 
+  if (getPropValue.toString() !== savedFunction) {
+    setSavedFunction(getPropValue.toString())
+    getPropValueRef.current = getPropValue
+  }
 
+  // When `list` or `getPropValue` function changes - 
+  // Create the `filteredItems` array with specified words to go into the trie
+  // If `list` contains objects - use getPropvalueRef to map out desired words  
   useEffect(() => {
-    if (cachedList.current && JSON.stringify(cachedList.current) === JSON.stringify(list)) {
-      if (!list.some(value => { return typeof value == "object" })) {
-        console.log("same list no objects")
-        return
-      } else {
-        if (getPropValue) {
-            if (cachedFunction.current && cachedFunction.current.toString() === getPropValue.toString()) {
-              console.log(" GETPROPVALUE WAS THE SAME - NOTHING ELSE")
-              return
-            } else {
-              try {
-                console.log("CREATED FILTEREDLIST WITH GETPROPVALUE AND CACHED GETPROPVALUE")
-                setCachedFunc(list.map(getPropValue))
-                cachedFunction.current = getPropValue
-              } catch (error) {
-                console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
-              };
-            }
-        } else if (!getPropValue) {
-            console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'")
-            return
-          }
-      }
-    } else if (Array.isArray(list)) {
-      console.log("CHECKED FOR OBJECTS")
-      if (list.some(value => { return typeof value == "object" })) {
-        console.log("CHECKED FOR GETPROPVALUE")
-        if (getPropValue) {
-          console.log("CREATED FILTEREDLIST WITH GETPROPVALUE AND CACHED GETPROPVALUE")
+    if (Array.isArray(savedList)) {
+      if (savedList.some(value => { return typeof value == "object" })) {
+        if (getPropValueRef.current) {
           try {
-            setCachedFunc(list.map(getPropValue))
-            cachedFunction.current = getPropValue
+            dispatch({ type: "FILTER", payload: savedList.map(getPropValueRef.current) })
           } catch (error) {
             console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
           };
-        } else if (!getPropValue) {
+        } else if (!getPropValueRef.current) {
           console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'")
           return
         }
       } else {
-        setFilteredItems(Array.from(list))
+        dispatch({ type: "FILTER", payload: savedList })
       }
     } else {
-      console.error(`Ivalid PropType : The prop 'list' has a value of '${typeof list}' - list must be an array`)
+      console.error(`Ivalid PropType : The prop 'list' has a value of '${typeof savedList}' - list must be an array`)
       return
     };
-    if(list){
-      cachedList.current = Array.from(list)
-      }
-  },[list, getPropValue])
+  }, [savedList, savedFunction])
 
-useEffect(() => {
- 
-  
-    
-  if (cachedList.current.some(value => { return typeof value == "object" })) {
-    console.log("get prop value changed")
-        try {
-          setFilteredItems(cachedFunc)
-        } catch (error) {
-          console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
+  //Insert the words in `filteredItems` into the trie
+  useEffect(() => {
+    trie.current = new Trie();
+    if (filteredItems) {
+      for (let i = 0; i < filteredItems.length; i++) {
+        const item = filteredItems[i]
+        if (item && typeof item == 'number') {
+          trie.current.insert(item.toString(), i)
+        } else if (item) {
+          trie.current.insert(item, i)
         };
-      }
-  
-}, [cachedFunc])
-
-
-//Store filteredList in trie
-useEffect(()=>{
-  console.log("STOREDATA - RAN STOREDATA FUNCTION TO CREATE NEW TRIE")
-  trie.current = new Trie();
-  if (filteredItems) {
-    for (let i = 0; i < filteredItems.length; i++) {
-      const item = filteredItems[i]
-      if (item && typeof item == 'number') {
-        trie.current.insert(item.toString(), i)
-      } else if (item) {
-        trie.current.insert(item, i)
       };
     };
-  };
-},[filteredItems])
+  }, [filteredItems])
 
-
-  // useEffect(()=>{
-  //   console.log("EF2")
-  //   // It the updateIsOpen prop is passed in - 
-  //   // Close dropdown if isOpen is false
-  //   // Open dropdown if isOpen is true
-  //   if (updateIsOpen && !isOpen) {
-  //     dispatch({ type: "CLOSE" });
-  //   } else if (updateIsOpen && isOpen) {
-  //     if(inputRef.current) {inputRef.current.focus()}
-  //     if (showAll && !inputRef.current.value) {
-  //       dispatch({ type: "OPEN", payload: filteredItems.map((item, index) => ({ value: item, originalIndex: index })) });
-  //     } else if (showAll && inputRef.current.value) {
-  //       dispatch({ type: "OPEN", payload: trie.current.find(inputRef.current.value) });
-  //     } else if (!showAll && inputRef.current.value) {
-  //       dispatch({ type: "OPEN", payload: trie.current.find(inputRef.current.value) });
-  //     }
-  //   };
-  //  }, [updateIsOpen, isOpen, showAll])
-
+  // Opens dropdown when isOpen is passed from parent as `true` - close when `false`
+  // `handleUpdateIsOpen` is a function that runs when the dropdown is opened or closed by the child
+  // it sends the updated state of `isOpen` back to the parent
   useEffect(() => {
-    console.log("highliterrrr")
+    if (updateRef.current && !isOpen) {
+      dispatch({ type: "CLOSE" });
+    } else if (updateRef.current && isOpen) {
+      if (inputRef.current) { inputRef.current.focus() }
+      if (showAll && !inputRef.current.value) {
+        dispatch({ type: "OPEN", payload: filteredItems.map((item, index) => ({ value: item, originalIndex: index })) });
+      } else if (showAll && inputRef.current.value) {
+        dispatch({ type: "OPEN", payload: trie.current.find(inputRef.current.value) });
+      } else if (!showAll && inputRef.current.value) {
+        dispatch({ type: "OPEN", payload: trie.current.find(inputRef.current.value) });
+      }
+    };
+  }, [isOpen, showAll, filteredItems])
+
+  // Runs the function passed in as `handleHighlightedItem` prop
+  // Passes in the higlighted element's `HTMLDivElement` & the string or object from the original list
+  useEffect(() => {
     if (itemsRef.current[highlightedIndex] && handleHighlightedItem) {
-      handleHighlightedItem(itemsRef.current[highlightedIndex], list[matchingItems[highlightedIndex].originalIndex])
+      handleHighlightedItem(itemsRef.current[highlightedIndex], savedList[matchingItems[highlightedIndex].originalIndex])
     }
+  }, [handleHighlightedItem, highlightedIndex, matchingItems, savedList])
 
-  }, [handleHighlightedItem, highlightedIndex, matchingItems, list])
-
+  // Handles text input and if `showAll` is true it opens the dropdown when input is in focus
+  // Runs the trie's find method to search for words that match the text input
   const handlePrefix = (e) => {
     const prefix = e.target.value
     if (filteredItems && showAll && prefix.length === 0) {
@@ -290,6 +203,7 @@ useEffect(()=>{
     }
   };
 
+  // Handles keypresses when input is in focus
   const handleKeyDown = (e) => {
     // Down Arrow - sets the next index in the 'matchingItemsList' as the highlighted index
     // If the highlighted index is the last index it resets the highlighted index back to 0
@@ -383,6 +297,7 @@ useEffect(()=>{
   const sorted = matchingItems.sort(function (a, b) {
     return collator.compare(a.value, b.value)
   });
+
   const matchingItemsList = sorted.map((matchingItem, index) => {
     if (highlightedIndex + 1 > matchingItems.length) {
       dispatch({ type: "UPDATE", payload: 0 });
@@ -403,6 +318,7 @@ useEffect(()=>{
     )
   })
 
+  // Onscroll function used to keep highlight inside the dropdown
   const scrollMe = () => {
     if (itemsRef.current) {
       let itemHeight = itemsRef.current[highlightedIndex].getBoundingClientRect().height
@@ -488,7 +404,9 @@ useEffect(()=>{
       }
     }
   }
-  // If "updateIsOpen" is passed in update it when  dropdown is opened or closed
+
+  // Passes the state of `isOpen` back to parent when dropdown is open -
+  // or closed from the Autocomplete function ("the child")
   function handleUpdateIsOpen(isItOpen) {
     if (updateIsOpen) {
       updateIsOpen(isItOpen)

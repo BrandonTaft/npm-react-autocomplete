@@ -172,7 +172,7 @@ return(
 ### `highlightedItemStyle: Object` (Optional)
 - J.S. Style Object Variable for the `highlighted item`
 - CSS can also be used with the class name `highlighted-item`
-- Default color is `grey`
+- Default color is `dodgerBlue`
 
 
 
