@@ -93,6 +93,9 @@ export default function AutoComplete({
 
   const [state, dispatch] = useReducer(reducer, initialState);
   const { filteredItems, matchingItems, highlightedIndex } = state;
+
+  // Store `updateIsOpen` in a ref to avoid triggering useEffect that -
+  // just checks if it was passed in as a prop
   updateRef.current = updateIsOpen;
 
   // Shallow check for new `list`
@@ -104,7 +107,7 @@ export default function AutoComplete({
   // If `getPropValue` is new - 
   // Store it as a string in the `savedFunction` state for shallow comparison
   // Then store the `getPropValue` function in the `getPropValueRef` 
-  if (getPropValue.toString() !== savedFunction) {
+  if (getPropValue && getPropValue.toString() !== savedFunction) {
     setSavedFunction(getPropValue.toString())
     getPropValueRef.current = getPropValue
   }
@@ -128,13 +131,15 @@ export default function AutoComplete({
       } else {
         dispatch({ type: "FILTER", payload: savedList })
       }
+    } else if (savedList === undefined) {
+      return
     } else {
       console.error(`Ivalid PropType : The prop 'list' has a value of '${typeof savedList}' - list must be an array`)
       return
     };
   }, [savedList, savedFunction])
 
-  //Insert the words in `filteredItems` into the trie
+  //Insert the items in `filteredItems` into the trie
   useEffect(() => {
     trie.current = new Trie();
     if (filteredItems) {
@@ -150,7 +155,7 @@ export default function AutoComplete({
   }, [filteredItems])
 
   // Opens dropdown when isOpen is passed from parent as `true` - close when `false`
-  // `handleUpdateIsOpen` is a function that runs when the dropdown is opened or closed by the child
+  // `handleUpdateIsOpen` function runs when the dropdown is opened/closed by the child -
   // it sends the updated state of `isOpen` back to the parent
   useEffect(() => {
     if (updateRef.current && !isOpen) {
@@ -158,7 +163,9 @@ export default function AutoComplete({
     } else if (updateRef.current && isOpen) {
       if (inputRef.current) { inputRef.current.focus() }
       if (showAll && !inputRef.current.value) {
-        dispatch({ type: "OPEN", payload: filteredItems.map((item, index) => ({ value: item, originalIndex: index })) });
+        if (filteredItems) {
+          dispatch({ type: "OPEN", payload: filteredItems.map((item, index) => ({ value: item, originalIndex: index })) });
+        }
       } else if (showAll && inputRef.current.value) {
         dispatch({ type: "OPEN", payload: trie.current.find(inputRef.current.value) });
       } else if (!showAll && inputRef.current.value) {
@@ -175,8 +182,8 @@ export default function AutoComplete({
     }
   }, [handleHighlightedItem, highlightedIndex, matchingItems, savedList])
 
-  // Handles text input and if `showAll` is true it opens the dropdown when input is in focus
-  // Runs the trie's find method to search for words that match the text input
+  // Handles text input and if `showAll` is true it opens the dropdown when input is focused
+  // Runs the trie's `find` method to search for words that match the text input
   const handlePrefix = (e) => {
     const prefix = e.target.value
     if (filteredItems && showAll && prefix.length === 0) {
@@ -203,9 +210,9 @@ export default function AutoComplete({
     }
   };
 
-  // Handles keypresses when input is in focus
   const handleKeyDown = (e) => {
-    // Down Arrow - sets the next index in the 'matchingItemsList' as the highlighted index
+    // Down Arrow - sets the next index in the 'dropDownList' as the highlighted index
+    // `scrollIntoView` scrolls the dropdown to keep highlight visible once it reaches the bottom 
     // If the highlighted index is the last index it resets the highlighted index back to 0
     if (e.keyCode === 40) {
       if (!itemsRef.current[highlightedIndex + 1] && itemsRef.current[0] !== undefined) {
@@ -227,7 +234,8 @@ export default function AutoComplete({
       }
     }
 
-    //Up Arrow - sets the highlighted index as the one before the current index
+    // Up Arrow - Moves highlight up the dropdown by setting highlighted index one index back
+    // `scrollIntoView` scrolls the dropdown to keep highlight visible once it reaches the top 
     if (e.keyCode === 38) {
       e.preventDefault()
       if (itemsRef.current[highlightedIndex - 1]) {
@@ -240,8 +248,10 @@ export default function AutoComplete({
       }
     };
 
-    // Enter key - Passes highlighted item in to the 'onselect' function and closes the dropdown
-    // If there is not a highlighted item it will pass the inputs value into the 'onSelect' function
+    // Enter key - Executes the `onSelect` function with 3 seperate arguments - 
+    // the highlighted item's original `string` or `object`, it's `HTMLelement`, and it's index from the original list
+    // If there is not a highlighted item it will pass the input's value into the 'onSelect' function
+    // Then closes the dropdown and runs the `resetInputValue` function which uses `clearOnSelect` prop to clear the input or not
     if (e.keyCode === 13) {
       if (list && matchingItems[highlightedIndex]) {
         try {
@@ -271,14 +281,17 @@ export default function AutoComplete({
         }
       }
     }
-    // Tab key closes the dropdown 
+    // Tab key takes focus off the input and closes the dropdown 
     if (e.keyCode === 9) {
       dispatch({ type: "CLOSE" });
       handleUpdateIsOpen(false)
     }
   }
 
-  // Runs the function passed in to the onSelect prop and then closes the dropdown
+  // When an item is clicked on - Executes the `onSelect` function with 3 seperate arguments - 
+  // the highlighted item's original `string` or `object`, it's `HTMLelement`, and it's index from the original list
+  // If there is not a highlighted item it will pass the input's value into the 'onSelect' function
+  // Then closes the dropdown and runs the `resetInputValue` function which uses `clearOnSelect` prop to clear the input or not
   const onMouseClick = (index, selectedElement, matchingItem) => {
     try {
       onSelect(list[index], selectedElement, index)
@@ -288,37 +301,11 @@ export default function AutoComplete({
       dispatch({ type: "CLOSE" });
       handleUpdateIsOpen(false)
       resetInputValue(matchingItem);
-
     }
   }
 
-  // Creates a new Collator object and uses its compare method to sort alphanumeric arrays
-  var collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-  const sorted = matchingItems.sort(function (a, b) {
-    return collator.compare(a.value, b.value)
-  });
-
-  const matchingItemsList = sorted.map((matchingItem, index) => {
-    if (highlightedIndex + 1 > matchingItems.length) {
-      dispatch({ type: "UPDATE", payload: 0 });
-    }
-    return (
-      matchingItem.value !== undefined ?
-        <div
-          key={matchingItem.originalIndex}
-          ref={el => itemsRef.current[index] = el}
-          className={highlightedIndex === index ? "dropdown-item highlited-item" : "dropdown-item"}
-          style={highlightedIndex === index ? { ...highlightedItemStyle, ...listItemStyle } : { ...listItemStyle }}
-          onClick={() => { onMouseClick(matchingItem.originalIndex, itemsRef.current[index], matchingItem.value) }}
-          onMouseEnter={() => dispatch({ type: "UPDATE", payload: index })}
-        >
-          {matchingItem.value}
-        </div>
-        : null
-    )
-  })
-
-  // Onscroll function used to keep highlight inside the dropdown
+  // Onscroll function determines the highlighted elements position within the dropdown
+  // to keep the highlight inside the dropdown by moving the `highlightedIndex` up or down accordingly
   const scrollMe = () => {
     if (itemsRef.current) {
       let itemHeight = itemsRef.current[highlightedIndex].getBoundingClientRect().height
@@ -351,6 +338,32 @@ export default function AutoComplete({
     }
   }
 
+  // Creates a new Collator object and uses its compare method to natural sort the array
+  var collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+  const sorted = matchingItems.sort(function (a, b) {
+    return collator.compare(a.value, b.value)
+  });
+
+  const dropDownList = sorted.map((matchingItem, index) => {
+    if (highlightedIndex + 1 > matchingItems.length) {
+      dispatch({ type: "UPDATE", payload: 0 });
+    }
+    return (
+      matchingItem.value !== undefined ?
+        <div
+          key={matchingItem.originalIndex}
+          ref={el => itemsRef.current[index] = el}
+          className={highlightedIndex === index ? "dropdown-item highlited-item" : "dropdown-item"}
+          style={highlightedIndex === index ? { ...highlightedItemStyle, ...listItemStyle } : { ...listItemStyle }}
+          onClick={() => { onMouseClick(matchingItem.originalIndex, itemsRef.current[index], matchingItem.value) }}
+          onMouseEnter={() => dispatch({ type: "UPDATE", payload: index })}
+        >
+          {matchingItem.value}
+        </div>
+        : null
+    )
+  })
+
   return (
     <Wrapper
       className="autocomplete-wrapper"
@@ -375,7 +388,7 @@ export default function AutoComplete({
         onFocus={handlePrefix}
         autoComplete='off'
       />
-      {matchingItemsList.length
+      {dropDownList.length
         ?
         <div
           className="dropdown-container"
@@ -383,7 +396,7 @@ export default function AutoComplete({
           style={dropDownStyle}
           onScroll={scrollMe}
         >
-          {matchingItemsList}
+          {dropDownList}
         </div>
         :
         null}

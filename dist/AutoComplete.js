@@ -42,28 +42,26 @@ function AutoComplete(_ref) {
     dropDownStyle,
     listItemStyle,
     highlightedItemStyle = {
-      backgroundColor: "gray"
+      backgroundColor: "dodgerBlue"
     },
     isOpen,
     updateIsOpen,
     handleHighlightedItem
   } = _ref;
-  const cachedList = (0, _react.useRef)();
-  const filteredItems = (0, _react.useRef)();
+  const getPropValueRef = (0, _react.useRef)();
+  const updateRef = (0, _react.useRef)();
   const trie = (0, _react.useRef)();
   const inputRef = (0, _react.useRef)();
   const dropDownRef = (0, _react.useRef)();
   const itemsRef = (0, _react.useRef)([]);
+  const [savedList, setSavedList] = (0, _react.useState)([]);
+  const [savedFunction, setSavedFunction] = (0, _react.useState)();
   const initialState = {
+    filterItems: [],
     matchingItems: [],
     highlightedIndex: highlightFirstItem ? 0 : -1
   };
-  const [state, dispatch] = (0, _react.useReducer)(reducer, initialState);
-  const {
-    matchingItems,
-    highlightedIndex
-  } = state;
-  function reducer(state, action) {
+  const reducer = (state, action) => {
     switch (action.type) {
       case "OPEN":
         {
@@ -74,15 +72,15 @@ function AutoComplete(_ref) {
       case "CLOSE":
         {
           if (highlightFirstItem === false) {
-            return {
+            return _objectSpread(_objectSpread({}, state), {}, {
               matchingItems: [],
               highlightedIndex: -1
-            };
+            });
           } else {
-            return {
+            return _objectSpread(_objectSpread({}, state), {}, {
               matchingItems: [],
               highlightedIndex: 0
-            };
+            });
           }
         }
       case "DOWN":
@@ -103,72 +101,107 @@ function AutoComplete(_ref) {
             highlightedIndex: action.payload
           });
         }
+      case "FILTER":
+        {
+          return _objectSpread(_objectSpread({}, state), {}, {
+            filteredItems: action.payload
+          });
+        }
       default:
         return state;
     }
+  };
+  const [state, dispatch] = (0, _react.useReducer)(reducer, initialState);
+  const {
+    filteredItems,
+    matchingItems,
+    highlightedIndex
+  } = state;
+  updateRef.current = updateIsOpen;
+
+  // Shallow check for new `list`
+  // If `list` is new - store it in the `savedList` state
+  if (JSON.stringify(list) !== JSON.stringify(savedList)) {
+    setSavedList(list);
   }
-  ;
+
+  // If `getPropValue` is new - 
+  // Store it as a string in the `savedFunction` state for shallow comparison
+  // Then store the `getPropValue` function in the `getPropValueRef` 
+  if (getPropValue && getPropValue.toString() !== savedFunction) {
+    setSavedFunction(getPropValue.toString());
+    getPropValueRef.current = getPropValue;
+  }
+
+  // When `list` or `getPropValue` function changes - 
+  // Create the `filteredItems` array with specified words to go into the trie
+  // If `list` contains objects - use getPropvalueRef to map out desired words  
   (0, _react.useEffect)(() => {
-    // If list is not already stored in the trie - store original list in cachedList ref
-    // If there are no nested objects, create a new array and store it in filterItems ref
-    // If there are nested objects, use 'getPropvalue' to extract property values and set them in filterItems ref
-    if (JSON.stringify(cachedList.current) !== JSON.stringify(list)) {
-      cachedList.current = Array.from(list);
-      if (Array.isArray(list)) {
-        if (list.some(value => {
-          return typeof value == "object";
-        })) {
-          if (!getPropValue) {
-            console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'");
-          } else {
-            try {
-              filteredItems.current = list.map(getPropValue);
-            } catch (error) {
-              console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error);
-            }
-            ;
+    if (Array.isArray(savedList)) {
+      if (savedList.some(value => {
+        return typeof value == "object";
+      })) {
+        if (getPropValueRef.current) {
+          try {
+            dispatch({
+              type: "FILTER",
+              payload: savedList.map(getPropValueRef.current)
+            });
+          } catch (error) {
+            console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error);
           }
           ;
-        } else {
-          filteredItems.current = Array.from(list);
+        } else if (!getPropValueRef.current) {
+          console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'");
+          return;
         }
-        ;
       } else {
-        console.error("Ivalid PropType : The prop 'list' has a value of '".concat(typeof list, "' - list must be an array"));
+        dispatch({
+          type: "FILTER",
+          payload: savedList
+        });
       }
-      ;
-      // Initialize root node and store in the 'trie' ref
-      // Then insert each word in filteredItems array and its index into the 'trie'
-      trie.current = new _trie.default();
-      if (filteredItems.current) {
-        for (let i = 0; i < filteredItems.current.length; i++) {
-          const item = filteredItems.current[i];
-          if (item && typeof item == 'number') {
-            trie.current.insert(item.toString(), i);
-          } else if (item) {
-            trie.current.insert(item, i);
-          }
-          ;
+    } else if (list !== undefined) {
+      console.error("Ivalid PropType : The prop 'list' has a value of '".concat(typeof savedList, "' - list must be an array"));
+      return;
+    }
+    ;
+  }, [savedList, savedFunction]);
+
+  //Insert the words in `filteredItems` into the trie
+  (0, _react.useEffect)(() => {
+    trie.current = new _trie.default();
+    if (filteredItems) {
+      for (let i = 0; i < filteredItems.length; i++) {
+        const item = filteredItems[i];
+        if (item && typeof item == 'number') {
+          trie.current.insert(item.toString(), i);
+        } else if (item) {
+          trie.current.insert(item, i);
         }
         ;
       }
       ;
     }
-    // It the updateIsOpen prop is passed in - 
-    // Close dropdown if isOpen is false
-    // Open dropdown if isOpen is true
-    if (updateIsOpen && !isOpen) {
+    ;
+  }, [filteredItems]);
+
+  // Opens dropdown when isOpen is passed from parent as `true` - close when `false`
+  // `handleUpdateIsOpen` is a function that runs when the dropdown is opened or closed by the child
+  // it sends the updated state of `isOpen` back to the parent
+  (0, _react.useEffect)(() => {
+    if (updateRef.current && !isOpen) {
       dispatch({
         type: "CLOSE"
       });
-    } else if (updateIsOpen && isOpen) {
+    } else if (updateRef.current && isOpen) {
       if (inputRef.current) {
         inputRef.current.focus();
       }
       if (showAll && !inputRef.current.value) {
         dispatch({
           type: "OPEN",
-          payload: filteredItems.current.map((item, index) => ({
+          payload: filteredItems.map((item, index) => ({
             value: item,
             originalIndex: index
           }))
@@ -186,18 +219,24 @@ function AutoComplete(_ref) {
       }
     }
     ;
-  }, [list, getPropValue, isOpen, updateIsOpen, showAll]);
+  }, [isOpen, showAll, filteredItems]);
+
+  // Runs the function passed in as `handleHighlightedItem` prop
+  // Passes in the higlighted element's `HTMLDivElement` & the string or object from the original list
   (0, _react.useEffect)(() => {
     if (itemsRef.current[highlightedIndex] && handleHighlightedItem) {
-      handleHighlightedItem(itemsRef.current[highlightedIndex], list[matchingItems[highlightedIndex].originalIndex]);
+      handleHighlightedItem(itemsRef.current[highlightedIndex], savedList[matchingItems[highlightedIndex].originalIndex]);
     }
-  }, [highlightedIndex, handleHighlightedItem, list, matchingItems]);
+  }, [handleHighlightedItem, highlightedIndex, matchingItems, savedList]);
+
+  // Handles text input and if `showAll` is true it opens the dropdown when input is in focus
+  // Runs the trie's find method to search for words that match the text input
   const handlePrefix = e => {
     const prefix = e.target.value;
-    if (filteredItems.current && showAll && prefix.length === 0) {
+    if (filteredItems && showAll && prefix.length === 0) {
       dispatch({
         type: "OPEN",
-        payload: filteredItems.current.map((item, index) => ({
+        payload: filteredItems.map((item, index) => ({
           value: item,
           originalIndex: index
         }))
@@ -224,6 +263,8 @@ function AutoComplete(_ref) {
       });
     }
   };
+
+  // Handles keypresses when input is in focus
   const handleKeyDown = e => {
     // Down Arrow - sets the next index in the 'matchingItemsList' as the highlighted index
     // If the highlighted index is the last index it resets the highlighted index back to 0
@@ -346,6 +387,8 @@ function AutoComplete(_ref) {
       })
     }, matchingItem.value) : null;
   });
+
+  // Onscroll function used to keep highlight inside the dropdown
   const scrollMe = () => {
     if (itemsRef.current) {
       let itemHeight = itemsRef.current[highlightedIndex].getBoundingClientRect().height;
@@ -418,7 +461,9 @@ function AutoComplete(_ref) {
       }
     }
   }
-  // If "updateIsOpen" is passed in update it when  dropdown is opened or closed
+
+  // Passes the state of `isOpen` back to parent when dropdown is open -
+  // or closed from the Autocomplete function ("the child")
   function handleUpdateIsOpen(isItOpen) {
     if (updateIsOpen) {
       updateIsOpen(isItOpen);
