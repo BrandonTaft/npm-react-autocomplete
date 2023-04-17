@@ -18,8 +18,8 @@ function App() {
   return (
     <div className="App">
       {preview.name}
-      <button className='ignore' style={{ padding: '10px' }} onClick={toggleDropDown} />
-      <button className='ignore' style={{ padding: '10px' }} onClick={toggleFilter} />
+      <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleDropDown} />
+      <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleFilter} />
       <AutoComplete
       
         //list={[0, 33, 1, 55, 5, 111, 11, 333, 44]}

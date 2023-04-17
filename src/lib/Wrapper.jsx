@@ -7,7 +7,7 @@ export default function Wrapper({ children, onOutsideClick, disabled, display, w
     useEffect(() => {
         const triggered = (e) => {
             if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
-                if (e.target.className !== 'ignore') {
+                if (!e.target.classList.contains('ignore')) {
                     onOutsideClick(e)
                 }
             }
