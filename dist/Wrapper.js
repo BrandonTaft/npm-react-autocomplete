@@ -29,7 +29,7 @@ function Wrapper(_ref) {
   (0, _react.useEffect)(() => {
     const triggered = e => {
       if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
-        if (e.target.className !== 'ignore') {
+        if (!e.target.classList.contains('ignore')) {
           onOutsideClick(e);
         }
       }

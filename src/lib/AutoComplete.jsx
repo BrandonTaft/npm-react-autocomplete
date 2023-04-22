@@ -9,6 +9,7 @@ export default function AutoComplete({
   getPropValue,
   onSelect,
   showAll = false,
+  descending = false,
   clearOnSelect = true,
   highlightFirstItem = true,
   disableOutsideClick = false,
@@ -27,6 +28,7 @@ export default function AutoComplete({
 }) {
   const getPropValueRef = useRef();
   const updateRef = useRef();
+  const matchingItemsRef = useRef([]);
   const trie = useRef();
   const inputRef = useRef();
   const dropDownRef = useRef();
@@ -42,12 +44,14 @@ export default function AutoComplete({
   const reducer = (state, action) => {
     switch (action.type) {
       case "OPEN": {
+        matchingItemsRef.current = action.payload
         return ({
           ...state,
           matchingItems: action.payload,
         })
       }
       case "CLOSE": {
+        matchingItemsRef.current = []
         if (highlightFirstItem === false) {
           return ({
             ...state,
@@ -153,6 +157,14 @@ export default function AutoComplete({
       };
     };
   }, [filteredItems])
+
+  // Runs when dropdown is open and the getPropValue function changes
+  // Allows user to toggle property values in dropdown while its open
+  useEffect(() => {
+    if(matchingItemsRef.current.length) {
+      dispatch({ type: "OPEN", payload: filteredItems.map((item, index) => ({ value: item, originalIndex: index })) });
+    }
+    },[filteredItems])
 
   // Opens dropdown when isOpen is passed from parent as `true` - close when `false`
   // `handleUpdateIsOpen` function runs when the dropdown is opened/closed by the child -
@@ -341,7 +353,11 @@ export default function AutoComplete({
   // Creates a new Collator object and uses its compare method to natural sort the array
   var collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
   const sorted = matchingItems.sort(function (a, b) {
+    if(!descending) {
     return collator.compare(a.value, b.value)
+    } else {
+      return collator.compare(b.value, a.value)
+    }
   });
 
   const dropDownList = sorted.map((matchingItem, index) => {

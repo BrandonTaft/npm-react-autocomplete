@@ -50,6 +50,7 @@ function AutoComplete(_ref) {
   } = _ref;
   const getPropValueRef = (0, _react.useRef)();
   const updateRef = (0, _react.useRef)();
+  const matchingItemsRef = (0, _react.useRef)([]);
   const trie = (0, _react.useRef)();
   const inputRef = (0, _react.useRef)();
   const dropDownRef = (0, _react.useRef)();
@@ -65,12 +66,14 @@ function AutoComplete(_ref) {
     switch (action.type) {
       case "OPEN":
         {
+          matchingItemsRef.current = action.payload;
           return _objectSpread(_objectSpread({}, state), {}, {
             matchingItems: action.payload
           });
         }
       case "CLOSE":
         {
+          matchingItemsRef.current = [];
           if (highlightFirstItem === false) {
             return _objectSpread(_objectSpread({}, state), {}, {
               matchingItems: [],
@@ -189,6 +192,20 @@ function AutoComplete(_ref) {
       ;
     }
     ;
+  }, [filteredItems]);
+
+  // Runs when dropdown is open and the getPropValue function changes
+  // Allows user to toggle property values in dropdown while its open
+  (0, _react.useEffect)(() => {
+    if (matchingItemsRef.current.length) {
+      dispatch({
+        type: "OPEN",
+        payload: filteredItems.map((item, index) => ({
+          value: item,
+          originalIndex: index
+        }))
+      });
+    }
   }, [filteredItems]);
 
   // Opens dropdown when isOpen is passed from parent as `true` - close when `false`

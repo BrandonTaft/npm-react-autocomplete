@@ -7,19 +7,24 @@ import "./index.css"
 function App() {
   const [preview, setPreview] = useState("")
   const [openDropDown, setOpenDropDown] = useState();
-  const [filter, setFilter] = useState(true)
+  const [filter, setFilter] = useState(true);
+  const [sort, setSort] = useState(false);
   const toggleDropDown = (() => {
     setOpenDropDown(openDropDown ? false : true)
   })
   const toggleFilter = (() => {
     setFilter(filter => !filter)
   })
+  const toggleSort = (() => {
+    setSort(sort => !sort)
+  })
 
   return (
     <div className="App">
       {preview.name}
-      <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleDropDown} />
-      <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleFilter} />
+      <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleDropDown}>OPEN/CLOSE</button>
+      <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleFilter}>FILTER</button>
+      <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleSort}>SORT</button>
       <AutoComplete
       
         //list={[0, 33, 1, 55, 5, 111, 11, 333, 44]}
@@ -29,6 +34,7 @@ function App() {
           filter === false ? (listName) => listName.id : (listName) => listName.name
         }
         showAll={true}
+        //descending={sort}
         //highlightFirstItem={false}
         clearOnSelect={false}
         inputProps={{
@@ -62,11 +68,12 @@ function App() {
           console.log(selectedElement)
           console.log(selectedItem, originalIndex)
         }}
-        // handleHighlightedItem={(highlightedElement, highlightedItem) => {
-        //   highlightedElement.style.color = ("red")
-        //   setPreview(highlightedItem)
-        // }}
-        //disableOutsideClick={true}
+        handleHighlightedItem={(highlightedElement, highlightedItem) => {
+          
+          highlightedElement.style.color = ("red")
+          setPreview(highlightedItem)
+        }}
+        disableOutsideClick={true}
         updateIsOpen={(updatedState) => {
           setOpenDropDown(updatedState)
         }}

@@ -116,6 +116,10 @@ return(
 - `false` (default) dropdown doesn't appear until input value matches an item's prefix
 - `true` - If the input is focused and empty the dropdown displays all list items
 
+### `descending: Boolean` (Optional)
+- `false` (default) values in dropdown will be in ascending order by default
+- `true` - If set to `true` the values will be in descending order 
+
 ### `disableOutsideClick : Boolean` (Optional)
 - `false` (default) the dropdown closes when mouse is clicked outside of the auto-complete wrapper div
 - `true` the dropdown only closes when onSelect fires or tab key is pressed
