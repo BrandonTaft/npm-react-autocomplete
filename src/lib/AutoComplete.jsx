@@ -24,7 +24,9 @@ export default function AutoComplete({
   },
   isOpen,
   updateIsOpen,
-  handleHighlightedItem
+  handleHighlightedItem,
+  handleNoMatch,
+  childFunc
 }) {
   const getPropValueRef = useRef();
   const updateRef = useRef();
@@ -116,6 +118,25 @@ export default function AutoComplete({
     getPropValueRef.current = getPropValue
   }
 
+  useEffect(() => {
+    if(childFunc !== undefined) {
+    childFunc.current = () => {if (inputRef.current.value) {
+      try {
+        if (handleNoMatch) {
+          handleNoMatch(inputRef.current.value.toString(), list)
+        } else {
+          onSelect(inputRef.current.value.toString(), list)
+        }
+      } catch (error) {
+        console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
+      } finally {
+        resetInputValue(inputRef.current.value)
+      }
+    }
+  }
+}
+  })
+
   // When `list` or `getPropValue` function changes - 
   // Create the `filteredItems` array with specified words to go into the trie
   // If `list` contains objects - use getPropvalueRef to map out desired words  
@@ -161,10 +182,10 @@ export default function AutoComplete({
   // Runs when dropdown is open and the getPropValue function changes
   // Allows user to toggle property values in dropdown while its open
   useEffect(() => {
-    if(matchingItemsRef.current.length) {
+    if (matchingItemsRef.current.length) {
       dispatch({ type: "OPEN", payload: filteredItems.map((item, index) => ({ value: item, originalIndex: index })) });
     }
-    },[filteredItems])
+  }, [filteredItems])
 
   // Opens dropdown when isOpen is passed from parent as `true` - close when `false`
   // `handleUpdateIsOpen` function runs when the dropdown is opened/closed by the child -
@@ -282,7 +303,11 @@ export default function AutoComplete({
       } else {
         if (inputRef.current.value) {
           try {
-            onSelect(inputRef.current.value.toString(), list)
+            if (handleNoMatch) {
+              handleNoMatch(inputRef.current.value.toString(), list)
+            } else {
+              onSelect(inputRef.current.value.toString(), list)
+            }
           } catch (error) {
             console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
           } finally {
@@ -353,8 +378,8 @@ export default function AutoComplete({
   // Creates a new Collator object and uses its compare method to natural sort the array
   var collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
   const sorted = matchingItems.sort(function (a, b) {
-    if(!descending) {
-    return collator.compare(a.value, b.value)
+    if (!descending) {
+      return collator.compare(a.value, b.value)
     } else {
       return collator.compare(b.value, a.value)
     }

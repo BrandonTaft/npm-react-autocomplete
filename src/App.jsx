@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import AutoComplete from './lib/AutoComplete';
 import testData from './test-data.json'
 import "./index.css"
 
 
 function App() {
+  const childFunc = useRef(null)
   const [preview, setPreview] = useState("")
   const [openDropDown, setOpenDropDown] = useState();
   const [filter, setFilter] = useState(true);
@@ -25,8 +26,9 @@ function App() {
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleDropDown}>OPEN/CLOSE</button>
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleFilter}>FILTER</button>
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleSort}>SORT</button>
+      <button onClick={() => childFunc.current()}>Click me</button>
       <AutoComplete
-      
+
         //list={[0, 33, 1, 55, 5, 111, 11, 333, 44]}
         //list={['very', 'apple', 'every', 'tom', 'fort', 'but', 'put', 'putty']}
         list={testData}
@@ -34,7 +36,7 @@ function App() {
           filter === false ? (listName) => listName.id : (listName) => listName.name
         }
         showAll={true}
-        //descending={sort}
+        descending={sort}
         //highlightFirstItem={false}
         clearOnSelect={false}
         inputProps={{
@@ -69,10 +71,13 @@ function App() {
           console.log(selectedItem, originalIndex)
         }}
         handleHighlightedItem={(highlightedElement, highlightedItem) => {
-          
           highlightedElement.style.color = ("red")
           setPreview(highlightedItem)
         }}
+        handleNoMatch={(value, list) => {
+          console.log('noMatch', value, list)
+        }}
+        childFunc={childFunc}
         disableOutsideClick={true}
         updateIsOpen={(updatedState) => {
           setOpenDropDown(updatedState)

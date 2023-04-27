@@ -32,6 +32,7 @@ function AutoComplete(_ref) {
     getPropValue,
     onSelect,
     showAll = false,
+    descending = false,
     clearOnSelect = true,
     highlightFirstItem = true,
     disableOutsideClick = false,
@@ -423,7 +424,11 @@ function AutoComplete(_ref) {
     sensitivity: 'base'
   });
   const sorted = matchingItems.sort(function (a, b) {
-    return collator.compare(a.value, b.value);
+    if (!descending) {
+      return collator.compare(a.value, b.value);
+    } else {
+      return collator.compare(b.value, a.value);
+    }
   });
   const dropDownList = sorted.map((matchingItem, index) => {
     if (highlightedIndex + 1 > matchingItems.length) {
