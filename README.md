@@ -72,6 +72,11 @@ npm install --save react-autocomplete-input-component
 - `false` value selected will become the input value
 - `onMouseDown` can be used in `inputProps` to clear the input
 
+### `handleNewValue: Function` (Optional)
+- Use if you want different logic when there is no matching value for the text input
+- Runs when Enter key is pressed with text present but no matches
+- If `handleNewValue` is not passed in, `onSelect` will still run with the text input
+
 ### `inputProps: Object` (Optional)
 - Sets HTML text input attributes with some exceptions
 - Type and Autocomplete are unable to be overridden
