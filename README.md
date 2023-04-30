@@ -15,17 +15,6 @@ import { AutoComplete } from 'react-autocomplete-input-component';
           { name: 'Tommy', id: 3445 },
           { name: 'Thomas', id: 3663 }
         ]}
-        highlightedItemStyle={{
-          backgroundColor: "dodgerBlue"
-        }}
-        listItemStyle={{
-          cursor: "pointer",
-          padding: "5px"
-        }}
-        dropDownStyle={{
-          backgroundColor: "antiquewhite",
-          width: "215px"
-        }}
         handleHighlightedItem={(highlightedElement, highlightedItem) => {
           highlightedElement.style.color= ("red")
           setPreview(highlightedItem)
@@ -33,7 +22,9 @@ import { AutoComplete } from 'react-autocomplete-input-component';
         onSelect={(selectedItem, selectedElement, originalIndex) => {
           console.log(selectedItem)
           console.log(selectedElement)
-          console.log(originalIndex)
+        }}
+        handleNewValue={(value, list) => {
+          console.log(value, list)
         }}
       />
 
@@ -186,6 +177,23 @@ return(
 - CSS can also be used with the class name `highlighted-item`
 - Default color is `dodgerBlue`
 
+```jsx
+  
+  <AutoComplete
+    highlightedItemStyle={{
+          backgroundColor: "dodgerBlue"
+        }}
+        listItemStyle={{
+          cursor: "pointer",
+          padding: "5px"
+        }}
+        dropDownStyle={{
+          backgroundColor: "antiquewhite",
+          width: "215px"
+        }}
+  />
+
+```
 
 
 
