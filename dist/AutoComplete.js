@@ -47,7 +47,8 @@ function AutoComplete(_ref) {
     },
     isOpen,
     updateIsOpen,
-    handleHighlightedItem
+    handleHighlightedItem,
+    handleNewValue
   } = _ref;
   const getPropValueRef = (0, _react.useRef)();
   const updateRef = (0, _react.useRef)();
@@ -258,6 +259,12 @@ function AutoComplete(_ref) {
   // Runs the trie's `find` method to search for words that match the text input
   const handlePrefix = e => {
     const prefix = e.target.value;
+    if (!highlightFirstItem) {
+      dispatch({
+        type: "UPDATE",
+        payload: -1
+      });
+    }
     if (filteredItems && showAll && prefix.length === 0) {
       dispatch({
         type: "OPEN",
@@ -333,24 +340,32 @@ function AutoComplete(_ref) {
     // If there is not a highlighted item it will pass the input's value into the 'onSelect' function
     // Then closes the dropdown and runs the `resetInputValue` function which uses `clearOnSelect` prop to clear the input or not
     if (e.keyCode === 13) {
+      if (!onSelect && !handleNewValue) {
+        console.error("MISSING PROP: You must provide a valid function to the 'onSelect' or 'handleNewValue' prop");
+      }
       if (list && matchingItems[highlightedIndex]) {
-        try {
-          onSelect(list[matchingItems[highlightedIndex].originalIndex], itemsRef.current[highlightedIndex], matchingItems[highlightedIndex].originalIndex);
-        } catch (error) {
-          console.error("You must provide a valid function to the 'onSelect' prop", '\n', error);
-        } finally {
-          dispatch({
-            type: "CLOSE"
-          });
-          handleUpdateIsOpen(false);
-          resetInputValue(matchingItems[highlightedIndex].value);
+        if (onSelect) {
+          try {
+            onSelect(list[matchingItems[highlightedIndex].originalIndex], itemsRef.current[highlightedIndex], matchingItems[highlightedIndex].originalIndex);
+          } catch (error) {
+            console.error("You must provide a valid function to the 'onSelect' prop", '\n', error);
+          }
         }
+        dispatch({
+          type: "CLOSE"
+        });
+        handleUpdateIsOpen(false);
+        resetInputValue(matchingItems[highlightedIndex].value);
       } else {
         if (inputRef.current.value) {
           try {
-            onSelect(inputRef.current.value.toString(), list);
+            if (handleNewValue) {
+              handleNewValue(inputRef.current.value.toString(), list);
+            } else {
+              onSelect(inputRef.current.value.toString(), list);
+            }
           } catch (error) {
-            console.error("You must provide a valid function to the 'onSelect' prop", '\n', error);
+            console.error("MISSING PROP: You must provide a valid function to the 'onSelect' or 'handleNewValue' prop", '\n', error);
           } finally {
             dispatch({
               type: "CLOSE"
@@ -375,23 +390,24 @@ function AutoComplete(_ref) {
   // If there is not a highlighted item it will pass the input's value into the 'onSelect' function
   // Then closes the dropdown and runs the `resetInputValue` function which uses `clearOnSelect` prop to clear the input or not
   const onMouseClick = (index, selectedElement, matchingItem) => {
-    try {
-      onSelect(list[index], selectedElement, index);
-    } catch (error) {
-      console.error("You must provide a valid function to the 'onSelect' prop", '\n', error);
-    } finally {
-      dispatch({
-        type: "CLOSE"
-      });
-      handleUpdateIsOpen(false);
-      resetInputValue(matchingItem);
+    if (onSelect) {
+      try {
+        onSelect(list[index], selectedElement, index);
+      } catch (error) {
+        console.error("You must provide a valid function to the 'onSelect' prop", '\n', error);
+      }
     }
+    dispatch({
+      type: "CLOSE"
+    });
+    handleUpdateIsOpen(false);
+    resetInputValue(matchingItem);
   };
 
   // Onscroll function determines the highlighted elements position within the dropdown
   // to keep the highlight inside the dropdown by moving the `highlightedIndex` up or down accordingly
   const scrollMe = () => {
-    if (itemsRef.current) {
+    if (itemsRef.current[highlightedIndex]) {
       let itemHeight = itemsRef.current[highlightedIndex].getBoundingClientRect().height;
       let containerTop = Math.round(dropDownRef.current.getBoundingClientRect().top);
       let itemTop = Math.round(itemsRef.current[highlightedIndex].getBoundingClientRect().top);

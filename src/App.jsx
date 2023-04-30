@@ -41,9 +41,9 @@ function App() {
         getPropValue={
           filter === false ? (listName) => listName.id : (listName) => listName.name
         }
-        showAll={true}
+        //showAll={true}
         descending={sort}
-        //highlightFirstItem={false}
+        highlightFirstItem={false}
         inputProps={{
           placeholder: "search...",
         }}

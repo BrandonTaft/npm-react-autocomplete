@@ -199,6 +199,9 @@ export default function AutoComplete({
   // Runs the trie's `find` method to search for words that match the text input
   const handlePrefix = (e) => {
     const prefix = e.target.value
+    if(!highlightFirstItem) {
+      dispatch({ type: "UPDATE", payload: -1 });
+    }
     if (filteredItems && showAll && prefix.length === 0) {
       dispatch({
         type: "OPEN", payload: filteredItems.map((item, index) => (
@@ -331,7 +334,7 @@ export default function AutoComplete({
   // Onscroll function determines the highlighted elements position within the dropdown
   // to keep the highlight inside the dropdown by moving the `highlightedIndex` up or down accordingly
   const scrollMe = () => {
-    if (itemsRef.current) {
+    if (itemsRef.current[highlightedIndex]) {
       let itemHeight = itemsRef.current[highlightedIndex].getBoundingClientRect().height
       let containerTop = Math.round(dropDownRef.current.getBoundingClientRect().top)
       let itemTop = Math.round(itemsRef.current[highlightedIndex].getBoundingClientRect().top)

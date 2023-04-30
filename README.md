@@ -39,8 +39,10 @@ import { AutoComplete } from 'react-autocomplete-input-component';
 
 ```
 
-## Install
+## Demo
+[Check out more examples](https://brandontaft.github.io/autocomplete-demo)
 
+## Install
 ### npm
 
 ```bash
@@ -76,11 +78,12 @@ npm install --save react-autocomplete-input-component
 - Use if you want different logic when there is no matching value for the text input
 - Runs when Enter key is pressed with text present but no matches
 - If `handleNewValue` is not passed in, `onSelect` will still run with the text input
+. Both `handleNewValue` and `onSelect` will have the input value and `list` array as arguments
 
 ### `inputProps: Object` (Optional)
 - Sets HTML text input attributes with some exceptions
 - Type and Autocomplete are unable to be overridden
-- Some Event handlers such as onClick can be used
+- Some Event handlers can be used
 - onClick, onChange, onKeyDown, onFocus cannot be overridden
 
 ```jsx
