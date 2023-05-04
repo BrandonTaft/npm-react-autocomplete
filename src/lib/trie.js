@@ -20,6 +20,20 @@ class TrieNode {
             }
             return originalObject;
         };
+
+        this.getOneWord = function () {
+            let output = [];
+            let node = this;
+            while (node !== null) {
+                output.unshift(node.letter);
+                node = node.previousLetter;
+            }
+            const originalObject = {
+                value: output.join(''),
+                originalIndex: this.originalIndex
+            }
+            return originalObject;
+        };
     }
 }
 
@@ -85,6 +99,38 @@ export default class Trie {
                 findAllWords(node.nextLetters[child], arr);
             }
         };
+
+        this.findOne = function (value) {
+            let newWord = value.toLowerCase();
+            let node = this.root;
+            let match;
+            // for every character in the prefix
+            for (let i = 0; i < newWord.length; i++) {
+              // make sure prefix has any possible words available
+              if (node.nextLetters[newWord[i]]) {
+                node = node.nextLetters[newWord[i]];
+              } else if (node.nextLetters[newWord[i].toUpperCase()]) {
+                node = node.nextLetters[newWord[i].toUpperCase()];
+              } else {
+                // if there are none then return it.
+                return match;
+              }
+            }
+            // find all words in the node that match
+            //findOneWord(node, output);
+            if (node.end) {
+                console.log(node.getOneWord())
+            return node.getOneWord();
+            }
+          };
+      
+          const findOneWord = (node, output) => {
+            // base case, if node is at a word, push to output
+            if (node.end) {
+              output = node.getOneWord()
+            }
+          };
+      
 
         // check if word is contained in trie.
         this.contains = function (word) {

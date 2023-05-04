@@ -25,10 +25,14 @@ export default function AutoComplete({
   isOpen,
   updateIsOpen,
   handleHighlightedItem,
-  handleNewValue
+  handleNewValue,
+  submit,
+  updateSubmit,
+  handleSubmit
 }) {
   const getPropValueRef = useRef();
   const updateRef = useRef();
+  const submitRef = useRef(submit);
   const matchingItemsRef = useRef([]);
   const trie = useRef();
   const inputRef = useRef();
@@ -195,11 +199,30 @@ export default function AutoComplete({
     }
   }, [handleHighlightedItem, highlightedIndex, matchingItems, savedList])
 
+  submitRef.current = () => {
+    console.log(trie.current.findOne(inputRef.current.value))
+    for (let i = 0; i < filteredItems.length; i++) {
+      if (inputRef.current.value === filteredItems[i]) {
+        console.log(filteredItems[i])
+        handleSubmit(list[i], list, i)
+        return
+      }
+    }
+    handleNewValue(inputRef.current.value.toString(), list)
+  }
+
+  useEffect(() => {
+    if (submit && inputRef.current.value) {
+      submitRef.current()
+    }
+    updateSubmit(false)
+  }, [submit, updateSubmit])
+
   // Handles text input and if `showAll` is true it opens the dropdown when input is focused
   // Runs the trie's `find` method to search for words that match the text input
   const handlePrefix = (e) => {
     const prefix = e.target.value
-    if(!highlightFirstItem) {
+    if (!highlightFirstItem) {
       dispatch({ type: "UPDATE", payload: -1 });
     }
     if (filteredItems && showAll && prefix.length === 0) {
@@ -318,17 +341,17 @@ export default function AutoComplete({
   // If there is not a highlighted item it will pass the input's value into the 'onSelect' function
   // Then closes the dropdown and runs the `resetInputValue` function which uses `clearOnSelect` prop to clear the input or not
   const onMouseClick = (index, selectedElement, matchingItem) => {
-    if(onSelect) {
-    try {
-      onSelect(list[index], selectedElement, index)
-    } catch (error) {
-      console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
+    if (onSelect) {
+      try {
+        onSelect(list[index], selectedElement, index)
+      } catch (error) {
+        console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
+      }
     }
-   } 
-      dispatch({ type: "CLOSE" });
-      handleUpdateIsOpen(false)
-      resetInputValue(matchingItem);
-    
+    dispatch({ type: "CLOSE" });
+    handleUpdateIsOpen(false)
+    resetInputValue(matchingItem);
+
   }
 
   // Onscroll function determines the highlighted elements position within the dropdown

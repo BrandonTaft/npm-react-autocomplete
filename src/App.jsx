@@ -20,11 +20,7 @@ function App() {
     setSort(sort => !sort)
   })
   const toggleSubmit = (() => {
-    setSubmit(true)
-  })
-
-  const test = (() => {
-    setSubmit(false)
+    setSubmit(!submit)
   })
 
   return (
@@ -33,7 +29,7 @@ function App() {
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleDropDown}>OPEN/CLOSE</button>
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleFilter}>FILTER</button>
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleSort}>SORT</button>
-      <button className='ignore btn' style={{ padding: '10px' }} onMouseDown={toggleSubmit} onClick={test}>SUBMIT</button>
+      <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleSubmit}>SUBMIT</button>
       <AutoComplete
         //list={[0, 33, 1, 55, 5, 111, 11, 333, 44]}
         //list={['very', 'apple', 'every', 'tom', 'fort', 'but', 'put', 'putty']}
@@ -41,7 +37,7 @@ function App() {
         getPropValue={
           filter === false ? (listName) => listName.id : (listName) => listName.name
         }
-        //showAll={true}
+        showAll={true}
         descending={sort}
         highlightFirstItem={false}
         inputProps={{
@@ -67,21 +63,26 @@ function App() {
           overflowY: "auto",
           maxHeight: "300px"
         }}
-        handleHighlightedItem={(highlightedElement, highlightedItem) => {
-          highlightedElement.style.color = ("red")
-          setPreview(highlightedItem)
-        }}
-         onSelect={(selectedElement, selectedItem, originalIndex) => {
-          setPreview(selectedItem)
-          console.log(selectedElement)
-          console.log(selectedItem, originalIndex)
-        }}
-        clearOnSelect={true}
+        // handleHighlightedItem={(highlightedElement, highlightedItem) => {
+        //   highlightedElement.style.color = ("red")
+        //   setPreview(highlightedItem)
+        // }}
+        //  onSelect={(selectedElement, selectedItem, originalIndex) => {
+        //   setPreview(selectedItem)
+        //   console.log(selectedElement)
+        //   console.log(selectedItem, originalIndex)
+        // }}
+        clearOnSelect={false}
         handleNewValue={(value, list) => {
           console.log('noMatch', value, list)
+          setPreview(value)
         }}
-        // submit={submit}
-        // updateSubmit={setSubmit}
+        submit={submit}
+        updateSubmit={setSubmit}
+        handleSubmit={(selectedItem, originalIndex) => {
+            setPreview(selectedItem)
+            console.log(selectedItem, originalIndex)
+          }}
         disableOutsideClick={true}
         updateIsOpen={(updatedState) => {
           setOpenDropDown(updatedState)
