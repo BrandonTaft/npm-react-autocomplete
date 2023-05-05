@@ -73,11 +73,13 @@ function App() {
           console.log(selectedItem, originalIndex)
         }}
         clearOnSelect={false}
+        
         // handleNewValue={(value, list) => {
         //   console.log('noMatch', value, list)
         //   setPreview(value)
         // }}
         submit={submit}
+        //clearOnSubmit={false}
         updateSubmit={setSubmit}
         handleSubmit={(selectedItem, originalIndex) => {
             setPreview(selectedItem)

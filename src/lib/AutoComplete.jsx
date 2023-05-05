@@ -11,6 +11,7 @@ export default function AutoComplete({
   showAll = false,
   descending = false,
   clearOnSelect = true,
+  clearOnSubmit = true,
   highlightFirstItem = true,
   disableOutsideClick = false,
   wrapperDiv = 'block',
@@ -210,6 +211,7 @@ export default function AutoComplete({
     } else {
       handleSubmit(inputRef.current.value.toString(), list)
     }
+    resetOnSubmit(inputRef.current.value)
   }
 
   // When submit is updated to `true` and text is entered into the input
@@ -469,6 +471,18 @@ export default function AutoComplete({
   // If clearOnSelect is set to false it will set the input value to the word passed in
   function resetInputValue(matchingItem) {
     if (clearOnSelect) {
+      inputRef.current.value = "";
+    } else {
+      if (!matchingItem) {
+        inputRef.current.value = ""
+      } else {
+        inputRef.current.value = matchingItem;
+      }
+    }
+  }
+
+  function resetOnSubmit(matchingItem) {
+    if (clearOnSubmit) {
       inputRef.current.value = "";
     } else {
       if (!matchingItem) {

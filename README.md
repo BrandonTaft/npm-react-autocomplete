@@ -19,9 +19,8 @@ import { AutoComplete } from 'react-autocomplete-input-component';
           highlightedElement.style.color= ("red")
           setPreview(highlightedItem)
         }}
-        onSelect={(selectedItem, selectedElement, originalIndex) => {
+        onSelect={(selectedItem, originalIndex, selectedElement) => {
           console.log(selectedItem)
-          console.log(selectedElement)
         }}
         handleNewValue={(value, list) => {
           console.log(value, list)
@@ -55,9 +54,9 @@ npm install --save react-autocomplete-input-component
 
 ### `onSelect: Function`
 - Function that will run when an item is selected from the dropdown
-- The 1st argument is the `selected item` passed in as an `***HTMLDivElement***`
-- The 2nd argument is the item string or object from the original `list` prop 
-- The 3rd argument is the item's original index from the original `list` prop
+- The 1st argument is the item string or object from the original `list` prop 
+- The 2nd argument is the item's original index from the original `list` prop
+- The 3rd argument is the `selected item` if it is highlighted passed in as an `***HTMLDivElement***`
 - If the selected item is a number it will be returned as a `string`
 
 ### `clearOnSelect: Boolean` (Optional)
@@ -66,28 +65,10 @@ npm install --save react-autocomplete-input-component
 - `onMouseDown` can be used in `inputProps` to clear the input
 
 ### `handleNewValue: Function` (Optional)
-- Use if you want different logic when there is no matching value for the text input
-- Runs when Enter key is pressed with text present but no matches
-- If `handleNewValue` is not passed in, `onSelect` will still run with the text input
-. Both `handleNewValue` and `onSelect` will have the input value and `list` array as arguments
-
-### `inputProps: Object` (Optional)
-- Sets HTML text input attributes with some exceptions
-- Type and Autocomplete are unable to be overridden
-- Some Event handlers can be used
-- onClick, onChange, onKeyDown, onFocus cannot be overridden
-
-```jsx
-  inputProps={{
-    placeholder: "search...",
-    onMouseOver: () => {
-            setState(true)
-          }
-  }}
-```
+- Runs when there is no matching value for the text input
 
 ### `handleHighlightedItem: Function` (Optional)
-- Function that is ran when the `highlighted item` changes
+- Function that runs when the `highlighted item` changes
 - The 1st argument is the `highlighted item` passed in as an `***HTMLDivElement***`
 - The 2nd argument is the item string or object from the original list prop 
 
@@ -106,24 +87,6 @@ return(
 </>
 )
 ```
-
-### `highlightFirstItem: Boolean` (Optional)
-- `true` (default) - automatically highlights first item in dropdown
-- `false` - Press arrow key or hover with mouse to highlight
-
-### `showAll: Boolean` (Optional)
-- `false` (default) dropdown doesn't appear until input value matches an item's prefix
-- `true` - If the input is focused and empty the dropdown displays all list items
-
-### `descending: Boolean` (Optional)
-- `false` (default) values in dropdown will be in ascending order by default
-- `true` - If set to `true` the values will be in descending order 
-
-### `disableOutsideClick : Boolean` (Optional)
-- `false` (default) the dropdown closes when mouse is clicked outside of the auto-complete wrapper div
-- `true` the dropdown only closes when onSelect fires or tab key is pressed
-- `NOTE!!!` to control the dropdown with `updateIsOpen` and keep this enabled,
-  the element controlling the event should have a `className` of `ignore`
 
 ### `isOpen : Boolean` (Optional)
 - This prop is used to set the position of the dropdown in the `AutoComplete` component
@@ -155,6 +118,77 @@ return(
 </>
 )
 ```
+
+### `submit : Boolean` (Optional)
+- This prop when set to `true` is used to run the `handleSubmit` function
+- Should be used with `updateSubmit` to update the state in the parent
+
+### `updateSubmit: Function` (Optional)
+- Set function used to reset the `submit` state to `false`
+- Runs every time `submit` is updated
+
+### `handleSubmit: Function` (Optional)
+- Function that runs when the `submit is updated to `true` changes
+- The 1st argument is the original string or object of the value selected
+- The 2nd argument is the 
+
+### `clearOnSubmit: Boolean` (Optional)
+
+```jsx
+
+```jsx
+  const [openDropDown, setOpenDropDown] = useState()
+
+  const toggleDropDown = () => {
+    setOpenDropDown(openDropDown ? false : true)
+  }
+
+return(
+<>
+  <button className='ignore' onClick={toggleDropDown} />
+  <AutoComplete
+    updateIsOpen={(updatedState) => {
+      setOpenDropDown(updatedState)
+    }}
+
+    isOpen={openDropDown}
+  />
+</>
+)
+```
+
+### `inputProps: Object` (Optional)
+- Sets HTML text input attributes with some exceptions
+- Type and Autocomplete are unable to be overridden
+- Some Event handlers can be used
+- onClick, onChange, onKeyDown, onFocus cannot be overridden
+
+```jsx
+  inputProps={{
+    placeholder: "search...",
+    onMouseOver: () => {
+            setState(true)
+          }
+  }}
+```
+
+### `highlightFirstItem: Boolean` (Optional)
+- `true` (default) - automatically highlights first item in dropdown
+- `false` - Press arrow key or hover with mouse to highlight
+
+### `showAll: Boolean` (Optional)
+- `false` (default) dropdown doesn't appear until input value matches an item's prefix
+- `true` - If the input is focused and empty the dropdown displays all list items
+
+### `descending: Boolean` (Optional)
+- `false` (default) values in dropdown will be in ascending order by default
+- `true` - If set to `true` the values will be in descending order 
+
+### `disableOutsideClick : Boolean` (Optional)
+- `false` (default) the dropdown closes when mouse is clicked outside of the auto-complete wrapper div
+- `true` the dropdown only closes when onSelect fires or tab key is pressed
+- `NOTE!!!` to control the dropdown with `updateIsOpen` and keep this enabled,
+  the element controlling the event should have a `className` of `ignore`
 
 ### `wrapperStyle: Object` (Optional)
 - J.S. Style Object Variable for the `div` wrapping the whole component
