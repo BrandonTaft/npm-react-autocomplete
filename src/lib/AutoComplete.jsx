@@ -199,18 +199,21 @@ export default function AutoComplete({
     }
   }, [handleHighlightedItem, highlightedIndex, matchingItems, savedList])
 
+  // If the input value is already a stored word the `handleSubmit` function runs
+  // If the input value is not a stored word the handleNewValue function runs
   submitRef.current = () => {
-    console.log(trie.current.findOne(inputRef.current.value))
-    for (let i = 0; i < filteredItems.length; i++) {
-      if (inputRef.current.value === filteredItems[i]) {
-        console.log(filteredItems[i])
-        handleSubmit(list[i], list, i)
-        return
-      }
+    let index = trie.current.contains(inputRef.current.value).originalIndex;
+    if (trie.current.contains(inputRef.current.value)) {
+      handleSubmit(list[index], list, index)
+    } else if(handleNewValue) {
+      handleNewValue(inputRef.current.value.toString(), list)
+    } else {
+      handleSubmit(inputRef.current.value.toString(), list)
     }
-    handleNewValue(inputRef.current.value.toString(), list)
   }
 
+  // When submit is updated to `true` and text is entered into the input
+  // The function stored in the `submitRef` will run the set submit back to false
   useEffect(() => {
     if (submit && inputRef.current.value) {
       submitRef.current()
@@ -253,8 +256,9 @@ export default function AutoComplete({
     // Down Arrow - sets the next index in the 'dropDownList' as the highlighted index
     // `scrollIntoView` scrolls the dropdown to keep highlight visible once it reaches the bottom 
     // If the highlighted index is the last index it resets the highlighted index back to 0
-    if (e.keyCode === 40) {
-      if (!itemsRef.current[highlightedIndex + 1] && itemsRef.current[0] !== undefined) {
+    if (e.keyCode === 40 && matchingItems.length) {
+      e.preventDefault()
+      if (!itemsRef.current[highlightedIndex + 1]) {
         dispatch({ type: "UPDATE", payload: 0 });
         scrollIntoView(
           itemsRef.current[0],
@@ -262,7 +266,6 @@ export default function AutoComplete({
           { onlyScrollIfNeeded: true }
         )
       }
-      e.preventDefault()
       if (itemsRef.current[highlightedIndex + 1]) {
         dispatch({ type: "DOWN" });
         scrollIntoView(
@@ -300,8 +303,8 @@ export default function AutoComplete({
           try {
             onSelect(
               list[matchingItems[highlightedIndex].originalIndex],
-              itemsRef.current[highlightedIndex],
-              matchingItems[highlightedIndex].originalIndex
+              matchingItems[highlightedIndex].originalIndex,
+              itemsRef.current[highlightedIndex]
             )
           } catch (error) {
             console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
@@ -310,17 +313,21 @@ export default function AutoComplete({
         dispatch({ type: "CLOSE" });
         handleUpdateIsOpen(false)
         resetInputValue(matchingItems[highlightedIndex].value)
-
       } else {
         if (inputRef.current.value) {
+          let index = trie.current.contains(inputRef.current.value).originalIndex;
           try {
-            if (handleNewValue) {
-              handleNewValue(inputRef.current.value.toString(), list)
+            if (!trie.current.contains(inputRef.current.value)) {
+              if (handleNewValue) {
+                handleNewValue(inputRef.current.value.toString(), list)
+              } else {
+                onSelect(inputRef.current.value.toString(), list)
+              }
             } else {
-              onSelect(inputRef.current.value.toString(), list)
+              onSelect(list[index], index)
             }
           } catch (error) {
-            console.error("MISSING PROP: You must provide a valid function to the 'onSelect' or 'handleNewValue' prop", '\n', error)
+            console.error("MISSING PROP: You must provide a valid function to the 'onSelect' prop", '\n', error)
           } finally {
             dispatch({ type: "CLOSE" });
             handleUpdateIsOpen(false)
@@ -343,7 +350,7 @@ export default function AutoComplete({
   const onMouseClick = (index, selectedElement, matchingItem) => {
     if (onSelect) {
       try {
-        onSelect(list[index], selectedElement, index)
+        onSelect(list[index], index, selectedElement)
       } catch (error) {
         console.error("You must provide a valid function to the 'onSelect' prop", '\n', error)
       }

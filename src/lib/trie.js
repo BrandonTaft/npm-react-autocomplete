@@ -57,15 +57,15 @@ export default class Trie {
                 node = node.nextLetters[word[i]];
                 // check to see if we are on the last character.
                 if (i === word.length - 1) {
-                     //Store the index from the original array
-                     node.originalIndex = originalIndex;
+                    //Store the index from the original array
+                    node.originalIndex = originalIndex;
                     // if so, set the end flag to true.
                     node.end = true;
                 }
             }
         };
 
-        
+
         // returns every word with given prefix
         this.find = function (value) {
             let prefix = value.toLowerCase()
@@ -80,7 +80,7 @@ export default class Trie {
                     node = node.nextLetters[prefix[i].toUpperCase()];
                 } else {
                     // if there are none then return it.
-                    return output ;
+                    return output;
                 }
             }
             // find all words in the node that match
@@ -100,40 +100,9 @@ export default class Trie {
             }
         };
 
-        this.findOne = function (value) {
-            let newWord = value.toLowerCase();
-            let node = this.root;
-            let match;
-            // for every character in the prefix
-            for (let i = 0; i < newWord.length; i++) {
-              // make sure prefix has any possible words available
-              if (node.nextLetters[newWord[i]]) {
-                node = node.nextLetters[newWord[i]];
-              } else if (node.nextLetters[newWord[i].toUpperCase()]) {
-                node = node.nextLetters[newWord[i].toUpperCase()];
-              } else {
-                // if there are none then return it.
-                return match;
-              }
-            }
-            // find all words in the node that match
-            //findOneWord(node, output);
-            if (node.end) {
-                console.log(node.getOneWord())
-            return node.getOneWord();
-            }
-          };
-      
-          const findOneWord = (node, output) => {
-            // base case, if node is at a word, push to output
-            if (node.end) {
-              output = node.getOneWord()
-            }
-          };
-      
-
         // check if word is contained in trie.
-        this.contains = function (word) {
+        this.contains = function (value) {
+            let word = value.toLowerCase()
             let node = this.root;
             // for every character in the word
             for (let i = 0; i < word.length; i++) {
@@ -141,13 +110,19 @@ export default class Trie {
                 if (node.nextLetters[word[i]]) {
                     // if it exists, proceed to the next depth of the trie.
                     node = node.nextLetters[word[i]];
+                } else if (node.nextLetters[word[i].toUpperCase()]) {
+                    node = node.nextLetters[word[i].toUpperCase()];
                 } else {
                     // doesn't exist, return false since it's not present.
                     return false;
                 }
             }
-            // return true if word is at node end
-            return node.end;
+            // return word if it is at node end
+            if (node.end) {
+                return node.getOneWord();
+            } else {
+                return false
+            }
         };
 
         // removes the given word

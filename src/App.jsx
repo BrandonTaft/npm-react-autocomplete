@@ -25,7 +25,7 @@ function App() {
 
   return (
     <div className="App">
-      {preview.name}
+      {/* {preview.name ? preview.name : ""} */}
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleDropDown}>OPEN/CLOSE</button>
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleFilter}>FILTER</button>
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleSort}>SORT</button>
@@ -67,21 +67,21 @@ function App() {
         //   highlightedElement.style.color = ("red")
         //   setPreview(highlightedItem)
         // }}
-        //  onSelect={(selectedElement, selectedItem, originalIndex) => {
-        //   setPreview(selectedItem)
-        //   console.log(selectedElement)
-        //   console.log(selectedItem, originalIndex)
-        // }}
-        clearOnSelect={false}
-        handleNewValue={(value, list) => {
-          console.log('noMatch', value, list)
-          setPreview(value)
+        onSelect={(selectedItem, originalIndex, selectedElement) => {
+          setPreview(selectedItem)
+          console.log(selectedElement)
+          console.log(selectedItem, originalIndex)
         }}
+        clearOnSelect={false}
+        // handleNewValue={(value, list) => {
+        //   console.log('noMatch', value, list)
+        //   setPreview(value)
+        // }}
         submit={submit}
         updateSubmit={setSubmit}
         handleSubmit={(selectedItem, originalIndex) => {
             setPreview(selectedItem)
-            console.log(selectedItem, originalIndex)
+            console.log(selectedItem, testData)
           }}
         disableOutsideClick={true}
         updateIsOpen={(updatedState) => {
