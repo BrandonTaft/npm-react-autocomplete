@@ -70,17 +70,17 @@ function App() {
         //   highlightedElement.style.color = ("red")
         //   setPreview(highlightedItem)
         // }}
-        // onSelect={(selectedItem, originalIndex, selectedElement) => {
-        //   setPreview(selectedItem)
-        //   console.log("ONSELECT")
-        //   console.log(selectedElement)
-        //   console.log(selectedItem, originalIndex)
-        // }}
-        //clearOnSelect={false}
+        onSelect={(selectedItem, originalIndex, selectedElement) => {
+          setPreview(selectedItem)
+          console.log("ONSELECT")
+          console.log(selectedElement)
+          console.log(selectedItem, originalIndex)
+        }}
+        clearOnSelect={false}
 
         handleNewValue={(value) => {
           console.log("HANDLE NEW VALUE")
-          console.log('noMatch', value, newList)
+          console.log('noMatch', value)
           setNewList(prevState => [...prevState, {name:value}])
           setPreview(value)
         }}
@@ -88,14 +88,15 @@ function App() {
         //clearOnSubmit={false}
         updateSubmit={setSubmit}
         handleSubmit={(selectedItem, originalIndex) => {
+          console.log("HANDLE SUBMIT")
           setPreview(selectedItem)
           console.log(selectedItem)
         }}
-        // disableOutsideClick={true}
-        // updateIsOpen={(updatedState) => {
-        //   setOpenDropDown(updatedState)
-        // }}
-        // isOpen={openDropDown}
+        disableOutsideClick={true}
+        updateIsOpen={(updatedState) => {
+          setOpenDropDown(updatedState)
+        }}
+        isOpen={openDropDown}
       />
 
     </div>

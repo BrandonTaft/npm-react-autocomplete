@@ -34,6 +34,15 @@ function AutoComplete(_ref) {
     descending = false,
     clearOnSubmit = true,
     highlightFirstItem = true,
+    isOpen,
+    updateIsOpen,
+    handleHighlightedItem,
+    onSelect,
+    clearOnSelect = onSelect ? true : false,
+    handleNewValue,
+    submit,
+    updateSubmit = () => {},
+    handleSubmit,
     disableOutsideClick = false,
     wrapperDiv = 'block',
     wrapperStyle,
@@ -43,16 +52,7 @@ function AutoComplete(_ref) {
     listItemStyle,
     highlightedItemStyle = {
       backgroundColor: "dodgerBlue"
-    },
-    isOpen,
-    updateIsOpen,
-    handleHighlightedItem,
-    onSelect,
-    clearOnSelect = onSelect ? true : false,
-    handleNewValue,
-    submit,
-    updateSubmit = () => {},
-    handleSubmit
+    }
   } = _ref;
   const getPropValueRef = (0, _react.useRef)();
   const updateRef = (0, _react.useRef)();
@@ -368,6 +368,10 @@ function AutoComplete(_ref) {
     // If there is not a highlighted item it will pass the input's value into the 'onSelect' function
     // Then closes the dropdown and runs the `resetInputValue` function which uses `clearOnSelect` prop to clear the input or not
     if (e.keyCode === 13) {
+      if (handleSubmit && !matchingItems.length) {
+        updateSubmit(true);
+        return;
+      }
       if (list && matchingItems[highlightedIndex]) {
         if (onSelect) {
           try {
@@ -379,33 +383,27 @@ function AutoComplete(_ref) {
         dispatch({
           type: "CLOSE"
         });
-        handleUpdateIsOpen(false);
         resetInputValue(matchingItems[highlightedIndex].value);
       } else {
         if (inputRef.current.value) {
-          if (handleSubmit) {
-            updateSubmit(true);
-          } else {
-            let match = trie.current.contains(inputRef.current.value);
-            try {
-              if (!match) {
-                if (handleNewValue) {
-                  handleNewValue(inputRef.current.value.toString());
-                } else {
-                  onSelect(inputRef.current.value.toString());
-                }
+          let match = trie.current.contains(inputRef.current.value);
+          try {
+            if (!match) {
+              if (handleNewValue) {
+                handleNewValue(inputRef.current.value.toString());
               } else {
-                onSelect(list[match.originalIndex], match.originalIndex);
+                onSelect(inputRef.current.value.toString());
               }
-            } catch (error) {
-              console.error("MISSING PROP: You must provide a valid function to the 'onSelect' prop", '\n', error);
-            } finally {
-              dispatch({
-                type: "CLOSE"
-              });
-              handleUpdateIsOpen(false);
-              resetInputValue(inputRef.current.value);
+            } else {
+              onSelect(list[match.originalIndex], match.originalIndex);
             }
+          } catch (error) {
+            console.error("MISSING PROP: You must provide a valid function to the 'onSelect' prop", '\n', error);
+          } finally {
+            dispatch({
+              type: "CLOSE"
+            });
+            resetInputValue(inputRef.current.value);
           }
         }
       }
@@ -434,7 +432,6 @@ function AutoComplete(_ref) {
     dispatch({
       type: "CLOSE"
     });
-    handleUpdateIsOpen(false);
     resetInputValue(matchingItem);
   };
 
@@ -549,6 +546,7 @@ function AutoComplete(_ref) {
         });
       }
     }
+    handleUpdateIsOpen(false);
   }
 
   // Sets the value of the input to be what is specified in 'clearOnSubmit' prop

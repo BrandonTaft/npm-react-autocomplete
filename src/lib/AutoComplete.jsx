@@ -7,12 +7,19 @@ import Trie from "./trie";
 export default function AutoComplete({
   list,
   getPropValue,
-  
   showAll = false,
   descending = false,
-  
   clearOnSubmit = true,
   highlightFirstItem = true,
+  isOpen,
+  updateIsOpen,
+  handleHighlightedItem,
+  onSelect,
+  clearOnSelect = onSelect ? true : false,
+  handleNewValue,
+  submit,
+  updateSubmit = () => { },
+  handleSubmit,
   disableOutsideClick = false,
   wrapperDiv = 'block',
   wrapperStyle,
@@ -22,16 +29,7 @@ export default function AutoComplete({
   listItemStyle,
   highlightedItemStyle = {
     backgroundColor: "dodgerBlue"
-  },
-  isOpen,
-  updateIsOpen,
-  handleHighlightedItem,
-  onSelect,
-  clearOnSelect = onSelect ? true : false,
-  handleNewValue,
-  submit,
-  updateSubmit = () => {},
-  handleSubmit
+  }
 }) {
   const getPropValueRef = useRef();
   const updateRef = useRef();
@@ -208,7 +206,7 @@ export default function AutoComplete({
     let match = trie.current.contains(inputRef.current.value);
     if (match) {
       handleSubmit(list[match.originalIndex], match.originalIndex)
-    } else if(handleNewValue) {
+    } else if (handleNewValue) {
       handleNewValue(inputRef.current.value.toString())
     } else {
       handleSubmit(inputRef.current.value.toString())
@@ -299,6 +297,10 @@ export default function AutoComplete({
     // If there is not a highlighted item it will pass the input's value into the 'onSelect' function
     // Then closes the dropdown and runs the `resetInputValue` function which uses `clearOnSelect` prop to clear the input or not
     if (e.keyCode === 13) {
+      if (handleSubmit && !matchingItems.length) {
+        updateSubmit(true)
+        return
+      }
       if (list && matchingItems[highlightedIndex]) {
         if (onSelect) {
           try {
@@ -312,13 +314,9 @@ export default function AutoComplete({
           }
         }
         dispatch({ type: "CLOSE" });
-        handleUpdateIsOpen(false)
         resetInputValue(matchingItems[highlightedIndex].value)
       } else {
         if (inputRef.current.value) {
-          if(handleSubmit) {
-            updateSubmit(true)
-          } else {
           let match = trie.current.contains(inputRef.current.value);
           try {
             if (!match) {
@@ -334,10 +332,8 @@ export default function AutoComplete({
             console.error("MISSING PROP: You must provide a valid function to the 'onSelect' prop", '\n', error)
           } finally {
             dispatch({ type: "CLOSE" });
-            handleUpdateIsOpen(false)
             resetInputValue(inputRef.current.value)
           }
-        }
         }
       }
     }
@@ -361,9 +357,7 @@ export default function AutoComplete({
       }
     }
     dispatch({ type: "CLOSE" });
-    handleUpdateIsOpen(false)
     resetInputValue(matchingItem);
-
   }
 
   // Onscroll function determines the highlighted elements position within the dropdown
@@ -484,6 +478,7 @@ export default function AutoComplete({
         dispatch({ type: "CLOSE" });
       }
     }
+    handleUpdateIsOpen(false)
   }
 
   // Sets the value of the input to be what is specified in 'clearOnSubmit' prop
