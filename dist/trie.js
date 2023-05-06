@@ -26,6 +26,19 @@ class TrieNode {
       };
       return originalObject;
     };
+    this.getOneWord = function () {
+      let output = [];
+      let node = this;
+      while (node !== null) {
+        output.unshift(node.letter);
+        node = node.previousLetter;
+      }
+      const originalObject = {
+        value: output.join(''),
+        originalIndex: this.originalIndex
+      };
+      return originalObject;
+    };
   }
 }
 class Trie {
@@ -91,7 +104,8 @@ class Trie {
     };
 
     // check if word is contained in trie.
-    this.contains = function (word) {
+    this.contains = function (value) {
+      let word = value.toLowerCase();
       let node = this.root;
       // for every character in the word
       for (let i = 0; i < word.length; i++) {
@@ -99,13 +113,19 @@ class Trie {
         if (node.nextLetters[word[i]]) {
           // if it exists, proceed to the next depth of the trie.
           node = node.nextLetters[word[i]];
+        } else if (node.nextLetters[word[i].toUpperCase()]) {
+          node = node.nextLetters[word[i].toUpperCase()];
         } else {
           // doesn't exist, return false since it's not present.
           return false;
         }
       }
-      // return true if word is at node end
-      return node.end;
+      // return word if it is at node end
+      if (node.end) {
+        return node.getOneWord();
+      } else {
+        return false;
+      }
     };
 
     // removes the given word
