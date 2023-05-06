@@ -42,7 +42,7 @@ function App() {
         }
         showAll={true}
         descending={sort}
-        highlightFirstItem={false}
+        //highlightFirstItem={false}
         inputProps={{
           placeholder: "search...",
         }}
@@ -84,13 +84,13 @@ function App() {
           setNewList(prevState => [...prevState, {name:value}])
           setPreview(value)
         }}
-        // submit={submit}
-        // //clearOnSubmit={false}
-        // updateSubmit={setSubmit}
-        // handleSubmit={(selectedItem, originalIndex) => {
-        //   setPreview(selectedItem)
-        //   console.log(selectedItem)
-        // }}
+        submit={submit}
+        //clearOnSubmit={false}
+        updateSubmit={setSubmit}
+        handleSubmit={(selectedItem, originalIndex) => {
+          setPreview(selectedItem)
+          console.log(selectedItem)
+        }}
         // disableOutsideClick={true}
         // updateIsOpen={(updatedState) => {
         //   setOpenDropDown(updatedState)

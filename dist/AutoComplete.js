@@ -544,6 +544,9 @@ function AutoComplete(_ref) {
       } else {
         inputRef.current.value = matchingItem;
         inputRef.current.focus();
+        dispatch({
+          type: "CLOSE"
+        });
       }
     }
   }
@@ -559,6 +562,10 @@ function AutoComplete(_ref) {
         inputRef.current.value = "";
       } else {
         inputRef.current.value = matchingItem;
+        inputRef.current.focus();
+        dispatch({
+          type: "CLOSE"
+        });
       }
     }
   }

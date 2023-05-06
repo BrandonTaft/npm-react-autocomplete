@@ -481,6 +481,7 @@ export default function AutoComplete({
       } else {
         inputRef.current.value = matchingItem;
         inputRef.current.focus()
+        dispatch({ type: "CLOSE" });
       }
     }
   }
@@ -496,6 +497,8 @@ export default function AutoComplete({
         inputRef.current.value = ""
       } else {
         inputRef.current.value = matchingItem;
+        inputRef.current.focus()
+        dispatch({ type: "CLOSE" });
       }
     }
   }
