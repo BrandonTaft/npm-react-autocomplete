@@ -2,31 +2,29 @@
 # React Autocomplete Input Component
 
 ```jsx
-import { AutoComplete } from 'react-autocomplete-input-component';
+  import { AutoComplete } from 'react-autocomplete-input-component';
 
-<AutoComplete
-        getPropValue={(listItem) => listItem.name}
-        showAll={true}
-        inputProps={{
-          placeholder: "search..."
-        }}
-        list={[
-          { name: 'Tom', id: 3233 },
-          { name: 'Tommy', id: 3445 },
-          { name: 'Thomas', id: 3663 }
-        ]}
-        handleHighlightedItem={(highlightedElement, highlightedItem) => {
-          highlightedElement.style.color= ("red")
-          setPreview(highlightedItem)
-        }}
-        onSelect={(selectedItem, originalIndex, selectedElement) => {
-          console.log(selectedItem)
-        }}
-        handleNewValue={(value, list) => {
-          console.log(value, list)
-        }}
-      />
-
+  <AutoComplete
+    getPropValue={(listItem) => listItem.name}
+    showAll={true}
+    inputProps={{
+      placeholder: "search..."
+    }}
+    list={[
+      { name: 'Tom', id: 3233 },
+      { name: 'Tommy', id: 3445 },
+      { name: 'Thomas', id: 3663 }
+    ]}
+    handleHighlightedItem={(highlightedElement, highlightedItem) => {      highlightedElement.style.color= ("red")
+      setPreview(highlightedItem)
+    }}
+    onSelect={(selectedItem, originalIndex, selectedElement) => {
+      console.log(selectedItem)
+    }}
+    handleNewValue={(value) => {
+      console.log(value)
+    }}
+  />
 ```
 
 ## Demo
@@ -52,11 +50,35 @@ npm install --save react-autocomplete-input-component
 - Defines a callback function passed to Array.map
 - Sets the object property value to be extracted and displayed in dropdown
 
+### `handleHighlightedItem: Function` (Optional)
+- Function that runs when the `highlighted item` changes
+- The 1st argument is the `highlighted item` passed in as an `***HTMLDivElement***`
+- The 2nd argument is the item or object from the original list prop 
+
+```jsx
+  const[preview, setPreview] = useState();
+
+  return(
+    <>
+      <div>{preview}</div>
+      <AutoComplete
+        handleHighlightedItem={(element, item) => {
+          element.style.color= ("red")
+          setPreview(item)
+        }}
+      />
+    </>
+  )
+```
+
 ### `onSelect: Function`
-- Function that will run when an item is selected from the dropdown
-- The 1st argument is the item string or object from the original `list` prop 
+- Function that will run when an item is selected from the dropdown, or if there is not a matching item and a `handleNewValue` function is not passed in
+- If `handleNewValue` is passed in, it will always run if the input value is not in the `list`
+- The 1st argument is the value or object from the original `list` prop 
 - The 2nd argument is the item's original index from the original `list` prop
-- The 3rd argument is the `selected item` if it is highlighted passed in as an `***HTMLDivElement***`
+- The 3rd argument is the `selected item` passed in as an `***HTMLDivElement***`, but only if it is highlighted
+- If there is a matching item but it is not highlighted, only the first 2 arguments are used
+- If there is not a matching item, only the text input value is passed in
 - If the selected item is a number it will be returned as a `string`
 
 ### `clearOnSelect: Boolean` (Optional)
@@ -66,26 +88,65 @@ npm install --save react-autocomplete-input-component
 
 ### `handleNewValue: Function` (Optional)
 - Runs when there is no matching value for the text input
-
-### `handleHighlightedItem: Function` (Optional)
-- Function that runs when the `highlighted item` changes
-- The 1st argument is the `highlighted item` passed in as an `***HTMLDivElement***`
-- The 2nd argument is the item string or object from the original list prop 
+- If it is not passed in, the `onSelect` function will run
+- The input value is its only Argument
 
 ```jsx
-  const[preview, setPreview] = useState();
+  const [newList, setNewList] = useState(testData);
 
-return(
-<>
-  <div>{preview}</div>
-  <AutoComplete
-    handleHighlightedItem={(highlightedElement, highlightedItem) => {
-      highlightedElement.style.color= ("red")
-      setPreview(highlightedItem)
-    }}
-  />
-</>
-)
+  return(
+    <>
+      <AutoComplete
+        list={newList}
+        handleNewValue={(value) => {
+          setNewList(prevState => [...prevState, {name:value}])
+      }}
+      />
+    </>
+  )
+```
+
+### `submit : Boolean` (Optional)
+- Only used if you want to use a `SUBMIT` button
+- Each time it is updated to `true` the `handleSubmit` function runs
+- Should be used with `updateSubmit` to update the state in the parent back to `false`
+
+### `updateSubmit: Function` (Optional)
+- Pass in the set function for your state used in the `submit` prop and it sets the state back to `false` after the `handleSubmit` function runs
+
+### `handleSubmit: Function` (Optional)
+- Function that runs when the `submit` prop is updated to `true`
+- The 1st argument is the original string or object of the value selected
+- The 2nd argument is the item's original index from the original `list` prop
+- If there is not a matching item and `handleNewValue` is not passed in, only the text input value is passed in as an argument
+- If `handleNewValue` is passed in, it will always run if the input value is not in the `list`
+
+### `clearOnSubmit: Boolean` (Optional)
+- `true` (default) the input will clear when an item is selected
+- `false` value selected will become the input value
+- `onMouseDown` can be used in `inputProps` to clear the input
+
+```jsx
+  const [submit, setSubmit] = useState(false);
+
+  const toggleSubmit = (() => {
+    setSubmit(true)
+  })
+
+  return(
+    <>
+      <button className='ignore' onClick={toggleSubmit}>
+        SUBMIT
+      </button>
+      <AutoComplete
+        submit={submit}
+        updateSubmit={setSubmit}
+        handleSubmit={(selectedItem, originalIndex) => {
+          console.log(selectedItem)
+        }}
+      />
+    </>
+  )
 ```
 
 ### `isOpen : Boolean` (Optional)
@@ -105,56 +166,17 @@ return(
     setOpenDropDown(openDropDown ? false : true)
   }
 
-return(
-<>
-  <button className='ignore' onClick={toggleDropDown} />
-  <AutoComplete
-    updateIsOpen={(updatedState) => {
-      setOpenDropDown(updatedState)
-    }}
-
-    isOpen={openDropDown}
-  />
-</>
-)
-```
-
-### `submit : Boolean` (Optional)
-- This prop when set to `true` is used to run the `handleSubmit` function
-- Should be used with `updateSubmit` to update the state in the parent
-
-### `updateSubmit: Function` (Optional)
-- Set function used to reset the `submit` state to `false`
-- Runs every time `submit` is updated
-
-### `handleSubmit: Function` (Optional)
-- Function that runs when the `submit is updated to `true` changes
-- The 1st argument is the original string or object of the value selected
-- The 2nd argument is the 
-
-### `clearOnSubmit: Boolean` (Optional)
-
-```jsx
-
-```jsx
-  const [openDropDown, setOpenDropDown] = useState()
-
-  const toggleDropDown = () => {
-    setOpenDropDown(openDropDown ? false : true)
-  }
-
-return(
-<>
-  <button className='ignore' onClick={toggleDropDown} />
-  <AutoComplete
-    updateIsOpen={(updatedState) => {
-      setOpenDropDown(updatedState)
-    }}
-
-    isOpen={openDropDown}
-  />
-</>
-)
+  return(
+    <>
+      <button className='ignore' onClick={toggleDropDown} />
+      <AutoComplete
+        updateIsOpen={(updatedState) => {
+          setOpenDropDown(updatedState)
+        }}
+        isOpen={openDropDown}
+      />
+    </>
+  )
 ```
 
 ### `inputProps: Object` (Optional)
@@ -211,22 +233,20 @@ return(
 - CSS can also be used with the class name `highlighted-item`
 - Default color is `dodgerBlue`
 
-```jsx
-  
+```jsx  
   <AutoComplete
     highlightedItemStyle={{
-          backgroundColor: "dodgerBlue"
-        }}
-        listItemStyle={{
-          cursor: "pointer",
-          padding: "5px"
-        }}
-        dropDownStyle={{
-          backgroundColor: "antiquewhite",
-          width: "215px"
-        }}
+      backgroundColor: "dodgerBlue"
+    }}
+    listItemStyle={{
+      cursor: "pointer",
+      padding: "5px"
+    }}
+    dropDownStyle={{
+      backgroundColor: "antiquewhite",
+      width: "215px"
+    }}
   />
-
 ```
 
 

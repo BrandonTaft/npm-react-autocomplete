@@ -7,10 +7,10 @@ import Trie from "./trie";
 export default function AutoComplete({
   list,
   getPropValue,
-  onSelect,
+  
   showAll = false,
   descending = false,
-  clearOnSelect = true,
+  
   clearOnSubmit = true,
   highlightFirstItem = true,
   disableOutsideClick = false,
@@ -26,9 +26,11 @@ export default function AutoComplete({
   isOpen,
   updateIsOpen,
   handleHighlightedItem,
+  onSelect,
+  clearOnSelect = onSelect ? true : false,
   handleNewValue,
   submit,
-  updateSubmit,
+  updateSubmit = () => {},
   handleSubmit
 }) {
   const getPropValueRef = useRef();
@@ -203,13 +205,13 @@ export default function AutoComplete({
   // If the input value is already a stored word the `handleSubmit` function runs
   // If the input value is not a stored word the handleNewValue function runs
   submitRef.current = () => {
-    let index = trie.current.contains(inputRef.current.value).originalIndex;
-    if (trie.current.contains(inputRef.current.value)) {
-      handleSubmit(list[index], list, index)
+    let match = trie.current.contains(inputRef.current.value);
+    if (match) {
+      handleSubmit(list[match.originalIndex], match.originalIndex)
     } else if(handleNewValue) {
-      handleNewValue(inputRef.current.value.toString(), list)
+      handleNewValue(inputRef.current.value.toString())
     } else {
-      handleSubmit(inputRef.current.value.toString(), list)
+      handleSubmit(inputRef.current.value.toString())
     }
     resetOnSubmit(inputRef.current.value)
   }
@@ -297,9 +299,6 @@ export default function AutoComplete({
     // If there is not a highlighted item it will pass the input's value into the 'onSelect' function
     // Then closes the dropdown and runs the `resetInputValue` function which uses `clearOnSelect` prop to clear the input or not
     if (e.keyCode === 13) {
-      if (!onSelect && !handleNewValue) {
-        console.error("MISSING PROP: You must provide a valid function to the 'onSelect' or 'handleNewValue' prop")
-      }
       if (list && matchingItems[highlightedIndex]) {
         if (onSelect) {
           try {
@@ -317,16 +316,19 @@ export default function AutoComplete({
         resetInputValue(matchingItems[highlightedIndex].value)
       } else {
         if (inputRef.current.value) {
-          let index = trie.current.contains(inputRef.current.value).originalIndex;
+          if(handleSubmit) {
+            updateSubmit(true)
+          } else {
+          let match = trie.current.contains(inputRef.current.value);
           try {
-            if (!trie.current.contains(inputRef.current.value)) {
+            if (!match) {
               if (handleNewValue) {
-                handleNewValue(inputRef.current.value.toString(), list)
+                handleNewValue(inputRef.current.value.toString())
               } else {
-                onSelect(inputRef.current.value.toString(), list)
+                onSelect(inputRef.current.value.toString())
               }
             } else {
-              onSelect(list[index], index)
+              onSelect(list[match.originalIndex], match.originalIndex)
             }
           } catch (error) {
             console.error("MISSING PROP: You must provide a valid function to the 'onSelect' prop", '\n', error)
@@ -335,6 +337,7 @@ export default function AutoComplete({
             handleUpdateIsOpen(false)
             resetInputValue(inputRef.current.value)
           }
+        }
         }
       }
     }
@@ -481,6 +484,9 @@ export default function AutoComplete({
     }
   }
 
+  // Sets the value of the input to be what is specified in 'clearOnSubmit' prop
+  // When onSelect runs it will clear the input if 'clearOnSubmit' is set to true
+  // If clearOnSubmit is set to false it will set the input value to the word passed in
   function resetOnSubmit(matchingItem) {
     if (clearOnSubmit) {
       inputRef.current.value = "";
