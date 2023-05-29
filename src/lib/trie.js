@@ -67,7 +67,7 @@ export default class Trie {
 
 
         // returns every word with given prefix
-        this.find = function (value) {
+        this.find = function (value, showNoMatchMessage) {
             let prefix = value.toLowerCase()
             let node = this.root;
             let output = [];
@@ -80,7 +80,19 @@ export default class Trie {
                     node = node.nextLetters[prefix[i].toUpperCase()];
                 } else {
                     // if there are none then return it.
-                    return output;
+                    if (showNoMatchMessage) {
+                        if (typeof showNoMatchMessage === 'boolean') {
+                            return (
+                                [{ value: "No matches found", originalIndex: -1 }]
+                            )
+                        } else if (typeof showNoMatchMessage === 'string') {
+                            return (
+                                [{ value: showNoMatchMessage, originalIndex: 0 }]
+                            )
+                        }
+                    } else {
+                        return output
+                    }
                 }
             }
             // find all words in the node that match
@@ -123,37 +135,6 @@ export default class Trie {
             } else {
                 return false
             }
-        };
-
-        // removes the given word
-        this.remove = function (word) {
-            let root = this.root;
-            if (!word)
-                return;
-            // recursively finds and removes a word
-            const removeWord = (node, word) => {
-                // check if current node contains the word
-                if (node.end && node.getWord() === word) {
-                    // check and see if node has nextLetters
-                    let hasNextLetters = Object.letters(node.nextLetters).length > 0;
-                    // if has nextLetters just un-flag the end node that marks end of a word.
-                    // so it doesn't remove words that contain/include supplied word
-                    if (hasNextLetters) {
-                        node.end = false;
-                    } else {
-                        // remove word by getting previousLetter and setting nextLetters to empty dictionary
-                        node.previousLetter.nextLetters = {};
-                    }
-                    return true;
-                }
-                // recursively remove word from all nextLetters
-                for (let letter in node.nextLetters) {
-                    removeWord(node.nextLetters[letter], word);
-                }
-                return false;
-            };
-            // call remove word on root node
-            removeWord(root, word);
         };
     }
 }

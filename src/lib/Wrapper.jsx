@@ -1,7 +1,14 @@
 import React from "react";
 import { useEffect, useRef } from "react"
 
-export default function Wrapper({ children, onOutsideClick, disabled, display, wrapperStyle }) {
+export default function Wrapper({
+    children,
+    onOutsideClick,
+    disabled,
+    display,
+    wrapperStyle
+}) {
+    
     const wrapperRef = useRef()
 
     useEffect(() => {

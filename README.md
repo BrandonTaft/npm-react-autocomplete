@@ -5,7 +5,9 @@
   import { AutoComplete } from 'react-autocomplete-input-component';
 
   <AutoComplete
-    getPropValue={(listItem) => listItem.name}
+    getPropValue={(list) => {
+      return list.map((listItem) => listItem.id)
+    }}
     showAll={true}
     inputProps={{
       placeholder: "search..."
@@ -15,10 +17,10 @@
       { name: 'Tommy', id: 3445 },
       { name: 'Thomas', id: 3663 }
     ]}
-    handleHighlightedItem={(highlightedElement, highlightedItem) => {      highlightedElement.style.color= ("red")
-      setPreview(highlightedItem)
+    handleHighlight={(highlightedItem) => {
+      console.log(highlightedItem)
     }}
-    onSelect={(selectedItem, originalIndex, selectedElement) => {
+    handleSelect={(selectedItem) => {
       console.log(selectedItem)
     }}
     handleNewValue={(value) => {
@@ -81,7 +83,7 @@ npm install --save react-autocomplete-input-component
 - If there is not a matching item, only the text input value is passed in
 - If the selected item is a number it will be returned as a `string`
 
-### `clearOnSelect: Boolean` (Optional)
+### `clearOnSelect: boolean` (Optional)
 - `true` (default) the input will clear when an item is selected
 - `false` value selected will become the input value
 - `onMouseDown` can be used in `inputProps` to clear the input
@@ -106,7 +108,7 @@ npm install --save react-autocomplete-input-component
   )
 ```
 
-### `submit : Boolean` (Optional)
+### `submit : boolean` (Optional)
 - Only used if you want to use a `SUBMIT` button
 - Each time it is updated to `true` the `handleSubmit` function runs
 - Should be used with `updateSubmit` to update the state in the parent back to `false`
@@ -121,7 +123,7 @@ npm install --save react-autocomplete-input-component
 - If there is not a matching item and `handleNewValue` is not passed in, only the text input value is passed in as an argument
 - If `handleNewValue` is passed in, it will always run if the input value is not in the `list`
 
-### `clearOnSubmit: Boolean` (Optional)
+### `clearOnSubmit: boolean` (Optional)
 - `true` (default) the input will clear when an item is selected
 - `false` value selected will become the input value
 - `onMouseDown` can be used in `inputProps` to clear the input
@@ -149,13 +151,13 @@ npm install --save react-autocomplete-input-component
   )
 ```
 
-### `isOpen : Boolean` (Optional)
+### `forceDropDown : boolean` (Optional)
 - This prop is used to set the position of the dropdown in the `AutoComplete` component
-- It is only necessary when using `updateIsOpen` to control the dropdown
+- It is only necessary when using `isOpen` to control the dropdown
 - `true` is passed in to open the dropdown
 - `false` is passed in to close the dropdown
 
-### `updateIsOpen: Function` (Optional)
+### `isOpen: Function` (Optional)
 - Function used to update the parent with the current position of the dropdown
 - Runs when dropdown opens by entering text or closes by clicking outside of the element 
 
@@ -170,10 +172,10 @@ npm install --save react-autocomplete-input-component
     <>
       <button className='ignore' onClick={toggleDropDown} />
       <AutoComplete
-        updateIsOpen={(updatedState) => {
+         onDropdownChange={(updatedState) => {
           setOpenDropDown(updatedState)
         }}
-        isOpen={openDropDown}
+        forceDropDown={openDropDown}
       />
     </>
   )
@@ -194,22 +196,22 @@ npm install --save react-autocomplete-input-component
   }}
 ```
 
-### `highlightFirstItem: Boolean` (Optional)
+### `highlightFirstItem: boolean` (Optional)
 - `true` (default) - automatically highlights first item in dropdown
 - `false` - Press arrow key or hover with mouse to highlight
 
-### `showAll: Boolean` (Optional)
+### `showAll: boolean` (Optional)
 - `false` (default) dropdown doesn't appear until input value matches an item's prefix
 - `true` - If the input is focused and empty the dropdown displays all list items
 
-### `descending: Boolean` (Optional)
+### `descending: boolean` (Optional)
 - `false` (default) values in dropdown will be in ascending order by default
 - `true` - If set to `true` the values will be in descending order 
 
-### `disableOutsideClick : Boolean` (Optional)
+### `disableOutsideClick : boolean` (Optional)
 - `false` (default) the dropdown closes when mouse is clicked outside of the auto-complete wrapper div
 - `true` the dropdown only closes when onSelect fires or tab key is pressed
-- `NOTE!!!` to control the dropdown with `updateIsOpen` and keep this enabled,
+- `NOTE!!!` to control the dropdown with `isOpen` and keep this enabled,
   the element controlling the event should have a `className` of `ignore`
 
 ### `wrapperStyle: Object` (Optional)

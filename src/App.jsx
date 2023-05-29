@@ -6,9 +6,9 @@ import "./index.css"
 
 function App() {
   const [submit, setSubmit] = useState(false);
-  const [preview, setPreview] = useState("")
+  
   const [openDropDown, setOpenDropDown] = useState();
-  const [filter, setFilter] = useState(true);
+  const [filter, setFilter] = useState(false);
   const [sort, setSort] = useState(false);
   const toggleDropDown = (() => {
     setOpenDropDown(openDropDown ? false : true)
@@ -22,9 +22,13 @@ function App() {
   const toggleSubmit = (() => {
     setSubmit(true)
   })
+  const toggleList = (() => {
+    setNewList(newList === testData ? a : testData)
+  })
 
   const [newList, setNewList] = useState(testData);
 
+  let a = [0, 33, 1, 55, 5, 111, 11, 333, 44]
 
   return (
     <div className="App">
@@ -33,16 +37,42 @@ function App() {
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleFilter}>FILTER</button>
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleSort}>SORT</button>
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleSubmit}>SUBMIT</button>
+      <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleList}>LIST</button>
       <AutoComplete
         //list={[0, 33, 1, 55, 5, 111, 11, 333, 44]}
         list={newList}
         //list={testData}
         getPropValue={
-          filter === false ? (listName) => listName.id : (listName) => listName.name
+          filter === false ?
+            (y) => {
+             
+              var vals = [];
+              for (var i = 0; i < y.length; i++) {
+                vals.push(y[i]?.name);
+              }
+              return vals
+            }
+            :
+            (y) => {
+              return y.map((listItem) => listItem.id)
+            }
         }
+        // handleHighlight={(highlightedItem) => {
+        //   console.log(highlightedItem)
+        // }}
+        handleSelect={(selectedItem, selectedElement) => {
+          console.log(selectedItem, selectedElement)
+        }}
+        handleNewValue={(value) => {
+          console.log("HANDLE NEW VALUE")
+          setNewList(prevState => [...prevState, {name:value}])
+        }}
+        // handleSubmit={(selectedItem, originalIndex) => {
+        //   console.log(selectedItem)
+        // }}
         showAll={true}
         descending={sort}
-        //highlightFirstItem={false}
+        highlightFirstItem={false}
         inputProps={{
           placeholder: "search...",
         }}
@@ -54,8 +84,7 @@ function App() {
           backgroundColor: "dodgerBlue",
           color: "blue"
         }}
-        wrapperDiv={"inline"}
-        wrapperStyle={{ width: '100px' }}
+        wrapperStyle={{ width: 'fit-content' }}
         listItemStyle={{
           cursor: "pointer",
           padding: "5px"
@@ -66,37 +95,20 @@ function App() {
           overflowY: "auto",
           maxHeight: "300px"
         }}
-        // handleHighlightedItem={(highlightedElement, highlightedItem) => {
-        //   highlightedElement.style.color = ("red")
-        //   setPreview(highlightedItem)
-        // }}
-        onSelect={(selectedItem, originalIndex, selectedElement) => {
-          setPreview(selectedItem)
-          console.log("ONSELECT")
-          console.log(selectedElement)
-          console.log(selectedItem, originalIndex)
-        }}
+        
+        
         clearOnSelect={false}
-
-        handleNewValue={(value) => {
-          console.log("HANDLE NEW VALUE")
-          console.log('noMatch', value)
-          setNewList(prevState => [...prevState, {name:value}])
-          setPreview(value)
-        }}
-        submit={submit}
         //clearOnSubmit={false}
+        submit={submit}
         updateSubmit={setSubmit}
-        handleSubmit={(selectedItem, originalIndex) => {
-          console.log("HANDLE SUBMIT")
-          setPreview(selectedItem)
-          console.log(selectedItem)
-        }}
-        disableOutsideClick={true}
-        updateIsOpen={(updatedState) => {
-          setOpenDropDown(updatedState)
-        }}
-        isOpen={openDropDown}
+        handleNoMatchMessage={"Please try again"}
+        
+        
+        
+        
+        //disableOutsideClick={true}
+        onDropdownChange={(x) => {setOpenDropDown(x)}}
+        forceDropDown={openDropDown}
       />
 
     </div>
