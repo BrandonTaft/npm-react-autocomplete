@@ -65,6 +65,13 @@ export default class Trie {
             }
         };
 
+         //  Return all words
+         this.returnAll = () => {
+            let output = [];
+            findAllWords(this.root, output);
+            return output.sort();
+        };
+
 
         // returns every word with given prefix
         this.find = function (value, showNoMatchMessage) {
@@ -87,7 +94,7 @@ export default class Trie {
                             )
                         } else if (typeof showNoMatchMessage === 'string') {
                             return (
-                                [{ value: showNoMatchMessage, originalIndex: 0 }]
+                                [{ value: showNoMatchMessage, originalIndex: -1 }]
                             )
                         }
                     } else {
@@ -111,6 +118,8 @@ export default class Trie {
                 findAllWords(node.nextLetters[child], arr);
             }
         };
+
+       
 
         // check if word is contained in trie.
         this.contains = function (value) {

@@ -77,16 +77,7 @@ npm install --save react-autocomplete-input-component
 - Function that will run when an item is selected from the dropdown, or if there is not a matching item and a `handleNewValue` function is not passed in
 - If `handleNewValue` is passed in, it will always run if the input value is not in the `list`
 - The 1st argument is the value or object from the original `list` prop 
-- The 2nd argument is the item's original index from the original `list` prop
-- The 3rd argument is the `selected item` passed in as an `***HTMLDivElement***`, but only if it is highlighted
-- If there is a matching item but it is not highlighted, only the first 2 arguments are used
-- If there is not a matching item, only the text input value is passed in
 - If the selected item is a number it will be returned as a `string`
-
-### `clearOnSelect: boolean` (Optional)
-- `true` (default) the input will clear when an item is selected
-- `false` value selected will become the input value
-- `onMouseDown` can be used in `inputProps` to clear the input
 
 ### `handleNewValue: Function` (Optional)
 - Runs when there is no matching value for the text input
@@ -119,14 +110,8 @@ npm install --save react-autocomplete-input-component
 ### `handleSubmit: Function` (Optional)
 - Function that runs when the `submit` prop is updated to `true`
 - The 1st argument is the original string or object of the value selected
-- The 2nd argument is the item's original index from the original `list` prop
-- If there is not a matching item and `handleNewValue` is not passed in, only the text input value is passed in as an argument
-- If `handleNewValue` is passed in, it will always run if the input value is not in the `list`
 
-### `clearOnSubmit: boolean` (Optional)
-- `true` (default) the input will clear when an item is selected
-- `false` value selected will become the input value
-- `onMouseDown` can be used in `inputProps` to clear the input
+- If `handleNewValue` is passed in, it will always run if the input value is not in the `list`
 
 ```jsx
   const [submit, setSubmit] = useState(false);
