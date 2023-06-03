@@ -50,6 +50,7 @@ export default function AutoComplete({
   // Create the `filtered` array with specified words to go into the trie
   // If `list` contains objects - use getPropvalueRef to map out desired words  
   useEffect(() => {
+    
     let filtered;
     try {
       if (savedList.some(value => { return typeof value == "object" })) {
@@ -64,6 +65,7 @@ export default function AutoComplete({
           return
         }
       } else {
+        console.log("IRAN")
         filtered = [...savedList]
       }
     } catch (error) {
@@ -71,6 +73,7 @@ export default function AutoComplete({
       return
     } finally {
       if (filtered.length) {
+        console.log("IRAN2")
         trie.current = new Trie();
         for (let i = 0; i < filtered.length; i++) {
           const item = filtered[i]
@@ -108,7 +111,7 @@ export default function AutoComplete({
       setHighlightedIndex(highlightFirstItem === false ? -1 : 0)
     }
     if (onDropdownChangeRef.current) { onDropdownChangeRef.current(isOpen) }
-  }, [isOpen, prefix, highlightFirstItem, showAll, handleNoMatchMessage])
+  }, [isOpen, prefix, highlightFirstItem, showAll, handleNoMatchMessage, savedList])
 
   // Optionally control logic of dropdown by passing in desired state of isOpen to `open`
   useEffect(() => {
