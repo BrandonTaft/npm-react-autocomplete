@@ -69,11 +69,11 @@ function App() {
         }}
 
         // If passed in - runs if input value is not a match
-        // handleNewValue={(value) => {
-        //   console.log("HANDLE NEW VALUE")
-        //   setNewList(prevState => [...prevState, { name: value }])
-        //   setSubmit(false)
-        // }}
+        handleNewValue={(value) => {
+          console.log("HANDLE NEW VALUE")
+          setNewList(prevState => [...prevState, { name: value }])
+          setSubmit(false)
+        }}
 
         // Function that runs when handleSelect runs with -
         // no matching item and handleNewValue is not passed in
@@ -92,9 +92,9 @@ function App() {
         //disableOutsideClick={true}
 
         // Force drop down to open or close
-        // open={openDropDown}
+        open={openDropDown}
         // // Function that if passed in, runs when dropdown opens or closes 
-        // onDropdownChange={(x) => { setOpenDropDown(x) }}
+        onDropdownChange={(x) => { setOpenDropDown(x) }}
 
         // When set to true, handle Select will only fire when submit is true
         //controlSubmit={true}

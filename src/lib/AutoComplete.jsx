@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
-import Wrapper from './Wrapper';
 import DropDown from './DropDown';
 import Trie from "./trie";
+import useOnOutsideClick from './useOnOutsideClick';
 import isEqual from "lodash.isequal";
 
 export default function AutoComplete({
@@ -39,6 +39,10 @@ export default function AutoComplete({
   const trie = useRef();
   const inputRef = useRef();
   const itemRef = useRef([]);
+  const wrapperRef = useRef();
+
+  const onOutsideClick = useCallback(() => { setIsOpen(false) }, [])
+  useOnOutsideClick(wrapperRef, onOutsideClick, disableOutsideClick)
 
   useEffect(() => {
     // If `list` is new - store it in the `savedList` state
@@ -50,7 +54,7 @@ export default function AutoComplete({
   // Create the `filtered` array with specified words to go into the trie
   // If `list` contains objects - use getPropvalueRef to map out desired words  
   useEffect(() => {
-    
+
     let filtered;
     try {
       if (savedList.some(value => { return typeof value == "object" })) {
@@ -65,7 +69,6 @@ export default function AutoComplete({
           return
         }
       } else {
-        console.log("IRAN")
         filtered = [...savedList]
       }
     } catch (error) {
@@ -73,7 +76,6 @@ export default function AutoComplete({
       return
     } finally {
       if (filtered.length) {
-        console.log("IRAN2")
         trie.current = new Trie();
         for (let i = 0; i < filtered.length; i++) {
           const item = filtered[i]
@@ -91,7 +93,6 @@ export default function AutoComplete({
   // When dropdown is opened - finds the matching items to be displayed
   // When dropdown is closed - resets the matching items and highlighted index
   useEffect(() => {
-    itemRef.current.length = 0
     if (isOpen) {
       inputRef.current.focus()
       if (prefix) {
@@ -143,6 +144,15 @@ export default function AutoComplete({
     }
   }, [submit])
 
+  const resetInputValue = useCallback((matchingItem) => {
+    setIsOpen(false)
+    if (!controlSubmit) {
+      setPrefix("")
+    } else {
+      setPrefix(matchingItem)
+    }
+  }, [controlSubmit])
+
   // Text input onChange sets value to prefix state and opens dropdown
   const handlePrefix = (event) => {
     setPrefix(event.target.value)
@@ -158,11 +168,12 @@ export default function AutoComplete({
       event.preventDefault()
       if (!matchingItems[highlightedIndex + 1]) {
         setHighlightedIndex(0)
+        itemRef.current[0].scrollIntoView({ block: "nearest" })
       } else if (matchingItems[highlightedIndex + 1]) {
         setHighlightedIndex(highlightedIndex + 1)
-      }
-      if (itemRef.current[highlightedIndex + 1]) {
-        itemRef.current[highlightedIndex + 1].scrollIntoView({ block: "nearest" })
+        if (itemRef.current[highlightedIndex + 1]) {
+          itemRef.current[highlightedIndex + 1].scrollIntoView({ block: "nearest" })
+        }
       }
       if (handleHighlight && matchingItems[highlightedIndex + 1]) {
         handleHighlight(savedList[matchingItems[highlightedIndex + 1].originalIndex])
@@ -170,14 +181,18 @@ export default function AutoComplete({
         handleHighlight(savedList[matchingItems[0].originalIndex])
       }
     }
+
     // Up Arrow - Moves highlight up the dropdown by setting highlighted index one index back
     if (event.key === 'ArrowUp') {
       event.preventDefault()
-      if (matchingItems[highlightedIndex - 1]) {
+      if (highlightedIndex === 0) {
+        setHighlightedIndex(matchingItems.length - 1)
+        itemRef.current[matchingItems.length - 1].scrollIntoView({ block: "nearest" })
+      } else if (matchingItems[highlightedIndex - 1]) {
         setHighlightedIndex(highlightedIndex - 1)
-      };
-      if (itemRef.current[highlightedIndex - 1]) {
-        itemRef.current[highlightedIndex - 1].scrollIntoView({ block: "nearest" })
+        if (itemRef.current[highlightedIndex - 1]) {
+          itemRef.current[highlightedIndex - 1].scrollIntoView({ block: "nearest" })
+        }
       }
       if (handleHighlight && matchingItems[highlightedIndex - 1]) {
         handleHighlight(savedList[matchingItems[highlightedIndex - 1].originalIndex])
@@ -233,21 +248,12 @@ export default function AutoComplete({
     }
   }
 
-  const resetInputValue = useCallback((matchingItem) => {
-    setIsOpen(false)
-    if (!controlSubmit) {
-      setPrefix("")
-    } else {
-      setPrefix(matchingItem)
-    }
-  }, [controlSubmit])
-
   return (
-    <Wrapper
+    <div
       className="autocomplete-wrapper"
-      disabled={disableOutsideClick}
-      wrapperStyle={wrapperStyle}
-      onOutsideClick={() => { setIsOpen(false) }}>
+      style={wrapperStyle}
+      ref={wrapperRef}
+    >
       <input
         className="autocomplete-input"
         style={inputStyle}
@@ -272,11 +278,10 @@ export default function AutoComplete({
           highlightedItemStyle={highlightedItemStyle}
           listItemStyle={listItemStyle}
           dropDownStyle={dropDownStyle}
-          submit={submit}
           controlSubmit={controlSubmit}
           savedList={savedList}
         />
       }
-    </Wrapper>
+    </div>
   )
 }
