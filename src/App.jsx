@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import AutoComplete from './lib/AutoComplete';
 import testData from './test-data.json'
 import "./index.css"
@@ -20,7 +20,7 @@ function App() {
     setNewList(newList === testData ? a : testData)
   })
 
-  let a = [0, 33, 1, 55, 5, 111, 11, 333, 44]
+  let a = [0, 33, 1, 55, 5, 111, 11, 333, 44, 51, 'a']
   
   const x = (y) => {
     var vals = [];

@@ -38,7 +38,6 @@ export default function AutoComplete({
   const submitRef = useRef();
   const trie = useRef();
   const inputRef = useRef();
-  const itemRef = useRef([]);
   const wrapperRef = useRef();
 
   const onOutsideClick = useCallback(() => { setIsOpen(false) }, [])
@@ -54,7 +53,6 @@ export default function AutoComplete({
   // Create the `filtered` array with specified words to go into the trie
   // If `list` contains objects - use getPropvalueRef to map out desired words  
   useEffect(() => {
-
     let filtered;
     try {
       if (savedList.some(value => { return typeof value == "object" })) {
@@ -134,7 +132,6 @@ export default function AutoComplete({
     } else if ((!match || !handleNewValue) && handleSelectError) {
       handleSelectError()
     }
-
   }
 
   // Invokes function stored in submitRef when submit is updated to `true` and text is present
@@ -161,6 +158,14 @@ export default function AutoComplete({
     }
   };
 
+  const onHandleHighlight = (index, reset) => {
+    if (matchingItems[index]) {
+      handleHighlight(savedList[matchingItems[index].originalIndex])
+    } else {
+      handleHighlight(savedList[matchingItems[reset].originalIndex])
+    }
+  }
+
   const handleKeyDown = (event) => {
     // Down Arrow - sets the next index in the 'dropDownList' as the highlighted index
     // If the highlighted index is the last index it resets the highlighted index back to 0
@@ -168,17 +173,11 @@ export default function AutoComplete({
       event.preventDefault()
       if (!matchingItems[highlightedIndex + 1]) {
         setHighlightedIndex(0)
-        itemRef.current[0].scrollIntoView({ block: "nearest" })
       } else if (matchingItems[highlightedIndex + 1]) {
         setHighlightedIndex(highlightedIndex + 1)
-        if (itemRef.current[highlightedIndex + 1]) {
-          itemRef.current[highlightedIndex + 1].scrollIntoView({ block: "nearest" })
-        }
       }
-      if (handleHighlight && matchingItems[highlightedIndex + 1]) {
-        handleHighlight(savedList[matchingItems[highlightedIndex + 1].originalIndex])
-      } else if (handleHighlight && !matchingItems[highlightedIndex + 1]) {
-        handleHighlight(savedList[matchingItems[0].originalIndex])
+      if (handleHighlight) {
+        onHandleHighlight(highlightedIndex + 1, 0)
       }
     }
 
@@ -187,20 +186,16 @@ export default function AutoComplete({
       event.preventDefault()
       if (highlightedIndex === 0) {
         setHighlightedIndex(matchingItems.length - 1)
-        itemRef.current[matchingItems.length - 1].scrollIntoView({ block: "nearest" })
       } else if (matchingItems[highlightedIndex - 1]) {
         setHighlightedIndex(highlightedIndex - 1)
-        if (itemRef.current[highlightedIndex - 1]) {
-          itemRef.current[highlightedIndex - 1].scrollIntoView({ block: "nearest" })
-        }
       }
-      if (handleHighlight && matchingItems[highlightedIndex - 1]) {
-        handleHighlight(savedList[matchingItems[highlightedIndex - 1].originalIndex])
+      if (handleHighlight) {
+        onHandleHighlight(highlightedIndex - 1, matchingItems.length - 1)
       }
     }
+    
     // Enter key - Invokes the handleSelect function with the highlighted item's original value
     // If there is not a highlighted item it will pass the input's value into the handleSelect function
-
     if (event.key === 'Enter') {
       if (!controlSubmit) {
         if (matchingItems[highlightedIndex]) {
@@ -268,7 +263,6 @@ export default function AutoComplete({
       />
       {isOpen &&
         <DropDown
-          ref={itemRef}
           matchingItems={matchingItems}
           highlightedIndex={highlightedIndex}
           setHighlightedIndex={setHighlightedIndex}

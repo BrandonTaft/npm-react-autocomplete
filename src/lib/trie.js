@@ -39,6 +39,7 @@ class TrieNode {
 
 export default class Trie {
     constructor() {
+        var collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
         this.root = new TrieNode(null);
         // inserts a word into the trie.
         this.insert = function (word, originalIndex) {
@@ -65,11 +66,11 @@ export default class Trie {
             }
         };
 
-         //  Return all words
-         this.returnAll = () => {
+          //  Return all words
+        this.returnAll = () => {
             let output = [];
             findAllWords(this.root, output);
-            return output.sort();
+            return output.sort((a, b) => collator.compare(a.value, b.value));
         };
 
 
@@ -104,7 +105,7 @@ export default class Trie {
             }
             // find all words in the node that match
             findAllWords(node, output);
-            return output.sort();
+            return output.sort((a, b) => collator.compare(a.value, b.value));
         };
 
         // find all words in the given node.

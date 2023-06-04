@@ -1,6 +1,6 @@
-import { forwardRef } from "react";
+import { useRef, useEffect } from "react";
 
-const DropDown = forwardRef(function ({
+const DropDown = ({
     matchingItems,
     highlightedIndex,
     setHighlightedIndex,
@@ -12,7 +12,18 @@ const DropDown = forwardRef(function ({
     listItemStyle,
     controlSubmit,
     savedList
-}, ref) {
+}) => {
+
+    const dropDownRef = useRef()
+
+    useEffect(() => {
+        if (dropDownRef.current) {
+            const highlighted = dropDownRef.current.querySelector(".highlighted-item")
+            if (highlighted) {
+                highlighted.scrollIntoView({ block: "nearest" })
+            }
+        }
+    }, [highlightedIndex])
 
     const handleClick = (matchingItem) => {
         if (!controlSubmit) {
@@ -32,27 +43,16 @@ const DropDown = forwardRef(function ({
         }
     }
 
-    const setRef = (el, index) => {
-        if (ref.current.length !== matchingItems.length) {
-            ref.current.length = matchingItems.length
-        }
-        ref.current[index] = el
-    }
-
-    // Creates a new Collator object and uses its compare method to natural sort the array
-    var collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
-    const sorted = matchingItems.sort((a, b) => collator.compare(a.value, b.value));
-
     return (
         <>
             <div
                 className="dropdown-container"
                 style={dropDownStyle}
+                ref={dropDownRef}
             >
-                {sorted.map((matchingItem, index) => (
+                {matchingItems.map((matchingItem, index) => (
                     <div
                         key={matchingItem.originalIndex}
-                        ref={el => setRef(el, index)}
                         className={highlightedIndex === index ? "dropdown-item highlighted-item" : "dropdown-item"}
                         style={highlightedIndex === index ? { ...highlightedItemStyle, ...listItemStyle } : { ...listItemStyle }}
                         onMouseEnter={() => onHighlight(index)}
@@ -65,6 +65,6 @@ const DropDown = forwardRef(function ({
             </div>
         </>
     )
-})
+}
 
 export default DropDown
