@@ -43,13 +43,16 @@ export default function AutoComplete({
   const onOutsideClick = useCallback(() => { setIsOpen(false) }, [])
   useOnOutsideClick(wrapperRef, onOutsideClick, disableOutsideClick)
 
-  useEffect(() => {
-    // If `list` is new - store it in the `savedList` state
-    if (!isEqual(list, savedList)) {
-      setSavedList(list)
-    }
-  }, [list, savedList])
-
+  // useEffect(() => {
+  //   // If `list` is new - store it in the `savedList` state
+  //   if (!isEqual(list, savedList)) {
+  //     setSavedList(list)
+  //   }
+  // }, [list, savedList])
+  console.log("RAN")
+  if (!isEqual(list, savedList)) {
+    setSavedList(list)
+  }
   // Create the `filtered` array with specified words to go into the trie
   // If `list` contains objects - use getPropvalueRef to map out desired words  
   useEffect(() => {
