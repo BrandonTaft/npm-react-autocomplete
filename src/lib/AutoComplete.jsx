@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import DropDown from './DropDown';
+import Input from './Input';
 import Trie from "./trie";
 import useOnOutsideClick from './useOnOutsideClick';
 import isEqual from "lodash.isequal";
@@ -43,16 +44,13 @@ export default function AutoComplete({
   const onOutsideClick = useCallback(() => { setIsOpen(false) }, [])
   useOnOutsideClick(wrapperRef, onOutsideClick, disableOutsideClick)
 
-  // useEffect(() => {
-  //   // If `list` is new - store it in the `savedList` state
-  //   if (!isEqual(list, savedList)) {
-  //     setSavedList(list)
-  //   }
-  // }, [list, savedList])
-  console.log("RAN")
-  if (!isEqual(list, savedList)) {
-    setSavedList(list)
-  }
+  useEffect(() => {
+    // If `list` is new - store it in the `savedList` state
+    if (!isEqual(list, savedList)) {
+      setSavedList(list)
+    }
+  }, [list, savedList])
+
   // Create the `filtered` array with specified words to go into the trie
   // If `list` contains objects - use getPropvalueRef to map out desired words  
   useEffect(() => {
@@ -252,17 +250,14 @@ export default function AutoComplete({
       style={wrapperStyle}
       ref={wrapperRef}
     >
-      <input
-        className="autocomplete-input"
-        style={inputStyle}
+      <Input
         ref={inputRef}
-        type="search"
-        value={prefix}
-        {...inputProps}
-        onChange={handlePrefix}
-        onKeyDown={handleKeyDown}
-        onClick={() => setIsOpen(true)}
-        autoComplete='off'
+        inputStyle={inputStyle}
+        prefix={prefix}
+        inputProps={inputProps}
+        handlePrefix={handlePrefix}
+        handleKeyDown={handleKeyDown}
+        setIsOpen={setIsOpen}
       />
       {isOpen &&
         <DropDown
