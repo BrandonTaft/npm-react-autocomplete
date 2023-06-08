@@ -11,12 +11,12 @@ export default function AutoComplete({
   showAll = false,
   highlightFirstItem = true,
   inputProps,
-  handleHighlight,
-  handleSelect,
-  handleSelectError,
+  onHighlight,
+  onSelect,
+  onSelectError,
   handleNewValue,
   disableOutsideClick = false,
-  handleNoMatchMessage = true,
+  noMatchMessage = true,
   open,
   onDropdownChange,
   submit,
@@ -44,12 +44,7 @@ export default function AutoComplete({
   const onOutsideClick = useCallback(() => { setIsOpen(false) }, [])
   useOnOutsideClick(wrapperRef, onOutsideClick, disableOutsideClick)
 
-  useEffect(() => {
-    // If `list` is new - store it in the `savedList` state
-    if (!isEqual(list, savedList)) {
-      setSavedList(list)
-    }
-  }, [list, savedList])
+  if (!isEqual(list, savedList)) { setSavedList(list) }
 
   // Create the `filtered` array with specified words to go into the trie
   // If `list` contains objects - use getPropvalueRef to map out desired words  
@@ -93,9 +88,9 @@ export default function AutoComplete({
   // When dropdown is closed - resets the matching items and highlighted index
   useEffect(() => {
     if (isOpen) {
-      inputRef.current.focus()
+      // inputRef.current.focus()
       if (prefix) {
-        setMatchingItems(trie.current.find(prefix, handleNoMatchMessage))
+        setMatchingItems(trie.current.find(prefix, noMatchMessage))
       } else {
         if (showAll) {
           setMatchingItems(
@@ -106,41 +101,39 @@ export default function AutoComplete({
         }
       }
     } else {
-      inputRef.current.blur()
+      // inputRef.current.blur()
       setMatchingItems([])
       setHighlightedIndex(highlightFirstItem === false ? -1 : 0)
     }
     if (onDropdownChangeRef.current) { onDropdownChangeRef.current(isOpen) }
-  }, [isOpen, prefix, highlightFirstItem, showAll, handleNoMatchMessage, savedList])
+  }, [isOpen, prefix, highlightFirstItem, showAll, noMatchMessage, savedList])
 
   // Optionally control logic of dropdown by passing in desired state of isOpen to `open`
+  // Invokes function stored in submitRef when submit is updated to `true` and text is present
   useEffect(() => {
     if (open !== undefined) {
       setIsOpen(open)
     }
-  }, [open])
+    if (submit) {
+      submitRef.current()
+    }
+  }, [open, submit])
+  
 
-  // If the input value is already a stored value, `handleSelect` is invoked
+  // If the input value is already a stored value, `onSelect` is invoked
   // If the input value is not a stored word `handleNewValue` is invoked
   submitRef.current = () => {
     let match = trie.current.contains(prefix.toString());
-    if (match && handleSelect) {
-      handleSelect(savedList[match.originalIndex])
+    if (match && onSelect) {
+      onSelect(savedList[match.originalIndex])
       resetInputValue("")
     } else if (handleNewValue && prefix) {
       handleNewValue(prefix)
       resetInputValue("")
-    } else if ((!match || !handleNewValue) && handleSelectError) {
-      handleSelectError()
+    } else if ((!match || !handleNewValue) && onSelectError) {
+      onSelectError()
     }
   }
-
-  // Invokes function stored in submitRef when submit is updated to `true` and text is present
-  useEffect(() => {
-    if (submit && inputRef.current.value) {
-      submitRef.current()
-    }
-  }, [submit])
 
   const resetInputValue = useCallback((matchingItem) => {
     setIsOpen(false)
@@ -159,11 +152,11 @@ export default function AutoComplete({
     }
   };
 
-  const onHandleHighlight = (index, reset) => {
+  const handleHighlight = (index, reset) => {
     if (matchingItems[index]) {
-      handleHighlight(savedList[matchingItems[index].originalIndex])
+      onHighlight(savedList[matchingItems[index].originalIndex])
     } else {
-      handleHighlight(savedList[matchingItems[reset].originalIndex])
+      onHighlight(savedList[matchingItems[reset].originalIndex])
     }
   }
 
@@ -177,8 +170,8 @@ export default function AutoComplete({
       } else if (matchingItems[highlightedIndex + 1]) {
         setHighlightedIndex(highlightedIndex + 1)
       }
-      if (handleHighlight) {
-        onHandleHighlight(highlightedIndex + 1, 0)
+      if (onHighlight) {
+        handleHighlight(highlightedIndex + 1, 0)
       }
     }
 
@@ -190,23 +183,23 @@ export default function AutoComplete({
       } else if (matchingItems[highlightedIndex - 1]) {
         setHighlightedIndex(highlightedIndex - 1)
       }
-      if (handleHighlight) {
-        onHandleHighlight(highlightedIndex - 1, matchingItems.length - 1)
+      if (onHighlight) {
+        handleHighlight(highlightedIndex - 1, matchingItems.length - 1)
       }
     }
     
-    // Enter key - Invokes the handleSelect function with the highlighted item's original value
-    // If there is not a highlighted item it will pass the input's value into the handleSelect function
+    // Enter key - Invokes the onSelect function with the highlighted item's original value
+    // If there is not a highlighted item it will pass the input's value into the onSelect function
     if (event.key === 'Enter') {
       if (!controlSubmit) {
         if (matchingItems[highlightedIndex]) {
-          if (handleSelect) {
+          if (onSelect) {
             try {
-              handleSelect(
+              onSelect(
                 savedList[matchingItems[highlightedIndex].originalIndex]
               );
             } catch (error) {
-              console.error("You must provide a valid function to the handleSelect prop", '\n', error)
+              console.error("You must provide a valid function to the onSelect prop", '\n', error)
             }
           }
           resetInputValue(matchingItems[highlightedIndex].value)
@@ -218,15 +211,15 @@ export default function AutoComplete({
                 if (handleNewValue) {
                   handleNewValue(prefix)
                   resetInputValue(prefix)
-                } else if (handleSelectError) {
-                  handleSelectError()
+                } else if (onSelectError) {
+                  onSelectError()
                 }
-              } else if (handleSelect) {
-                handleSelect(savedList[match.originalIndex])
+              } else if (onSelect) {
+                onSelect(savedList[match.originalIndex])
                 resetInputValue(prefix)
               }
             } catch (error) {
-              console.error("MISSING PROP: You must provide a valid function to the handleSelect prop", '\n', error)
+              console.error("MISSING PROP: You must provide a valid function to the onSelect prop", '\n', error)
             }
           }
         }
@@ -251,7 +244,7 @@ export default function AutoComplete({
       ref={wrapperRef}
     >
       <Input
-        ref={inputRef}
+        //ref={inputRef}
         inputStyle={inputStyle}
         prefix={prefix}
         inputProps={inputProps}
@@ -264,13 +257,13 @@ export default function AutoComplete({
           matchingItems={matchingItems}
           highlightedIndex={highlightedIndex}
           setHighlightedIndex={setHighlightedIndex}
-          handleSelect={handleSelect}
-          handleHighlight={handleHighlight}
+          onSelect={onSelect}
+          onHighlight={onHighlight}
           resetInputValue={resetInputValue}
           highlightedItemStyle={highlightedItemStyle}
           listItemStyle={listItemStyle}
           dropDownStyle={dropDownStyle}
-          controlSubmit={controlSubmit}
+          submit={submit}
           savedList={savedList}
         />
       }

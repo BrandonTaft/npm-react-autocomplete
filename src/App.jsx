@@ -57,13 +57,13 @@ function App() {
         }}
 
         // If passed in - runs on every new highlight
-        handleHighlight={(highlightedItem) => {
+        onHighlight={(highlightedItem) => {
           console.log(highlightedItem)
         }}
 
         // Runs when item is clicked, when enter is pressed, or submit = true
-        handleSelect={(selectedItem) => {
-          console.log("HANDLESELECT")
+        onSelect={(selectedItem) => {
+          console.log("onSELECT")
           console.log(selectedItem)
           setSubmit(false)
         }}
@@ -75,9 +75,9 @@ function App() {
           setSubmit(false)
         }}
 
-        // Function that runs when handleSelect runs with -
+        // Function that runs when onSelect runs with -
         // no matching item and handleNewValue is not passed in
-        handleSelectError={() => {
+        onSelectError={() => {
           setSubmit(false)
           window.alert("TRY AGAIN")
         }}
@@ -86,7 +86,7 @@ function App() {
         // Default - "No matches found"
         // False - no message
         // If a string is passed in - it will be the message shown
-        handleNoMatchMessage={"Please try again"}
+        noMatchMessage={"Please try again"}
 
         // When set to true gives all control to open
         //disableOutsideClick={true}
@@ -97,9 +97,9 @@ function App() {
         onDropdownChange={(x) => { setOpenDropDown(x) }}
 
         // When set to true, handle Select will only fire when submit is true
-        //controlSubmit={true}
-        // When true - fires handle select
-        //submit={submit}
+        controlSubmit={true}
+        // // When true - fires handle select
+        submit={submit}
 
         //// JS Style objects/////
         inputStyle={{

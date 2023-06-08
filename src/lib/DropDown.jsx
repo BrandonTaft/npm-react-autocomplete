@@ -4,8 +4,8 @@ const DropDown = ({
     matchingItems,
     highlightedIndex,
     setHighlightedIndex,
-    handleSelect,
-    handleHighlight,
+    onSelect,
+    onHighlight,
     resetInputValue,
     highlightedItemStyle,
     dropDownStyle,
@@ -28,18 +28,18 @@ const DropDown = ({
     const handleClick = (matchingItem) => {
         if (!controlSubmit) {
             try {
-                handleSelect(savedList[matchingItem.originalIndex])
+                onSelect(savedList[matchingItem.originalIndex])
             } catch (error) {
-                console.error("You must provide a valid function to the handleSelect prop", '\n', error)
+                console.error("You must provide a valid function to the onSelect prop", '\n', error)
             }
         }
         resetInputValue(matchingItem.value);
     }
 
-    const onHighlight = (index) => {
+    const handleHighlight = (index) => {
         setHighlightedIndex(index)
-        if (handleHighlight) {
-            handleHighlight(savedList[matchingItems[index].originalIndex])
+        if (onHighlight) {
+            onHighlight(savedList[matchingItems[index].originalIndex])
         }
     }
 
@@ -55,7 +55,7 @@ const DropDown = ({
                         key={matchingItem.originalIndex}
                         className={highlightedIndex === index ? "dropdown-item highlighted-item" : "dropdown-item"}
                         style={highlightedIndex === index ? { ...highlightedItemStyle, ...listItemStyle } : { ...listItemStyle }}
-                        onMouseEnter={() => onHighlight(index)}
+                        onMouseEnter={() => handleHighlight(index)}
                         onClick={() => { if (matchingItem.originalIndex > 0) { handleClick(matchingItem) } }}
                     >
                         {matchingItem.value}
