@@ -53,7 +53,7 @@ function App() {
 
         // Sets custome properties and attributes for inout element
         inputProps={{
-          placeholder: "search...",
+          placeholder: "search..."
         }}
 
         // If passed in - runs on every new highlight
@@ -79,7 +79,7 @@ function App() {
         // no matching item and handleNewValue is not passed in
         onSelectError={() => {
           setSubmit(false)
-          window.alert("TRY AGAIN")
+          window.prompt("TRY AGAIN")
         }}
 
         // Message shown if no matches found

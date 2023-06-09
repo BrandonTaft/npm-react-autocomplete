@@ -1,27 +1,25 @@
-import { forwardRef } from "react"
 
-const Input = forwardRef(({
+const Input = ({
     inputStyle,
+    setPrefix,
     prefix,
     inputProps,
-    handlePrefix,
     handleKeyDown,
     setIsOpen
-}, ref) => {
+}) => {
     return (
         <input
             className="autocomplete-input"
             style={inputStyle}
-            ref={ref}
             type="search"
-            value={prefix}
             {...inputProps}
-            onChange={handlePrefix}
+            value={prefix}
+            onChange={(e) => setPrefix(e.target.value)}
             onKeyDown={handleKeyDown}
-            onClick={() => setIsOpen(true)}
+            onFocus={() => setIsOpen(true)}
             autoComplete='off'
         />
     )
-})
+}
 
 export default Input

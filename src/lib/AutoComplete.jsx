@@ -38,37 +38,24 @@ export default function AutoComplete({
   const onDropdownChangeRef = useRef(onDropdownChange);
   const submitRef = useRef();
   const trie = useRef();
-  const inputRef = useRef();
   const wrapperRef = useRef();
 
   const onOutsideClick = useCallback(() => { setIsOpen(false) }, [])
   useOnOutsideClick(wrapperRef, onOutsideClick, disableOutsideClick)
 
-  if (!isEqual(list, savedList)) { setSavedList(list) }
+  if (!isEqual(list, savedList)) setSavedList(list)
 
   // Create the `filtered` array with specified words to go into the trie
-  // If `list` contains objects - use getPropvalueRef to map out desired words  
+  // If `list` contains objects - use getPropvalueRef to filter out desired words  
   useEffect(() => {
     let filtered;
-    try {
       if (savedList.some(value => { return typeof value == "object" })) {
         if (getPropValueRef.current) {
-          try {
             filtered = (getPropValueRef.current(savedList))
-          } catch (error) {
-            console.error("Check the getPropValue function : the property value doesn't seem to exist", '\n', error)
-          };
-        } else {
-          console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'")
-          return
-        }
+        } 
       } else {
         filtered = [...savedList]
       }
-    } catch (error) {
-      console.error(`Ivalid PropType : The prop 'list' has a value of '${typeof savedList}' - list must be an array`, '\n', error)
-      return
-    } finally {
       if (filtered.length) {
         trie.current = new Trie();
         for (let i = 0; i < filtered.length; i++) {
@@ -80,7 +67,6 @@ export default function AutoComplete({
           };
         };
       };
-    }
   }, [savedList])
 
 
@@ -88,20 +74,14 @@ export default function AutoComplete({
   // When dropdown is closed - resets the matching items and highlighted index
   useEffect(() => {
     if (isOpen) {
-      // inputRef.current.focus()
       if (prefix) {
         setMatchingItems(trie.current.find(prefix, noMatchMessage))
       } else {
         if (showAll) {
-          setMatchingItems(
-            trie.current.returnAll()
-          )
-        } else {
-          setMatchingItems([])
-        }
+          setMatchingItems(trie.current.returnAll())
+        } 
       }
     } else {
-      // inputRef.current.blur()
       setMatchingItems([])
       setHighlightedIndex(highlightFirstItem === false ? -1 : 0)
     }
@@ -118,7 +98,7 @@ export default function AutoComplete({
       submitRef.current()
     }
   }, [open, submit])
-  
+
 
   // If the input value is already a stored value, `onSelect` is invoked
   // If the input value is not a stored word `handleNewValue` is invoked
@@ -126,13 +106,12 @@ export default function AutoComplete({
     let match = trie.current.contains(prefix.toString());
     if (match && onSelect) {
       onSelect(savedList[match.originalIndex])
-      resetInputValue("")
     } else if (handleNewValue && prefix) {
       handleNewValue(prefix)
-      resetInputValue("")
     } else if ((!match || !handleNewValue) && onSelectError) {
       onSelectError()
     }
+    resetInputValue("")
   }
 
   const resetInputValue = useCallback((matchingItem) => {
@@ -143,14 +122,6 @@ export default function AutoComplete({
       setPrefix(matchingItem)
     }
   }, [controlSubmit])
-
-  // Text input onChange sets value to prefix state and opens dropdown
-  const handlePrefix = (event) => {
-    setPrefix(event.target.value)
-    if (event.target.value && !isOpen) {
-      setIsOpen(true)
-    }
-  };
 
   const handleHighlight = (index, reset) => {
     if (matchingItems[index]) {
@@ -187,42 +158,35 @@ export default function AutoComplete({
         handleHighlight(highlightedIndex - 1, matchingItems.length - 1)
       }
     }
-    
+
+     //Tab key takes focus off the input and closes the dropdown 
+     if (event.key === 'Tab') {
+      setIsOpen(false)
+    }
+
     // Enter key - Invokes the onSelect function with the highlighted item's original value
     // If there is not a highlighted item it will pass the input's value into the onSelect function
     if (event.key === 'Enter') {
       if (!controlSubmit) {
-        if (matchingItems[highlightedIndex]) {
-          if (onSelect) {
-            try {
-              onSelect(
-                savedList[matchingItems[highlightedIndex].originalIndex]
-              );
-            } catch (error) {
-              console.error("You must provide a valid function to the onSelect prop", '\n', error)
-            }
-          }
-          resetInputValue(matchingItems[highlightedIndex].value)
-        } else {
-          if (prefix) {
+        if (onSelect) {
+          if (matchingItems[highlightedIndex]) {
+            onSelect(savedList[matchingItems[highlightedIndex].originalIndex]);
+          } else if (prefix) {
             let match = trie.current.contains(prefix);
-            try {
-              if (!match) {
-                if (handleNewValue) {
-                  handleNewValue(prefix)
-                  resetInputValue(prefix)
-                } else if (onSelectError) {
-                  onSelectError()
-                }
-              } else if (onSelect) {
-                onSelect(savedList[match.originalIndex])
-                resetInputValue(prefix)
+            if (!match) {
+              if (handleNewValue) {
+                handleNewValue(prefix)
+              } else if (onSelectError) {
+                onSelectError()
               }
-            } catch (error) {
-              console.error("MISSING PROP: You must provide a valid function to the onSelect prop", '\n', error)
+            } else {
+              onSelect(savedList[match.originalIndex])
             }
           }
+          resetInputValue()
+          event.target.blur()
         }
+       
       } else {
         if (matchingItems[highlightedIndex]) {
           resetInputValue(matchingItems[highlightedIndex].value)
@@ -230,10 +194,6 @@ export default function AutoComplete({
           resetInputValue(prefix)
         }
       }
-    }
-    // Tab key takes focus off the input and closes the dropdown 
-    if (event.key === 'Tab') {
-      setIsOpen(false)
     }
   }
 
@@ -244,11 +204,10 @@ export default function AutoComplete({
       ref={wrapperRef}
     >
       <Input
-        //ref={inputRef}
         inputStyle={inputStyle}
         prefix={prefix}
         inputProps={inputProps}
-        handlePrefix={handlePrefix}
+        setPrefix={setPrefix}
         handleKeyDown={handleKeyDown}
         setIsOpen={setIsOpen}
       />
