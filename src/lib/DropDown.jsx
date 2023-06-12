@@ -27,11 +27,7 @@ const DropDown = ({
 
     const handleClick = (matchingItem) => {
         if (!controlSubmit) {
-            try {
-                onSelect(savedList[matchingItem.originalIndex])
-            } catch (error) {
-                console.error("You must provide a valid function to the onSelect prop", '\n', error)
-            }
+            onSelect(savedList[matchingItem.originalIndex])
         }
         resetInputValue(matchingItem.value);
     }
@@ -46,6 +42,7 @@ const DropDown = ({
     return (
         <>
             <div
+                data-testid="dropDown"
                 className="dropdown-container"
                 style={dropDownStyle}
                 ref={dropDownRef}

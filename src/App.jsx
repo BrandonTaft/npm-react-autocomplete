@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import AutoComplete from './lib/AutoComplete';
 import testData from './test-data.json'
-import "./index.css"
 
 
 function App() {
@@ -21,7 +20,7 @@ function App() {
   })
 
   let a = [0, 33, 1, 55, 5, 111, 11, 333, 44, 51, 'a']
-  
+  const myList = [1, 'one', 2, 'two', 3, 'three', 4, 'four', 5, 'five']
   const x = (y) => {
     var vals = [];
     for (var i = 0; i < y.length; i++) {
@@ -39,93 +38,91 @@ function App() {
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleList}>LIST</button>
       <AutoComplete
         // Array of values to be stored and displayed in the dropdown
-        list={newList}
+        list={a}
 
-        // Filter the desired property values to display when list contains object
-        getPropValue={x}
+        // // // Filter the desired property values to display when list contains object
+        // getPropValue={x}
 
-        // Sets behavior of values shown in dropdown when no text is entered
-        //If set to true dropdown will dislpay all values from list if no text is entered
-        showAll={true}
+        // // // Sets behavior of values shown in dropdown when no text is entered
+        // // //If set to true dropdown will dislpay all values from list if no text is entered
+        // // showAll={true}
 
-        // Sets behavior of highlight when dropdown is opened
-        highlightFirstItem={false}
+        // // // Sets behavior of highlight when dropdown is opened
+        // highlightFirstItem={false}
 
-        // Sets custome properties and attributes for inout element
-        inputProps={{
-          placeholder: "search..."
-        }}
+        // // Sets custome properties and attributes for inout element
+        // inputProps={{
+        //   placeholder: "search..."
+        // }}
 
-        // If passed in - runs on every new highlight
-        onHighlight={(highlightedItem) => {
-          console.log(highlightedItem)
-        }}
+        // // If passed in - runs on every new highlight
+        // onHighlight={(highlightedItem) => {
+        //   console.log(highlightedItem)
+        // }}
 
-        // Runs when item is clicked, when enter is pressed, or submit = true
+        // // Runs when item is clicked, when enter is pressed, or submit = true
         onSelect={(selectedItem) => {
           console.log("onSELECT")
           console.log(selectedItem)
           setSubmit(false)
         }}
 
-        // If passed in - runs if input value is not a match
+        // // If passed in - runs if input value is not a match
         handleNewValue={(value) => {
           console.log("HANDLE NEW VALUE")
           setNewList(prevState => [...prevState, { name: value }])
           setSubmit(false)
         }}
 
-        // Function that runs when onSelect runs with -
-        // no matching item and handleNewValue is not passed in
-        onSelectError={() => {
-          setSubmit(false)
-          window.prompt("TRY AGAIN")
-        }}
+        // // Function that runs when onSelect runs with -
+        // // no matching item and handleNewValue is not passed in
+        // onSelectError={() => {
+        //   setSubmit(false)
+        //   window.alert("TRY AGAIN")
+        // }}
 
-        // Message shown if no matches found
-        // Default - "No matches found"
-        // False - no message
-        // If a string is passed in - it will be the message shown
-        noMatchMessage={"Please try again"}
+        // // // Message shown if no matches found
+        // // // Default - "No matches found"
+        // // // False - no message
+        // // // If a string is passed in - it will be the message shown
+        // noMatchMessage={"Please try again"}
 
-        // When set to true gives all control to open
-        //disableOutsideClick={true}
+        // // // When set to true gives all control to open
+        // disableOutsideClick={true}
 
-        // Force drop down to open or close
-        open={openDropDown}
-        // // Function that if passed in, runs when dropdown opens or closes 
-        onDropdownChange={(x) => { setOpenDropDown(x) }}
+        // // // Force drop down to open or close
+        // open={openDropDown}
+        // // // Function that if passed in, runs when dropdown opens or closes 
+        // onDropdownChange={(x) => { setOpenDropDown(x) }}
 
         // When set to true, handle Select will only fire when submit is true
         controlSubmit={true}
         // // When true - fires handle select
         submit={submit}
 
-        //// JS Style objects/////
-        inputStyle={{
-          width: "200px",
-          padding: "5px"
-        }}
-        highlightedItemStyle={{
-          backgroundColor: "dodgerBlue",
-          color: "blue"
-        }}
-        wrapperStyle={{ width: 'fit-content' }}
-        listItemStyle={{
-          cursor: "pointer",
-          padding: "5px"
-        }}
-        dropDownStyle={{
-          backgroundColor: "antiquewhite",
-          width: "215px",
-          overflowY: "auto",
-          maxHeight: "300px"
-        }}
+        // // //// JS Style objects/////
+        // inputStyle={{
+        //   width: "200px",
+        //   padding: "5px"
+        // }}
+        // highlightedItemStyle={{
+        //   backgroundColor: "dodgerBlue",
+        //   color: "blue"
+        // }}
+        // wrapperStyle={{ width: 'fit-content' }}
+        // listItemStyle={{
+        //   cursor: "pointer",
+        //   padding: "5px"
+        // }}
+        // dropDownStyle={{
+        //   backgroundColor: "antiquewhite",
+        //   width: "215px",
+        //   overflowY: "auto",
+        //   maxHeight: "300px"
+        // }}
 
       />
-
-    </div>
-  );
-}
+      </div>
+)}
 
 export default App;

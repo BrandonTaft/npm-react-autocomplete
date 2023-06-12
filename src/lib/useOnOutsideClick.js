@@ -3,7 +3,6 @@ import { useEffect } from "react";
 export default function useOnOutsideClick(ref, onOutsideClick, disabled) {
 
     useEffect(() => {
-        console.log("CLICKED")
         const triggered = (e) => {
             if (ref.current && !ref.current.contains(e.target)) {
                 if (!e.target.classList.contains('ignore')) {
