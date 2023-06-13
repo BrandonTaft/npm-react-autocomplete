@@ -22,12 +22,10 @@ describe('AutoComplete', () => {
 });
 
 describe('AutoComplete', () => {
-  beforeEach(function(){
-     jest.spyOn(console, 'error');
-  })
+  const err = jest.spyOn(console, 'error');
   it('logs error if list contains obj but is missing getPropValue', () => {
     render(<AutoComplete list={testData} />);
-    expect(console.error).toHaveBeenCalledTimes(1);
+    expect(err).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -49,12 +47,19 @@ describe('AutoComplete', () => {
 });
 
 describe('AutoComplete', () => {
-  it('forces the dropdown opened', async () => {
-    render(<AutoComplete list={myList} showAll={true} open={true} />);
+  it('forces the dropdown to open', async () => {
+    const {rerender} = render(<AutoComplete list={myList} showAll={true} open={false} />);
 
-    const dropDown = screen.getByTestId('dropDown');
+    const dropDown = screen.queryByTestId('dropDown');
     await waitFor(() => {
-      expect(dropDown).toBeInTheDocument();
+      expect(dropDown).toBeNull();
+    })
+
+    rerender(<AutoComplete list={myList} showAll={true} open={true} />);
+
+    const openDropDown = screen.getByTestId('dropDown');
+    await waitFor(() => {
+      expect(openDropDown).toBeInTheDocument();
     })
 
     screen.debug();
@@ -62,8 +67,7 @@ describe('AutoComplete', () => {
 });
 
 describe('AutoComplete', () => {
-  it('fires the onSelect function', async () => {
-    //const onSelect = jest.fn();
+  it('fires the onSelect function with click', async () => {
     render(<AutoComplete list={myList} onSelect={onSelect}/>);
 
     const myInput = screen.getByRole('searchbox');
@@ -90,14 +94,36 @@ describe('AutoComplete', () => {
     await waitFor(() => {
     fireEvent.click(item)
     })
-
     
-   
     expect(logSpy).toHaveBeenCalled();
     expect(logSpy).toHaveBeenCalledWith('one');
+
+    screen.debug();
+  });
+});
+
+describe('AutoComplete', () => {
+  it('fires the onSelect function with Enter', async () => {
+    render(<AutoComplete list={myList} onSelect={onSelect}/>);
+
+    const myInput = screen.getByRole('searchbox');
+    expect(myInput).toBeInTheDocument(); 
+    fireEvent.focus(myInput);
+
+    await waitFor(() => {
+      fireEvent.change(myInput, {
+        target: { value: 't' },
+      });
+    })
+
+    const logSpy = jest.spyOn(console, 'log');
+    await waitFor(() => {
+      fireEvent.keyDown(myInput, {key: 'Enter', code: 'Enter', charCode: 13})
+    })
     
-    
-    //expect(onSelect).toHaveBeenCalled();
+    expect(logSpy).toHaveBeenCalled();
+    expect(logSpy).toHaveBeenCalledWith('three');
+
     screen.debug();
   });
 });
@@ -134,6 +160,33 @@ describe('AutoComplete', () => {
 });
 
 describe('AutoComplete', () => {
+  it('fires the handleNewValue function with Enter', async () => {
+    render(<AutoComplete list={myList} onSelect={onSelect} handleNewValue={handleNewValue}/>);
+
+    const myInput = screen.getByRole('searchbox');
+    expect(myInput).toBeInTheDocument(); 
+    fireEvent.focus(myInput);
+
+    await waitFor(() => {
+      fireEvent.change(myInput, {
+        target: { value: 'ten' },
+      });
+    })
+
+    const logSpy = jest.spyOn(console, 'log');
+    await waitFor(() => {
+      fireEvent.keyDown(myInput, {key: 'Enter', code: 'Enter', charCode: 13})
+    })
+    
+    expect(logSpy).toHaveBeenCalled();
+    expect(logSpy).toHaveBeenCalledWith('ten');
+    expect(logSpy).toHaveBeenCalledWith("HANDLE NEW VALUE")
+
+    screen.debug();
+  });
+});
+
+describe('AutoComplete', () => {
   it('fires the onSelect function using submit button', async () => {
     const onSelect = jest.fn();
     
@@ -159,14 +212,11 @@ describe('AutoComplete', () => {
       expect(item).toBeInTheDocument();
     })
 
-    //const logSpy = jest.spyOn(console, 'log');
     await waitFor(() => {
     fireEvent.click(item)
     })
+
     rerender(<AutoComplete list={myList} onSelect={onSelect} submit={true} controlSubmit={true}/>);
-    // expect(logSpy).toHaveBeenCalled();
-    // expect(logSpy).toHaveBeenCalledWith('one');
-    
     
     expect(onSelect).toHaveBeenCalledTimes(1);
     screen.debug();
