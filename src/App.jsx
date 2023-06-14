@@ -36,16 +36,16 @@ function App() {
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleDropDown}>OPEN/CLOSE</button>
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleSubmit}>SUBMIT</button>
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleList}>LIST</button>
-      {/* <AutoComplete
+      <AutoComplete
         // Array of values to be stored and displayed in the dropdown
-        list={a}
+        list={testData}
 
         // // // Filter the desired property values to display when list contains object
-        // getPropValue={x}
+        getPropValue={x}
 
         // // // Sets behavior of values shown in dropdown when no text is entered
         // // //If set to true dropdown will dislpay all values from list if no text is entered
-        // // showAll={true}
+        showAll={true}
 
         // // // Sets behavior of highlight when dropdown is opened
         // highlightFirstItem={false}
@@ -121,12 +121,8 @@ function App() {
         //   maxHeight: "300px"
         // }}
 
-      /> */}
-      <AutoComplete list={myList} onSelect={(selectedItem) => {
-          console.log("onSELECT")
-          console.log(selectedItem)
-          setSubmit(false)
-        }}/>
+      />
+      
       </div>
 )}
 

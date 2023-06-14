@@ -9,202 +9,205 @@ const onSelect = (selectedItem) => {
   console.log(selectedItem)
 }
 const handleNewValue = (value) => {
-          console.log("HANDLE NEW VALUE")
-          console.log(value)
-          myList.push(value)
-        }
+  console.log("HANDLE NEW VALUE")
+  console.log(value)
+  myList.push(value)
+}
 
 describe('AutoComplete', () => {
   it('renders AutoComplete w/ no props', () => {
     render(<AutoComplete />);
     screen.debug();
   });
-});
 
-describe('AutoComplete', () => {
   const err = jest.spyOn(console, 'error');
   it('logs error if list contains obj but is missing getPropValue', () => {
     render(<AutoComplete list={testData} />);
     expect(err).toHaveBeenCalledTimes(1);
   });
-});
 
-describe('AutoComplete', () => {
-  it('inserts list into trie', async () => {
-    render(<AutoComplete list={myList} showAll={true} />);
+  it('uses getprop to filter all items in list', async () => {
+    render(<AutoComplete list={testData} getPropValue={getProp} showAll={true} />);
 
-    const myInput = screen.getByRole('searchbox');
-    expect(myInput).toBeInTheDocument(); 
-    fireEvent.focus(myInput);
+    expect(screen.getByRole('searchbox')).toBeInTheDocument();
+    fireEvent.focus(screen.getByRole('searchbox'));
 
-    const dropDown = screen.getByTestId('dropDown');
+    const dropDown = screen.getByTestId('dropDown')
     await waitFor(() => {
       expect(dropDown).toBeInTheDocument();
     })
 
-    screen.debug();
+    const items = dropDown.querySelectorAll('.dropdown-item')
+    expect(items).toHaveLength(59)
+    screen.debug()
   });
-});
 
-describe('AutoComplete', () => {
-  it('forces the dropdown to open', async () => {
-    const {rerender} = render(<AutoComplete list={myList} showAll={true} open={false} />);
 
-    const dropDown = screen.queryByTestId('dropDown');
+  it('inserts list into trie', async () => {
+    render(<AutoComplete list={myList} showAll={true} />);
+
+    expect(screen.getByRole('searchbox')).toBeInTheDocument();
+    fireEvent.focus(screen.getByRole('searchbox'));
+
     await waitFor(() => {
-      expect(dropDown).toBeNull();
+      expect(screen.getByTestId('dropDown')).toBeInTheDocument();
+    })
+
+    screen.debug()
+  });
+
+
+
+  it('forces the dropdown to open', async () => {
+    const { rerender } = render(<AutoComplete list={myList} showAll={true} open={false} />);
+    
+    await waitFor(() => {
+      expect(screen.queryByTestId('dropDown')).toBeNull();
     })
 
     rerender(<AutoComplete list={myList} showAll={true} open={true} />);
-
-    const openDropDown = screen.getByTestId('dropDown');
+    
     await waitFor(() => {
-      expect(openDropDown).toBeInTheDocument();
+      expect(screen.getByTestId('dropDown')).toBeInTheDocument();
     })
 
     screen.debug();
   });
-});
 
-describe('AutoComplete', () => {
+
+
   it('fires the onSelect function with click', async () => {
-    render(<AutoComplete list={myList} onSelect={onSelect}/>);
+    render(<AutoComplete list={myList} onSelect={onSelect} />);
 
-    const myInput = screen.getByRole('searchbox');
-    expect(myInput).toBeInTheDocument(); 
-    fireEvent.focus(myInput);
+    expect(screen.getByRole('searchbox')).toBeInTheDocument();
+    fireEvent.focus(screen.getByRole('searchbox'));
 
     await waitFor(() => {
-      fireEvent.change(myInput, {
+      fireEvent.change(screen.getByRole('searchbox'), {
         target: { value: 'o' },
       });
     })
 
-    const dropDown = screen.getByTestId('dropDown');
+    
     await waitFor(() => {
-      expect(dropDown).toBeInTheDocument();
+      expect(screen.getByTestId('dropDown')).toBeInTheDocument();
     })
 
-    const item = screen.getByText('one');
+    
     await waitFor(() => {
-      expect(item).toBeInTheDocument();
+      expect(screen.getByText('one')).toBeInTheDocument();
     })
 
     const logSpy = jest.spyOn(console, 'log');
     await waitFor(() => {
-    fireEvent.click(item)
+      fireEvent.click(screen.getByText('one'))
     })
-    
+
     expect(logSpy).toHaveBeenCalled();
     expect(logSpy).toHaveBeenCalledWith('one');
 
     screen.debug();
   });
-});
 
-describe('AutoComplete', () => {
+
+
   it('fires the onSelect function with Enter', async () => {
-    render(<AutoComplete list={myList} onSelect={onSelect}/>);
+    render(<AutoComplete list={myList} onSelect={onSelect} />);
 
-    const myInput = screen.getByRole('searchbox');
-    expect(myInput).toBeInTheDocument(); 
-    fireEvent.focus(myInput);
+    
+    expect(screen.getByRole('searchbox')).toBeInTheDocument();
+    fireEvent.focus(screen.getByRole('searchbox'));
 
     await waitFor(() => {
-      fireEvent.change(myInput, {
+      fireEvent.change(screen.getByRole('searchbox'), {
         target: { value: 't' },
       });
     })
 
     const logSpy = jest.spyOn(console, 'log');
     await waitFor(() => {
-      fireEvent.keyDown(myInput, {key: 'Enter', code: 'Enter', charCode: 13})
+      fireEvent.keyDown(screen.getByRole('searchbox'), { key: 'Enter', code: 'Enter', charCode: 13 })
     })
-    
+
     expect(logSpy).toHaveBeenCalled();
     expect(logSpy).toHaveBeenCalledWith('three');
 
     screen.debug();
   });
-});
 
-describe('AutoComplete', () => {
+
   it('fires the handleNewValue function', async () => {
-    render(<AutoComplete list={myList} onSelect={onSelect} handleNewValue={handleNewValue}/>);
+    render(<AutoComplete list={myList} onSelect={onSelect} handleNewValue={handleNewValue} />);
 
-    const myInput = screen.getByRole('searchbox');
-    expect(myInput).toBeInTheDocument(); 
-    fireEvent.focus(myInput);
+    
+    expect(screen.getByRole('searchbox')).toBeInTheDocument();
+    fireEvent.focus(screen.getByRole('searchbox'));
 
     await waitFor(() => {
-      fireEvent.change(myInput, {
+      fireEvent.change(screen.getByRole('searchbox'), {
         target: { value: 'newValue' },
       });
     })
 
-    const dropDown = screen.getByTestId('dropDown');
+    
     await waitFor(() => {
-      expect(dropDown).toBeInTheDocument();
+      expect(screen.getByTestId('dropDown')).toBeInTheDocument();
     })
 
     const logSpy = jest.spyOn(console, 'log');
     await waitFor(() => {
-      fireEvent.keyDown(myInput, {key: 'Enter', code: 'Enter', charCode: 13})
+      fireEvent.keyDown(screen.getByRole('searchbox'), { key: 'Enter', code: 'Enter', charCode: 13 })
     })
-    
+
     expect(logSpy).toHaveBeenCalled();
     expect(logSpy).toHaveBeenCalledWith('newValue');
-    
+
     screen.debug();
   });
-});
 
-describe('AutoComplete', () => {
   it('fires the handleNewValue function with Enter', async () => {
-    render(<AutoComplete list={myList} onSelect={onSelect} handleNewValue={handleNewValue}/>);
+    render(<AutoComplete list={myList} onSelect={onSelect} handleNewValue={handleNewValue} />);
 
-    const myInput = screen.getByRole('searchbox');
-    expect(myInput).toBeInTheDocument(); 
-    fireEvent.focus(myInput);
+    
+    expect(screen.getByRole('searchbox')).toBeInTheDocument();
+    fireEvent.focus(screen.getByRole('searchbox'));
 
     await waitFor(() => {
-      fireEvent.change(myInput, {
+      fireEvent.change(screen.getByRole('searchbox'), {
         target: { value: 'ten' },
       });
     })
 
     const logSpy = jest.spyOn(console, 'log');
     await waitFor(() => {
-      fireEvent.keyDown(myInput, {key: 'Enter', code: 'Enter', charCode: 13})
+      fireEvent.keyDown(screen.getByRole('searchbox'), { key: 'Enter', code: 'Enter', charCode: 13 })
     })
-    
+
     expect(logSpy).toHaveBeenCalled();
     expect(logSpy).toHaveBeenCalledWith('ten');
     expect(logSpy).toHaveBeenCalledWith("HANDLE NEW VALUE")
 
     screen.debug();
   });
-});
 
-describe('AutoComplete', () => {
   it('fires the onSelect function using submit button', async () => {
     const onSelect = jest.fn();
-    
-    const {rerender} = render(<AutoComplete list={myList} onSelect={onSelect} submit={false} controlSubmit={true}/>);
 
-    const myInput = screen.getByRole('searchbox');
-    expect(myInput).toBeInTheDocument(); 
-    fireEvent.focus(myInput);
+    const { rerender } = render(<AutoComplete list={myList} onSelect={onSelect} submit={false} controlSubmit={true} />);
+
+    
+    expect(screen.getByRole('searchbox')).toBeInTheDocument();
+    fireEvent.focus(screen.getByRole('searchbox'));
 
     await waitFor(() => {
-      fireEvent.change(myInput, {
+      fireEvent.change(screen.getByRole('searchbox'), {
         target: { value: 'o' },
       });
     })
 
-    const dropDown = screen.getByTestId('dropDown');
+    
     await waitFor(() => {
-      expect(dropDown).toBeInTheDocument();
+      expect(screen.getByTestId('dropDown')).toBeInTheDocument();
     })
 
     const item = screen.getByText('one');
@@ -213,11 +216,11 @@ describe('AutoComplete', () => {
     })
 
     await waitFor(() => {
-    fireEvent.click(item)
+      fireEvent.click(item)
     })
 
-    rerender(<AutoComplete list={myList} onSelect={onSelect} submit={true} controlSubmit={true}/>);
-    
+    rerender(<AutoComplete list={myList} onSelect={onSelect} submit={true} controlSubmit={true} />);
+
     expect(onSelect).toHaveBeenCalledTimes(1);
     screen.debug();
   });
