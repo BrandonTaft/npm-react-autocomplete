@@ -41,24 +41,24 @@ function App() {
         list={testData}
 
         // // // Filter the desired property values to display when list contains object
-        getPropValue={x}
+        getPropValue={b}
 
         // // // Sets behavior of values shown in dropdown when no text is entered
         // // //If set to true dropdown will dislpay all values from list if no text is entered
         showAll={true}
 
         // // // Sets behavior of highlight when dropdown is opened
-        // highlightFirstItem={false}
+        highlightFirstItem={false}
 
         // // Sets custome properties and attributes for inout element
-        // inputProps={{
-        //   placeholder: "search..."
-        // }}
+        inputProps={{
+          placeholder: "search..."
+        }}
 
         // // If passed in - runs on every new highlight
-        // onHighlight={(highlightedItem) => {
-        //   console.log(highlightedItem)
-        // }}
+        onHighlight={(highlightedItem) => {
+          console.log(highlightedItem)
+        }}
 
         // // Runs when item is clicked, when enter is pressed, or submit = true
         onSelect={(selectedItem) => {
@@ -70,6 +70,7 @@ function App() {
         // // If passed in - runs if input value is not a match
         handleNewValue={(value) => {
           console.log("HANDLE NEW VALUE")
+          console.log(value)
           setNewList(prevState => [...prevState, { name: value }])
           setSubmit(false)
         }}
@@ -96,9 +97,9 @@ function App() {
         // onDropdownChange={(x) => { setOpenDropDown(x) }}
 
         // When set to true, handle Select will only fire when submit is true
-        controlSubmit={true}
+        // controlSubmit={true}
         // // When true - fires handle select
-        submit={submit}
+        // submit={submit}
 
         // // //// JS Style objects/////
         // inputStyle={{

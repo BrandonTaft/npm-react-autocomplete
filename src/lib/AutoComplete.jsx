@@ -12,7 +12,7 @@ export default function AutoComplete({
   highlightFirstItem = true,
   inputProps,
   onHighlight,
-  onSelect =() => {},
+  onSelect = () => {},
   onSelectError,
   handleNewValue,
   disableOutsideClick = false,
@@ -102,17 +102,21 @@ export default function AutoComplete({
   }, [open, submit])
 
   submitRef.current = () => {
-    console.log('submitted')
     let match = trie.current.contains(prefix.toString());
     if (match && onSelect) {
       onSelect(savedList[match.originalIndex])
     } else if (handleNewValue && prefix) {
+      console.log(prefix)
       handleNewValue(prefix)
     } else if ((!match || !handleNewValue) && onSelectError) {
       onSelectError()
     }
     resetInputValue("")
   }
+
+  if(highlightedIndex > matchingItems.length) {
+    setHighlightedIndex(0)
+}
 
   const resetInputValue = useCallback((matchingItem) => {
     setIsOpen(false)
@@ -142,7 +146,7 @@ export default function AutoComplete({
             } else if (matchingItems[highlightedIndex + 1]) {
               setHighlightedIndex(highlightedIndex + 1)
             }
-            if (onHighlight) {
+            if (onHighlight && matchingItems[0].originalIndex >= 0) {
               handleHighlight(highlightedIndex + 1, 0)
             }
           }
@@ -154,7 +158,7 @@ export default function AutoComplete({
           } else if (matchingItems[highlightedIndex - 1]) {
             setHighlightedIndex(highlightedIndex - 1)
           }
-          if (onHighlight) {
+          if (onHighlight && matchingItems[0].originalIndex >= 0) {
             handleHighlight(highlightedIndex - 1, matchingItems.length - 1)
           }
           break
@@ -162,7 +166,7 @@ export default function AutoComplete({
           const highlighted = matchingItems[highlightedIndex]
           if (!controlSubmit) {
             if (onSelect) {
-              if (highlighted && highlighted.originalIndex > 0) {
+              if (highlighted && highlighted.originalIndex >= 0) {
                 onSelect(savedList[highlighted.originalIndex]);
               } else if (prefix) {
                 let match = trie.current.contains(prefix);
@@ -181,7 +185,7 @@ export default function AutoComplete({
             }
 
           } else {
-            if (highlighted) {
+            if (highlighted && highlighted.originalIndex >= 0) {
               resetInputValue(highlighted.value)
             } else if (prefix) {
               resetInputValue(prefix)

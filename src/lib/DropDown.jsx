@@ -34,7 +34,7 @@ const DropDown = ({
 
     const handleHighlight = (index) => {
         setHighlightedIndex(index)
-        if (onHighlight) {
+        if (onHighlight && matchingItems[index].originalIndex >= 0) {
             onHighlight(savedList[matchingItems[index].originalIndex])
         }
     }
@@ -53,7 +53,7 @@ const DropDown = ({
                         className={highlightedIndex === index ? "dropdown-item highlighted-item" : "dropdown-item"}
                         style={highlightedIndex === index ? { ...highlightedItemStyle, ...listItemStyle } : { ...listItemStyle }}
                         onMouseEnter={() => handleHighlight(index)}
-                        onClick={() => { if (matchingItem.originalIndex > 0) { handleClick(matchingItem) } }}
+                        onClick={() => { if (matchingItem.originalIndex >= 0) { handleClick(matchingItem) } }}
                     >
                         {matchingItem.value}
                     </div>
