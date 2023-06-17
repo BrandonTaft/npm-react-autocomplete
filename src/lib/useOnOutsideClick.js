@@ -7,16 +7,16 @@ export default function useOnOutsideClick(ref, onOutsideClick, disabled) {
             if (ref.current && !ref.current.contains(e.target)) {
                 if (!e.target.classList.contains('ignore')) {
                     onOutsideClick()
-                }
-            }
-        }
+                };
+            };
+        };
         if (!disabled) {
             document.addEventListener("mousedown", triggered);
             document.addEventListener("touchstart", triggered);
-        }
+        };
         return () => {
             document.removeEventListener("mousedown", triggered);
             document.removeEventListener("touchstart", triggered);
         };
     },[ref, onOutsideClick, disabled]);
-}
+};

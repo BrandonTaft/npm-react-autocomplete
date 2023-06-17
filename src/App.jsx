@@ -36,7 +36,7 @@ function App() {
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleDropDown}>OPEN/CLOSE</button>
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleSubmit}>SUBMIT</button>
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleList}>LIST</button>
-      <AutoComplete
+      {/* <AutoComplete
         // Array of values to be stored and displayed in the dropdown
         list={testData}
 
@@ -61,11 +61,11 @@ function App() {
         }}
 
         // // Runs when item is clicked, when enter is pressed, or submit = true
-        onSelect={(selectedItem) => {
-          console.log("onSELECT")
-          console.log(selectedItem)
-          setSubmit(false)
-        }}
+        // onSelect={(selectedItem) => {
+        //   console.log("onSELECT")
+        //   console.log(selectedItem)
+        //   setSubmit(false)
+        // }}
 
         // // If passed in - runs if input value is not a match
         handleNewValue={(value) => {
@@ -122,7 +122,8 @@ function App() {
         //   maxHeight: "300px"
         // }}
 
-      />
+      /> */}
+      <AutoComplete list={myList} showAll={true} />
       
       </div>
 )}

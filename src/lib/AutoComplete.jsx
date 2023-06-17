@@ -12,7 +12,7 @@ export default function AutoComplete({
   highlightFirstItem = true,
   inputProps,
   onHighlight,
-  onSelect = () => {},
+  onSelect = () => { },
   onSelectError,
   handleNewValue,
   disableOutsideClick = false,
@@ -42,81 +42,81 @@ export default function AutoComplete({
 
   const onOutsideClick = useCallback(() => {
     setIsOpen(false)
-  }, [])
+  }, []);
 
-  useOnOutsideClick(wrapperRef, onOutsideClick, disableOutsideClick)
+  useOnOutsideClick(wrapperRef, onOutsideClick, disableOutsideClick);
 
   if (!isEqual(list, savedList)) {
     setSavedList(list)
-  }
+  };
 
   useEffect(() => {
     let filtered = [];
     if (savedList.some(value => { return typeof value == "object" })) {
       if (getPropValueRef.current) {
-        filtered = (getPropValueRef.current(savedList))
+        filtered = (getPropValueRef.current(savedList));
       } else {
         console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'")
         return
-      }
+      };
     } else {
       filtered = savedList.slice(0)
-    }
+    };
     if (filtered.length) {
       trie.current = new Trie();
       for (let i = 0; i < filtered.length; i++) {
-        const item = filtered[i]
+        const item = filtered[i];
         if (item && typeof item == 'number') {
-          trie.current.insert(item.toString(), i)
+          trie.current.insert(item.toString(), i);
         } else if (item) {
-          trie.current.insert(item, i)
+          trie.current.insert(item, i);
         };
       };
     };
-  }, [savedList])
+  }, [savedList]);
 
   useEffect(() => {
     if (prefix) {
       if (isOpen) {
         setMatchingItems(trie.current.find(prefix, noMatchMessage))
-      }
+      };
     } else {
       if (isOpen && showAll) {
         setMatchingItems(trie.current.returnAll())
-      }
+      };
       if (!isOpen || !showAll) {
         setMatchingItems([])
         setHighlightedIndex(highlightFirstItem === false ? -1 : 0)
-      }
-    }
+      };
+    };
     if (onDropdownChangeRef.current) onDropdownChangeRef.current(isOpen)
   }, [isOpen, prefix, highlightFirstItem, showAll, noMatchMessage, savedList])
 
   useEffect(() => {
     if (open !== undefined) {
       setIsOpen(open)
-    }
+    };
     if (submit) {
       submitRef.current()
-    }
-  }, [open, submit])
+    };
+  }, [open, submit]);
 
   submitRef.current = () => {
     let match = trie.current.contains(prefix.toString());
-    if (match && onSelect) {
+    if (match) {
       onSelect(savedList[match.originalIndex])
     } else if (handleNewValue && prefix) {
       console.log(prefix)
       handleNewValue(prefix)
     } else if ((!match || !handleNewValue) && onSelectError) {
       onSelectError()
-    }
+    };
     resetInputValue("")
-  }
+  };
 
-  if(highlightedIndex > matchingItems.length) {
+  if (highlightedIndex > matchingItems.length) {
     setHighlightedIndex(0)
-}
+  };
 
   const resetInputValue = useCallback((matchingItem) => {
     setIsOpen(false)
@@ -124,16 +124,16 @@ export default function AutoComplete({
       setPrefix("")
     } else {
       setPrefix(matchingItem)
-    }
-  }, [controlSubmit])
+    };
+  }, [controlSubmit]);
 
   const handleHighlight = (index, reset) => {
     if (matchingItems[index]) {
       onHighlight(savedList[matchingItems[index].originalIndex])
     } else {
       onHighlight(savedList[matchingItems[reset].originalIndex])
-    }
-  }
+    };
+  };
 
   const handleKeyDown = (event) => {
     if (event) {
@@ -145,119 +145,59 @@ export default function AutoComplete({
               setHighlightedIndex(0)
             } else if (matchingItems[highlightedIndex + 1]) {
               setHighlightedIndex(highlightedIndex + 1)
-            }
+            };
             if (onHighlight && matchingItems[0].originalIndex >= 0) {
               handleHighlight(highlightedIndex + 1, 0)
-            }
-          }
-          break
+            };
+          };
+          break;
         case 'ArrowUp':
           event.preventDefault()
           if (highlightedIndex === 0) {
             setHighlightedIndex(matchingItems.length - 1)
           } else if (matchingItems[highlightedIndex - 1]) {
             setHighlightedIndex(highlightedIndex - 1)
-          }
+          };
           if (onHighlight && matchingItems[0].originalIndex >= 0) {
             handleHighlight(highlightedIndex - 1, matchingItems.length - 1)
-          }
-          break
+          };
+          break;
         case 'Enter':
           const highlighted = matchingItems[highlightedIndex]
           if (!controlSubmit) {
-            if (onSelect) {
-              if (highlighted && highlighted.originalIndex >= 0) {
-                onSelect(savedList[highlighted.originalIndex]);
-              } else if (prefix) {
-                let match = trie.current.contains(prefix);
-                if (!match) {
-                  if (handleNewValue) {
-                    handleNewValue(prefix)
-                  } else if (onSelectError) {
-                    onSelectError()
-                  }
-                } else {
-                  onSelect(savedList[match.originalIndex])
-                }
-              }
-              resetInputValue()
-              event.target.blur()
-            }
-
+            if (highlighted && highlighted.originalIndex >= 0) {
+              onSelect(savedList[highlighted.originalIndex]);
+            } else if (prefix) {
+              let match = trie.current.contains(prefix);
+              if (!match) {
+                if (handleNewValue) {
+                  handleNewValue(prefix)
+                } else if (onSelectError) {
+                  onSelectError()
+                };
+              } else {
+                onSelect(savedList[match.originalIndex])
+              };
+            };
+            resetInputValue()
+            event.target.blur()
           } else {
             if (highlighted && highlighted.originalIndex >= 0) {
               resetInputValue(highlighted.value)
             } else if (prefix) {
               resetInputValue(prefix)
-            }
+            };
             event.target.blur()
-          }
-          break
+          };
+          break;
         case 'Tab':
           setIsOpen(false)
-          break
+          break;
         default:
-          break
-      }
-    }
-    // if (event.key === 'ArrowDown' && matchingItems.length) {
-    //   event.preventDefault()
-    //   if (!matchingItems[highlightedIndex + 1]) {
-    //     setHighlightedIndex(0)
-    //   } else if (matchingItems[highlightedIndex + 1]) {
-    //     setHighlightedIndex(highlightedIndex + 1)
-    //   }
-    //   if (onHighlight) {
-    //     handleHighlight(highlightedIndex + 1, 0)
-    //   }
-    // }
-
-    // if (event.key === 'ArrowUp') {
-    //   event.preventDefault()
-    //   if (highlightedIndex === 0) {
-    //     setHighlightedIndex(matchingItems.length - 1)
-    //   } else if (matchingItems[highlightedIndex - 1]) {
-    //     setHighlightedIndex(highlightedIndex - 1)
-    //   }
-    //   if (onHighlight) {
-    //     handleHighlight(highlightedIndex - 1, matchingItems.length - 1)
-    //   }
-    // }
-
-    // if (event.key === 'Tab') {
-    //   setIsOpen(false)
-    // }
-
-    // if (event.key === 'Enter') {
-    //   if (!controlSubmit) {
-    //     if (onSelect) {
-    //       if (highlighted) {
-    //         onSelect(savedList[highlighted.originalIndex]);
-    //       } else if (prefix) {
-    //         let match = trie.current.contains(prefix);
-    //         if (!match) {
-    //           if (handleNewValue) {
-    //             handleNewValue(prefix)
-    //           } else if (onSelectError) {
-    //             onSelectError()
-    //           }
-    //         } else {
-    //           onSelect(savedList[match.originalIndex])
-    //         }
-    //       }
-    //       resetInputValue()
-    //       event.target.blur()
-    //     }
-
-    //   } else {
-    //     if (highlighted) {
-    //       resetInputValue(highlighted.value)
-    //     } else if (prefix) {
-    //       resetInputValue(prefix)
-    //     }
-    //   }
-    // }
-  }
+          break;
+      };
+    };
+  };
 
   return (
     <div
@@ -291,4 +231,4 @@ export default function AutoComplete({
       }
     </div>
   )
-}
+};

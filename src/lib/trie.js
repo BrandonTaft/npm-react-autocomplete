@@ -13,11 +13,11 @@ class TrieNode {
             while (node !== null) {
                 output.unshift(node.letter);
                 node = node.previousLetter;
-            }
+            };
             const originalObject = {
                 value: output.join(''),
                 originalIndex: this.originalIndex
-            }
+            };
             return originalObject;
         };
 
@@ -27,15 +27,15 @@ class TrieNode {
             while (node !== null) {
                 output.unshift(node.letter);
                 node = node.previousLetter;
-            }
+            };
             const originalObject = {
                 value: output.join(''),
                 originalIndex: this.originalIndex
-            }
+            };
             return originalObject;
         };
-    }
-}
+    };
+};
 
 export default class Trie {
     constructor() {
@@ -53,7 +53,7 @@ export default class Trie {
                     node.nextLetters[word[i]] = new TrieNode(word[i]);
                     // also assign the previousLetter to the child node.
                     node.nextLetters[word[i]].previousLetter = node;
-                }
+                };
                 // move to the next depth in the trie.
                 node = node.nextLetters[word[i]];
                 // check to see if we are on the last character.
@@ -62,8 +62,8 @@ export default class Trie {
                     node.originalIndex = originalIndex;
                     // if so, set the end flag to true.
                     node.end = true;
-                }
-            }
+                };
+            };
         };
 
           //  Return all words
@@ -76,7 +76,7 @@ export default class Trie {
 
         // returns every word with given prefix
         this.find = function (value, showNoMatchMessage) {
-            let prefix = value.toLowerCase()
+            let prefix = value.toLowerCase();
             let node = this.root;
             let output = [];
             // for every character in the prefix
@@ -97,12 +97,12 @@ export default class Trie {
                             return (
                                 [{ value: showNoMatchMessage, originalIndex: -1 }]
                             )
-                        }
+                        };
                     } else {
-                        return output
-                    }
-                }
-            }
+                        return output;
+                    };
+                };
+            };
             // find all words in the node that match
             findAllWords(node, output);
             return output.sort((a, b) => collator.compare(a.value, b.value));
@@ -113,14 +113,12 @@ export default class Trie {
             // base case, if node is at a word, push to output
             if (node.end) {
                 arr.unshift(node.getWord());
-            }
+            };
             // iterate through nextLetters, and find all possible matches with that prefix
             for (let child in node.nextLetters) {
                 findAllWords(node.nextLetters[child], arr);
-            }
+            };
         };
-
-       
 
         // check if word is contained in trie.
         this.contains = function (value) {
@@ -137,14 +135,14 @@ export default class Trie {
                 } else {
                     // doesn't exist, return false since it's not present.
                     return false;
-                }
-            }
+                };
+            };
             // return word if it is at node end
             if (node.end) {
                 return node.getOneWord();
             } else {
-                return false
-            }
+                return false;
+            };
         };
-    }
-}
+    };
+};

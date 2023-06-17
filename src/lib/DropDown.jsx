@@ -14,30 +14,30 @@ const DropDown = ({
     savedList
 }) => {
 
-    const dropDownRef = useRef()
+    const dropDownRef = useRef();
 
     useEffect(() => {
         if (dropDownRef.current) {
-            const highlighted = dropDownRef.current.querySelector(".highlighted-item")
+            const highlighted = dropDownRef.current.querySelector(".highlighted-item");
             if (highlighted) {
                 highlighted.scrollIntoView({ block: "nearest" })
-            }
-        }
-    }, [highlightedIndex])
+            };
+        };
+    }, [highlightedIndex]);
 
     const handleClick = (matchingItem) => {
         if (!controlSubmit) {
             onSelect(savedList[matchingItem.originalIndex])
-        }
+        };
         resetInputValue(matchingItem.value);
-    }
+    };
 
     const handleHighlight = (index) => {
         setHighlightedIndex(index)
         if (onHighlight && matchingItems[index].originalIndex >= 0) {
             onHighlight(savedList[matchingItems[index].originalIndex])
-        }
-    }
+        };
+    };
 
     return (
         <>
@@ -62,6 +62,6 @@ const DropDown = ({
             </div>
         </>
     )
-}
+};
 
 export default DropDown

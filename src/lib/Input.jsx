@@ -19,6 +19,6 @@ const Input = ({
             autoComplete='off'
         />
     )
-}
+};
 
 export default Input
