@@ -210,8 +210,8 @@ npm install --save react-autocomplete-input-component
 ```
 ## Tests
 
-Add to them: src/AutoComplete.test.js
-Run them: npm test
+Add to the tests: src/AutoComplete.test.js
+Run the tests: npm test
 
 ## Available Scripts
 
