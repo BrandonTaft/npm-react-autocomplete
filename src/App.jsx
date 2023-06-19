@@ -36,36 +36,24 @@ function App() {
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleDropDown}>OPEN/CLOSE</button>
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleSubmit}>SUBMIT</button>
       <button className='ignore btn' style={{ padding: '10px' }} onClick={toggleList}>LIST</button>
-      {/* <AutoComplete
+     <AutoComplete
         // Array of values to be stored and displayed in the dropdown
-        list={testData}
+        list={myList}
 
         // // // Filter the desired property values to display when list contains object
-        getPropValue={b}
-
-        // // // Sets behavior of values shown in dropdown when no text is entered
-        // // //If set to true dropdown will dislpay all values from list if no text is entered
-        showAll={true}
-
-        // // // Sets behavior of highlight when dropdown is opened
-        highlightFirstItem={false}
-
-        // // Sets custome properties and attributes for inout element
-        inputProps={{
-          placeholder: "search..."
-        }}
+        getDisplayValue={b}
 
         // // If passed in - runs on every new highlight
-        onHighlight={(highlightedItem) => {
+        onHighlightChange={(highlightedItem) => {
           console.log(highlightedItem)
         }}
 
         // // Runs when item is clicked, when enter is pressed, or submit = true
-        // onSelect={(selectedItem) => {
-        //   console.log("onSELECT")
-        //   console.log(selectedItem)
-        //   setSubmit(false)
-        // }}
+        onSelect={(selectedItem) => {
+          console.log("onSELECT")
+          console.log(typeof selectedItem)
+          setSubmit(false)
+        }}
 
         // // If passed in - runs if input value is not a match
         handleNewValue={(value) => {
@@ -86,15 +74,28 @@ function App() {
         // // // Default - "No matches found"
         // // // False - no message
         // // // If a string is passed in - it will be the message shown
-        // noMatchMessage={"Please try again"}
+        //noMatchMessage={"No matches found"}
+
+        // // // Force drop down to open or close
+        open={openDropDown}
+        // // // Function that if passed in, runs when dropdown opens or closes 
+        onDropdownChange={(x) => { setOpenDropDown(x) }}
 
         // // // When set to true gives all control to open
         // disableOutsideClick={true}
 
-        // // // Force drop down to open or close
-        // open={openDropDown}
-        // // // Function that if passed in, runs when dropdown opens or closes 
-        // onDropdownChange={(x) => { setOpenDropDown(x) }}
+        // // Sets custome properties and attributes for inout element
+        inputProps={{
+          placeholder: "search...",
+          onMouseOver: () => setOpenDropDown(true)
+        }}
+
+        // // // Sets behavior of values shown in dropdown when no text is entered
+        // // //If set to true dropdown will dislpay all values from list if no text is entered
+        showAll={true}
+
+        // // // Sets behavior of highlight when dropdown is opened
+        //highlightFirstItem={false}
 
         // When set to true, handle Select will only fire when submit is true
         // controlSubmit={true}
@@ -102,17 +103,9 @@ function App() {
         // submit={submit}
 
         // // //// JS Style objects/////
+        // wrapperStyle={{ width: 'fit-content' }}
         // inputStyle={{
         //   width: "200px",
-        //   padding: "5px"
-        // }}
-        // highlightedItemStyle={{
-        //   backgroundColor: "dodgerBlue",
-        //   color: "blue"
-        // }}
-        // wrapperStyle={{ width: 'fit-content' }}
-        // listItemStyle={{
-        //   cursor: "pointer",
         //   padding: "5px"
         // }}
         // dropDownStyle={{
@@ -122,8 +115,18 @@ function App() {
         //   maxHeight: "300px"
         // }}
 
-      /> */}
-      <AutoComplete list={myList} showAll={true} />
+        // highlightedItemStyle={{
+        //   backgroundColor: "dodgerBlue",
+        //   color: "blue"
+        // }}
+        
+        // listItemStyle={{
+        //   cursor: "pointer",
+        //   padding: "5px"
+        // }}
+        
+      />
+     
       
       </div>
 )}

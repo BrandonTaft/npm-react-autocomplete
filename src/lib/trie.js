@@ -89,15 +89,9 @@ export default class Trie {
                 } else {
                     // if there are none then return it.
                     if (showNoMatchMessage) {
-                        if (typeof showNoMatchMessage === 'boolean') {
-                            return (
-                                [{ value: "No matches found", originalIndex: -1 }]
-                            )
-                        } else if (typeof showNoMatchMessage === 'string') {
                             return (
                                 [{ value: showNoMatchMessage, originalIndex: -1 }]
                             )
-                        };
                     } else {
                         return output;
                     };

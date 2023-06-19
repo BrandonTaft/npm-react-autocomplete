@@ -7,16 +7,16 @@ import isEqual from "lodash.isequal";
 
 export default function AutoComplete({
   list = [],
-  getPropValue,
+  getDisplayValue,
   showAll = false,
   highlightFirstItem = true,
   inputProps,
-  onHighlight,
+  onHighlightChange,
   onSelect = () => { },
   onSelectError,
   handleNewValue,
   disableOutsideClick = false,
-  noMatchMessage = true,
+  noMatchMessage = false,
   open,
   onDropdownChange,
   submit,
@@ -34,7 +34,7 @@ export default function AutoComplete({
   const [prefix, setPrefix] = useState("");
   const [highlightedIndex, setHighlightedIndex] = useState(highlightFirstItem ? 0 : -1);
   const [savedList, setSavedList] = useState([]);
-  const getPropValueRef = useRef(getPropValue);
+  const getDisplayValueRef = useRef(getDisplayValue);
   const onDropdownChangeRef = useRef(onDropdownChange);
   const submitRef = useRef();
   const trie = useRef();
@@ -53,10 +53,10 @@ export default function AutoComplete({
   useEffect(() => {
     let filtered = [];
     if (savedList.some(value => { return typeof value == "object" })) {
-      if (getPropValueRef.current) {
-        filtered = (getPropValueRef.current(savedList));
+      if (getDisplayValueRef.current) {
+        filtered = (getDisplayValueRef.current(savedList));
       } else {
-        console.error("Missing prop - 'getPropValue' is needed to get an object property value from 'list'")
+        console.error("Missing prop - 'getDisplayValue' is needed to get an object property value from 'list'")
         return
       };
     } else {
@@ -129,9 +129,9 @@ export default function AutoComplete({
 
   const handleHighlight = (index, reset) => {
     if (matchingItems[index]) {
-      onHighlight(savedList[matchingItems[index].originalIndex])
+      onHighlightChange(savedList[matchingItems[index].originalIndex])
     } else {
-      onHighlight(savedList[matchingItems[reset].originalIndex])
+      onHighlightChange(savedList[matchingItems[reset].originalIndex])
     };
   };
 
@@ -146,7 +146,7 @@ export default function AutoComplete({
             } else if (matchingItems[highlightedIndex + 1]) {
               setHighlightedIndex(highlightedIndex + 1)
             };
-            if (onHighlight && matchingItems[0].originalIndex >= 0) {
+            if (onHighlightChange && matchingItems[0].originalIndex >= 0) {
               handleHighlight(highlightedIndex + 1, 0)
             };
           };
@@ -158,7 +158,7 @@ export default function AutoComplete({
           } else if (matchingItems[highlightedIndex - 1]) {
             setHighlightedIndex(highlightedIndex - 1)
           };
-          if (onHighlight && matchingItems[0].originalIndex >= 0) {
+          if (onHighlightChange && matchingItems[0].originalIndex >= 0) {
             handleHighlight(highlightedIndex - 1, matchingItems.length - 1)
           };
           break;
@@ -219,7 +219,7 @@ export default function AutoComplete({
           highlightedIndex={highlightedIndex}
           setHighlightedIndex={setHighlightedIndex}
           onSelect={onSelect}
-          onHighlight={onHighlight}
+          onHighlightChange={onHighlightChange}
           resetInputValue={resetInputValue}
           highlightedItemStyle={highlightedItemStyle}
           listItemStyle={listItemStyle}

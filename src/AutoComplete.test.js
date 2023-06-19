@@ -13,7 +13,7 @@ describe('Initial render', () => {
 
   });
 
-  it('logs error if list contains obj but is missing getPropValue', () => {
+  it('logs error if list contains obj but is missing getDisplayValue', () => {
     const err = jest.spyOn(console, 'error');
 
     render(<AutoComplete list={testData} />);
@@ -37,9 +37,9 @@ describe('Renders dropdown component', () => {
     screen.debug();
   });
 
-  it('uses getpropValue to filter and display all items in list', async () => {
+  it('uses getDisplayValue to filter and display all items in list', async () => {
 
-    render(<AutoComplete list={testData} getPropValue={getProp} showAll={true} />);
+    render(<AutoComplete list={testData} getDisplayValue={getProp} showAll={true} />);
 
     fireEvent.focus(screen.getByRole('searchbox'));
 
@@ -301,12 +301,12 @@ describe('handleNewValue', () => {
   });
 });
 
-describe('onHighlight', () => {
-  it('fires onHighlight with mouse', async () => {
-    const onHighlight = jest.fn((highlighted) => console.log(highlighted));
+describe('onHighlightChange', () => {
+  it('fires onHighlightChange with mouse', async () => {
+    const onHighlightChange = jest.fn((highlighted) => console.log(highlighted));
     const logSpy = jest.spyOn(console, 'log');
 
-    render(<AutoComplete list={myList} onHighlight={onHighlight} showAll={true} />);
+    render(<AutoComplete list={myList} onHighlightChange={onHighlightChange} showAll={true} />);
 
     await waitFor(() => {
       fireEvent.focus(screen.getByRole('searchbox'));
@@ -322,17 +322,17 @@ describe('onHighlight', () => {
       fireEvent.mouseEnter(item);
     });
 
-    expect(onHighlight).toHaveBeenCalledTimes(1);
+    expect(onHighlightChange).toHaveBeenCalledTimes(1);
     expect(logSpy).toBeCalledWith(1);
 
   });
 
-  it('fires onHighlight with arrow down', async () => {
+  it('fires onHighlightChange with arrow down', async () => {
     window.HTMLElement.prototype.scrollIntoView = function () { };
-    const onHighlight = jest.fn((highlighted) => console.log(highlighted));
+    const onHighlightChange = jest.fn((highlighted) => console.log(highlighted));
     const logSpy = jest.spyOn(console, 'log');
 
-    render(<AutoComplete list={myList} onHighlight={onHighlight} showAll={true} />);
+    render(<AutoComplete list={myList} onHighlightChange={onHighlightChange} showAll={true} />);
 
     expect(screen.getByRole('searchbox')).toBeInTheDocument();
 
@@ -344,7 +344,7 @@ describe('onHighlight', () => {
 
     fireEvent.keyDown(screen.getByRole('searchbox'), { key: "ArrowDown", code: 40 });
 
-    expect(onHighlight).toHaveBeenCalledTimes(1);
+    expect(onHighlightChange).toHaveBeenCalledTimes(1);
     expect(logSpy).toBeCalledWith(2);
 
     screen.debug();

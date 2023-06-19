@@ -5,7 +5,7 @@ const DropDown = ({
     highlightedIndex,
     setHighlightedIndex,
     onSelect,
-    onHighlight,
+    onHighlightChange,
     resetInputValue,
     highlightedItemStyle,
     dropDownStyle,
@@ -34,8 +34,8 @@ const DropDown = ({
 
     const handleHighlight = (index) => {
         setHighlightedIndex(index)
-        if (onHighlight && matchingItems[index].originalIndex >= 0) {
-            onHighlight(savedList[matchingItems[index].originalIndex])
+        if (onHighlightChange && matchingItems[index].originalIndex >= 0) {
+            onHighlightChange(savedList[matchingItems[index].originalIndex])
         };
     };
 

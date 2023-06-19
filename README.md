@@ -5,30 +5,18 @@
   import { AutoComplete } from 'react-autocomplete-input-component';
 
   <AutoComplete
-    getPropValue={(list) => {
-      return list.map((listItem) => listItem.id)
-    }}
-    showAll={true}
-    inputProps={{
-      placeholder: "search..."
-    }}
-    list={[
-      { name: 'Tom', id: 3233 },
-      { name: 'Tommy', id: 3445 },
-      { name: 'Thomas', id: 3663 }
-    ]}
-    handleHighlight={(highlightedItem) => {
+    list={[1, 'one', 2, 'two', 3, 'three']}
+    onHighlightChange={(highlightedItem) => {
       console.log(highlightedItem)
     }}
-    handleSelect={(selectedItem) => {
+    onSelect={(selectedItem) => {
       console.log(selectedItem)
     }}
-    handleNewValue={(value) => {
-      console.log(value)
+    handleNewValue={(inputValue) => {
+      console.log(inputValue)
     }}
   />
 ```
-
 ## Demo
 [Check out more examples](https://brandontaft.github.io/autocomplete-demo)
 
@@ -41,77 +29,122 @@ npm install --save react-autocomplete-input-component
 
 ## Props
 
-### `list: Array`
-- `Array` of the values to be searched for a match to the user input
-- Values are first inserted and stored into a trie data structure
-- List values that match the user's input will be displayed in the dropdown
-- `getPropValue: Function` is needed if `list` array contains objects 
+### `list: array`
+- `array` of the values to be searched for a match to the user input
+- `getDisplayValue` is needed if `list` array contains objects 
+- can be passed in as an empty array and can always be changed dynamically 
 
-### `getPropValue: Function` (Optional)
-- Only needed if `list` contains objects
-- Defines a callback function passed to Array.map
-- Sets the object property value to be extracted and displayed in dropdown
-
-### `handleHighlightedItem: Function` (Optional)
-- Function that runs when the `highlighted item` changes
-- The 1st argument is the `highlighted item` passed in as an `***HTMLDivElement***`
-- The 2nd argument is the item or object from the original list prop 
+### `getDisplayValue: function` (Optional)
+- only needed if `list` contains objects
+- `function` used to filter out the property value to be displayed in the dropdown
 
 ```jsx
-  const[preview, setPreview] = useState();
+<AutoComplete
+    list={[
+      { name: 'Tom', id: 3233 },
+      { name: 'Tommy', id: 3445 },
+      { name: 'Thomas', id: 3663 }
+    ]}
+    getDisplayValue={(list) => {
+      return list.map((listItem) => listItem.name)
+    }}
+  />
+```
 
-  return(
-    <>
-      <div>{preview}</div>
-      <AutoComplete
-        handleHighlightedItem={(element, item) => {
-          element.style.color= ("red")
-          setPreview(item)
+### `onHighlightChange: function` (Optional)
+- callback function invoked when the `highlighted item` changes
+- its only argument is the `highlighted item's` value from the original list
+- if the `highlighted item` is a property value from an object, the whole object is passed in
+
+### `onSelect: function` (Optional)
+- callback function invoked when an item is selected
+- its only argument is the `selected item's` value from the original list
+- if the `selected item` is a property value from an object, the whole object is passed in
+
+### `handleNewValue: function` (Optional)
+- callback function invoked in place of `onSelect` when there is no matching value for the text input
+- the input value is its only Argument
+- if it is not passed in, the `onSelect` function will run with the text input being its only argument
+
+### `onSelectError: function` (Optional)
+- used if new values are not permitted
+- callback function invoked if `onSelect` fires when there is no match for the input value and the `handleNewValue` function is not passed in
+
+### `noMatchMessage: string` (Optional)
+- message displayed in the dropdown when there is no match for the current input value
+- `default` - will show no message
+- if a string is passed in - it will be the message shown
+
+```jsx
+<AutoComplete
+    onSelectError={() => {
+          window.alert("TRY AGAIN")
         }}
-      />
-    </>
-  )
+    noMatchMessage={"No matches found"}
+  />
 ```
 
-### `onSelect: Function`
-- Function that will run when an item is selected from the dropdown, or if there is not a matching item and a `handleNewValue` function is not passed in
-- If `handleNewValue` is passed in, it will always run if the input value is not in the `list`
-- The 1st argument is the value or object from the original `list` prop 
-- If the selected item is a number it will be returned as a `string`
+### `open : boolean` (Optional)
+- can be used to control the position of the dropdown
+- `true` opens the dropdown and `false` closes the dropdown
 
-### `handleNewValue: Function` (Optional)
-- Runs when there is no matching value for the text input
-- If it is not passed in, the `onSelect` function will run
-- The input value is its only Argument
+### `onDropdownChange: function` (Optional)
+- callback function invoked whenever dropdown is opened or closed
+- its only argument is the current position of the dropdown
 
 ```jsx
-  const [newList, setNewList] = useState(testData);
+  const [openDropDown, setOpenDropDown] = useState()
+
+  const toggleDropDown = () => {
+    setOpenDropDown(openDropDown ? false : true)
+  }
 
   return(
     <>
+      <button className='ignore' onClick={toggleDropDown} />
       <AutoComplete
-        list={newList}
-        handleNewValue={(value) => {
-          setNewList(prevState => [...prevState, {name:value}])
-      }}
+        onDropdownChange={(isOpen) => {
+          setOpenDropDown(isOpen)
+        }}
+        open={openDropDown}
       />
     </>
   )
 ```
+### `disableOutsideClick : boolean` (Optional)
+- `false` (default) the dropdown closes when mouse is clicked outside of the auto-complete wrapper div
+- setting to `true` will disable the feature
+- to ignore a specific element give the element a `className` of `ignore`
+
+### `inputProps: Object` (Optional)
+- Sets HTMLInputElement properties with some exceptions
+- autocomplete, onChange, onKeyDown, onFocus cannot be overridden
+
+```jsx
+ <AutoComplete
+  inputProps={{
+    placeholder: "search...",
+    onMouseOver: () => {
+            setOpenDropDown(true)
+          }
+  }}
+  showAll={true}
+  highlightFirstItem={false}
+  />
+```
+### `showAll: boolean` (Optional)
+- `false` (default) dropdown doesn't appear until input value matches an item's prefix
+- `true` - If the input is focused and empty the dropdown displays all list items
+
+### `highlightFirstItem: boolean` (Optional)
+- `true` (default) - automatically highlights first item in dropdown
+- `false` - highlight is hidden until arrow key is pressed or hover with mouse
 
 ### `submit : boolean` (Optional)
-- Only used if you want to use a `SUBMIT` button
-- Each time it is updated to `true` the `handleSubmit` function runs
-- Should be used with `updateSubmit` to update the state in the parent back to `false`
+- can be used with `controlSubmit` to only fire `onSelect` or `handleNewValue` when passed in as `true`
 
-### `updateSubmit: Function` (Optional)
-- Pass in the set function for your state used in the `submit` prop and it sets the state back to `false` after the `handleSubmit` function runs
-
-### `handleSubmit: Function` (Optional)
-- Function that runs when the `submit` prop is updated to `true`
-- The 1st argument is the original string or object of the value selected
-
-- If `handleNewValue` is passed in, it will always run if the input value is not in the `list`
+### `controlSubmit: boolean` (Optional)
+- when set to `true`, `onSelect` and `handleNewValue` will only fire when submit is passed in as `true`
 
 ```jsx
   const [submit, setSubmit] = useState(false);
@@ -126,78 +159,18 @@ npm install --save react-autocomplete-input-component
         SUBMIT
       </button>
       <AutoComplete
+        controlSubmit={true}
         submit={submit}
-        updateSubmit={setSubmit}
-        handleSubmit={(selectedItem, originalIndex) => {
+        onSelect={(selectedItem) => {
           console.log(selectedItem)
         }}
-      />
-    </>
-  )
-```
-
-### `forceDropDown : boolean` (Optional)
-- This prop is used to set the position of the dropdown in the `AutoComplete` component
-- It is only necessary when using `isOpen` to control the dropdown
-- `true` is passed in to open the dropdown
-- `false` is passed in to close the dropdown
-
-### `isOpen: Function` (Optional)
-- Function used to update the parent with the current position of the dropdown
-- Runs when dropdown opens by entering text or closes by clicking outside of the element 
-
-```jsx
-  const [openDropDown, setOpenDropDown] = useState()
-
-  const toggleDropDown = () => {
-    setOpenDropDown(openDropDown ? false : true)
-  }
-
-  return(
-    <>
-      <button className='ignore' onClick={toggleDropDown} />
-      <AutoComplete
-         onDropdownChange={(updatedState) => {
-          setOpenDropDown(updatedState)
+        handleNewValue={(inputValue) => {
+          console.log(inputValue)
         }}
-        forceDropDown={openDropDown}
       />
     </>
   )
 ```
-
-### `inputProps: Object` (Optional)
-- Sets HTML text input attributes with some exceptions
-- Type and Autocomplete are unable to be overridden
-- Some Event handlers can be used
-- onClick, onChange, onKeyDown, onFocus cannot be overridden
-
-```jsx
-  inputProps={{
-    placeholder: "search...",
-    onMouseOver: () => {
-            setState(true)
-          }
-  }}
-```
-
-### `highlightFirstItem: boolean` (Optional)
-- `true` (default) - automatically highlights first item in dropdown
-- `false` - Press arrow key or hover with mouse to highlight
-
-### `showAll: boolean` (Optional)
-- `false` (default) dropdown doesn't appear until input value matches an item's prefix
-- `true` - If the input is focused and empty the dropdown displays all list items
-
-### `descending: boolean` (Optional)
-- `false` (default) values in dropdown will be in ascending order by default
-- `true` - If set to `true` the values will be in descending order 
-
-### `disableOutsideClick : boolean` (Optional)
-- `false` (default) the dropdown closes when mouse is clicked outside of the auto-complete wrapper div
-- `true` the dropdown only closes when onSelect fires or tab key is pressed
-- `NOTE!!!` to control the dropdown with `isOpen` and keep this enabled,
-  the element controlling the event should have a `className` of `ignore`
 
 ### `wrapperStyle: Object` (Optional)
 - J.S. Style Object Variable for the `div` wrapping the whole component
@@ -235,6 +208,28 @@ npm install --save react-autocomplete-input-component
     }}
   />
 ```
+## Tests
+
+Add to them: src/AutoComplete.test.js
+Run them: npm test
+
+## Available Scripts
+
+In the project directory, you can run:
+
+### `npm start`
+
+Runs the app in the development mode.\
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+
+The page will reload if you make edits.\
+You will also see any lint errors in the console.
+
+### `npm test`
+
+Launches the test runner in the interactive watch mode.\
+
+
 
 
 
