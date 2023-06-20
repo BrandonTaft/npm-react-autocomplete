@@ -5,16 +5,13 @@
   import { AutoComplete } from 'react-autocomplete-input-component';
 
   <AutoComplete
-    list={[1, 'one', 2, 'two', 3, 'three']}
-    onHighlightChange={(highlightedItem) => {
-      console.log(highlightedItem)
-    }}
-    onSelect={(selectedItem) => {
-      console.log(selectedItem)
-    }}
-    handleNewValue={(inputValue) => {
-      console.log(inputValue)
-    }}
+      list={[1, 'one', 2, 'two', 3, 'three']}
+      handleHighlight={(highlightedItem) => {
+        console.log(highlightedItem)
+      }}
+      onSelect={(selectedItem) => {
+        console.log(selectedItem)
+      }}
   />
 ```
 ## Demo
@@ -51,7 +48,7 @@ npm install --save react-autocomplete-input-component
   />
 ```
 
-### `onHighlightChange: function` (Optional)
+### `handleHighlight: function` (Optional)
 - callback function invoked when the `highlighted item` changes
 - its only argument is the `highlighted item's` value from the original list
 - if the `highlighted item` is a property value from an object, the whole object is passed in
@@ -66,6 +63,20 @@ npm install --save react-autocomplete-input-component
 - the input value is its only Argument
 - if it is not passed in, the `onSelect` function will run with the text input being its only argument
 
+```jsx
+  import { AutoComplete } from 'react-autocomplete-input-component';
+
+  <AutoComplete
+      list={[1, 'one', 2, 'two', 3, 'three']}
+      onSelect={(selectedItem) => {
+        console.log(selectedItem)
+      }}
+      handleNewValue={(inputValue) => {
+        console.log(inputValue)
+      }}
+  />
+```
+
 ### `onSelectError: function` (Optional)
 - used if new values are not permitted
 - callback function invoked if `onSelect` fires when there is no match for the input value and the `handleNewValue` function is not passed in
@@ -77,9 +88,7 @@ npm install --save react-autocomplete-input-component
 
 ```jsx
 <AutoComplete
-    onSelectError={() => {
-          window.alert("TRY AGAIN")
-        }}
+    onSelectError={() => window.alert("TRY AGAIN")}
     noMatchMessage={"No matches found"}
   />
 ```
@@ -103,10 +112,8 @@ npm install --save react-autocomplete-input-component
     <>
       <button className='ignore' onClick={toggleDropDown} />
       <AutoComplete
-        onDropdownChange={(isOpen) => {
-          setOpenDropDown(isOpen)
-        }}
-        open={openDropDown}
+          onDropdownChange={(isOpen) => setOpenDropDown(isOpen)}
+          open={openDropDown}
       />
     </>
   )
@@ -122,14 +129,12 @@ npm install --save react-autocomplete-input-component
 
 ```jsx
  <AutoComplete
-  inputProps={{
-    placeholder: "search...",
-    onMouseOver: () => {
-            setOpenDropDown(true)
-          }
-  }}
-  showAll={true}
-  highlightFirstItem={false}
+    inputProps={{
+      placeholder: "search...",
+      onMouseOver: () => setOpenDropDown(true)
+    }}
+    showAll={true}
+    highlightFirstItem={false}
   />
 ```
 ### `showAll: boolean` (Optional)
@@ -155,18 +160,13 @@ npm install --save react-autocomplete-input-component
 
   return(
     <>
-      <button className='ignore' onClick={toggleSubmit}>
-        SUBMIT
-      </button>
+      <button className='ignore' onClick={toggleSubmit}>SUBMIT</button>
       <AutoComplete
-        controlSubmit={true}
-        submit={submit}
-        onSelect={(selectedItem) => {
-          console.log(selectedItem)
-        }}
-        handleNewValue={(inputValue) => {
-          console.log(inputValue)
-        }}
+          controlSubmit={true}
+          submit={submit}
+          onSelect={(selectedItem) => {
+            console.log(selectedItem)
+          }}
       />
     </>
   )
@@ -195,23 +195,23 @@ npm install --save react-autocomplete-input-component
 
 ```jsx  
   <AutoComplete
-    highlightedItemStyle={{
-      backgroundColor: "dodgerBlue"
-    }}
-    listItemStyle={{
-      cursor: "pointer",
-      padding: "5px"
-    }}
-    dropDownStyle={{
-      backgroundColor: "antiquewhite",
-      width: "215px"
-    }}
+      highlightedItemStyle={{
+        backgroundColor: "dodgerBlue"
+      }}
+      listItemStyle={{
+        cursor: "pointer",
+        padding: "5px"
+      }}
+      dropDownStyle={{
+        backgroundColor: "antiquewhite",
+        width: "215px"
+      }}
   />
 ```
 ## Tests
 
-Add to the tests: src/AutoComplete.test.js
-Run the tests: npm test
+Add to the tests: src/AutoComplete.test.js \
+Run the tests: npm test \
 
 ## Available Scripts
 
@@ -227,7 +227,7 @@ You will also see any lint errors in the console.
 
 ### `npm test`
 
-Launches the test runner in the interactive watch mode.\
+Launches the test runner in the interactive watch mode.
 
 
 

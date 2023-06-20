@@ -5,7 +5,7 @@ const DropDown = ({
     highlightedIndex,
     setHighlightedIndex,
     onSelect,
-    onHighlightChange,
+    handleHighlight,
     resetInputValue,
     highlightedItemStyle,
     dropDownStyle,
@@ -32,10 +32,10 @@ const DropDown = ({
         resetInputValue(matchingItem.value);
     };
 
-    const handleHighlight = (index) => {
+    const onHighlightChange = (index) => {
         setHighlightedIndex(index)
-        if (onHighlightChange && matchingItems[index].originalIndex >= 0) {
-            onHighlightChange(savedList[matchingItems[index].originalIndex])
+        if (handleHighlight && matchingItems[index].originalIndex >= 0) {
+            handleHighlight(savedList[matchingItems[index].originalIndex])
         };
     };
 
@@ -52,7 +52,7 @@ const DropDown = ({
                         key={matchingItem.originalIndex}
                         className={highlightedIndex === index ? "dropdown-item highlighted-item" : "dropdown-item"}
                         style={highlightedIndex === index ? { ...highlightedItemStyle, ...listItemStyle } : { ...listItemStyle }}
-                        onMouseEnter={() => handleHighlight(index)}
+                        onMouseEnter={() => onHighlightChange(index)}
                         onClick={() => { if (matchingItem.originalIndex >= 0) { handleClick(matchingItem) } }}
                     >
                         {matchingItem.value}

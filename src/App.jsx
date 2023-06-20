@@ -29,6 +29,8 @@ function App() {
     return vals
   }
 
+  
+
   const b = (y) => y.map((listItem) => listItem.id)
 
   return (
@@ -41,10 +43,10 @@ function App() {
         list={myList}
 
         // // // Filter the desired property values to display when list contains object
-        getDisplayValue={b}
+        getDisplayValue={(list) => list.map((item) => item.name)}
 
         // // If passed in - runs on every new highlight
-        onHighlightChange={(highlightedItem) => {
+        handleHighlight={(highlightedItem) => {
           console.log(highlightedItem)
         }}
 
@@ -58,7 +60,8 @@ function App() {
         // // If passed in - runs if input value is not a match
         handleNewValue={(value) => {
           console.log("HANDLE NEW VALUE")
-          console.log(value)
+          myList.push(value)
+          console.log(myList)
           setNewList(prevState => [...prevState, { name: value }])
           setSubmit(false)
         }}

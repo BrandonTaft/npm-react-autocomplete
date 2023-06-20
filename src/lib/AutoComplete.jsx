@@ -11,7 +11,7 @@ export default function AutoComplete({
   showAll = false,
   highlightFirstItem = true,
   inputProps,
-  onHighlightChange,
+  handleHighlight,
   onSelect = () => { },
   onSelectError,
   handleNewValue,
@@ -127,11 +127,11 @@ export default function AutoComplete({
     };
   }, [controlSubmit]);
 
-  const handleHighlight = (index, reset) => {
+  const onHighlightChange = (index, reset) => {
     if (matchingItems[index]) {
-      onHighlightChange(savedList[matchingItems[index].originalIndex])
+      handleHighlight(savedList[matchingItems[index].originalIndex])
     } else {
-      onHighlightChange(savedList[matchingItems[reset].originalIndex])
+      handleHighlight(savedList[matchingItems[reset].originalIndex])
     };
   };
 
@@ -146,8 +146,8 @@ export default function AutoComplete({
             } else if (matchingItems[highlightedIndex + 1]) {
               setHighlightedIndex(highlightedIndex + 1)
             };
-            if (onHighlightChange && matchingItems[0].originalIndex >= 0) {
-              handleHighlight(highlightedIndex + 1, 0)
+            if (handleHighlight && matchingItems[0].originalIndex >= 0) {
+              onHighlightChange(highlightedIndex + 1, 0)
             };
           };
           break;
@@ -158,8 +158,8 @@ export default function AutoComplete({
           } else if (matchingItems[highlightedIndex - 1]) {
             setHighlightedIndex(highlightedIndex - 1)
           };
-          if (onHighlightChange && matchingItems[0].originalIndex >= 0) {
-            handleHighlight(highlightedIndex - 1, matchingItems.length - 1)
+          if (handleHighlight && matchingItems[0].originalIndex >= 0) {
+            onHighlightChange(highlightedIndex - 1, matchingItems.length - 1)
           };
           break;
         case 'Enter':
@@ -219,7 +219,7 @@ export default function AutoComplete({
           highlightedIndex={highlightedIndex}
           setHighlightedIndex={setHighlightedIndex}
           onSelect={onSelect}
-          onHighlightChange={onHighlightChange}
+          handleHighlight={handleHighlight}
           resetInputValue={resetInputValue}
           highlightedItemStyle={highlightedItemStyle}
           listItemStyle={listItemStyle}
