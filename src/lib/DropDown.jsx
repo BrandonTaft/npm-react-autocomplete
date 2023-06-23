@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import React, { useRef } from "react";
 
 const DropDown = ({
     matchingItems,
@@ -15,15 +15,16 @@ const DropDown = ({
 }) => {
 
     const dropDownRef = useRef();
+    const itemRef = useRef([])
 
-    useEffect(() => {
-        if (dropDownRef.current) {
-            const highlighted = dropDownRef.current.querySelector(".highlighted-item");
-            if (highlighted) {
-                highlighted.scrollIntoView({ block: "nearest" })
-            };
-        };
-    }, [highlightedIndex]);
+    if (handleHighlight && matchingItems[0] && highlightedIndex >= 0 ) {
+        if (matchingItems[highlightedIndex].originalIndex >= 0) {
+        handleHighlight(savedList[matchingItems[highlightedIndex].originalIndex])
+        }
+    }
+    if(itemRef.current[highlightedIndex] ) {
+        itemRef.current[highlightedIndex].scrollIntoView({ block: "nearest" })
+        }
 
     const handleClick = (matchingItem) => {
         if (!controlSubmit) {
@@ -32,12 +33,6 @@ const DropDown = ({
         resetInputValue(matchingItem.value);
     };
 
-    const onHighlightChange = (index) => {
-        setHighlightedIndex(index)
-        if (handleHighlight && matchingItems[index].originalIndex >= 0) {
-            handleHighlight(savedList[matchingItems[index].originalIndex])
-        };
-    };
 
     return (
         <>
@@ -50,9 +45,10 @@ const DropDown = ({
                 {matchingItems.map((matchingItem, index) => (
                     <div
                         key={matchingItem.originalIndex}
+                        ref = {e => itemRef.current[index] = e}
                         className={highlightedIndex === index ? "dropdown-item highlighted-item" : "dropdown-item"}
                         style={highlightedIndex === index ? { ...highlightedItemStyle, ...listItemStyle } : { ...listItemStyle }}
-                        onMouseEnter={() => onHighlightChange(index)}
+                        onMouseEnter={() => setHighlightedIndex(index)}
                         onClick={() => { if (matchingItem.originalIndex >= 0) { handleClick(matchingItem) } }}
                     >
                         {matchingItem.value}

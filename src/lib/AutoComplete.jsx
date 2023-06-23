@@ -18,7 +18,7 @@ export default function AutoComplete({
   disableOutsideClick = false,
   noMatchMessage = false,
   open,
-  onDropdownChange,
+  onDropDownChange,
   submit,
   controlSubmit,
   inputStyle,
@@ -35,7 +35,7 @@ export default function AutoComplete({
   const [highlightedIndex, setHighlightedIndex] = useState(highlightFirstItem ? 0 : -1);
   const [savedList, setSavedList] = useState([]);
   const getDisplayValueRef = useRef(getDisplayValue);
-  const onDropdownChangeRef = useRef(onDropdownChange);
+  const onDropDownChangeRef = useRef(onDropDownChange);
   const submitRef = useRef();
   const trie = useRef();
   const wrapperRef = useRef();
@@ -66,11 +66,12 @@ export default function AutoComplete({
       trie.current = new Trie();
       for (let i = 0; i < filtered.length; i++) {
         const item = filtered[i];
-        if (item && typeof item == 'number') {
+        if ((item && typeof item === 'number') || item === 0) {
           trie.current.insert(item.toString(), i);
-        } else if (item) {
-          trie.current.insert(item, i);
-        };
+        } else
+          if (item) {
+            trie.current.insert(item, i);
+          };
       };
     };
   }, [savedList]);
@@ -89,27 +90,33 @@ export default function AutoComplete({
         setHighlightedIndex(highlightFirstItem === false ? -1 : 0)
       };
     };
-    if (onDropdownChangeRef.current) onDropdownChangeRef.current(isOpen)
+    if (onDropDownChangeRef.current) onDropDownChangeRef.current(isOpen)
   }, [isOpen, prefix, highlightFirstItem, showAll, noMatchMessage, savedList])
 
   useEffect(() => {
     if (open !== undefined) {
       setIsOpen(open)
     };
+  }, [open]);
+
+  useEffect(() => {
     if (submit) {
       submitRef.current()
     };
-  }, [open, submit]);
+  }, [submit]);
 
   submitRef.current = () => {
     let match = trie.current.contains(prefix.toString());
     if (match) {
       onSelect(savedList[match.originalIndex])
     } else if (handleNewValue && prefix) {
-      console.log(prefix)
       handleNewValue(prefix)
-    } else if ((!match || !handleNewValue) && onSelectError) {
-      onSelectError()
+    } else if ((!match || !handleNewValue)) {
+      if (onSelectError) {
+        onSelectError()
+      } else if (onSelect) {
+        onSelect(prefix)
+      }
     };
     resetInputValue("")
   };
@@ -127,14 +134,6 @@ export default function AutoComplete({
     };
   }, [controlSubmit]);
 
-  const onHighlightChange = (index, reset) => {
-    if (matchingItems[index]) {
-      handleHighlight(savedList[matchingItems[index].originalIndex])
-    } else {
-      handleHighlight(savedList[matchingItems[reset].originalIndex])
-    };
-  };
-
   const handleKeyDown = (event) => {
     if (event) {
       switch (event.key) {
@@ -146,9 +145,6 @@ export default function AutoComplete({
             } else if (matchingItems[highlightedIndex + 1]) {
               setHighlightedIndex(highlightedIndex + 1)
             };
-            if (handleHighlight && matchingItems[0].originalIndex >= 0) {
-              onHighlightChange(highlightedIndex + 1, 0)
-            };
           };
           break;
         case 'ArrowUp':
@@ -157,9 +153,6 @@ export default function AutoComplete({
             setHighlightedIndex(matchingItems.length - 1)
           } else if (matchingItems[highlightedIndex - 1]) {
             setHighlightedIndex(highlightedIndex - 1)
-          };
-          if (handleHighlight && matchingItems[0].originalIndex >= 0) {
-            onHighlightChange(highlightedIndex - 1, matchingItems.length - 1)
           };
           break;
         case 'Enter':
@@ -174,6 +167,8 @@ export default function AutoComplete({
                   handleNewValue(prefix)
                 } else if (onSelectError) {
                   onSelectError()
+                } else if (onSelect) {
+                  onSelect(prefix)
                 };
               } else {
                 onSelect(savedList[match.originalIndex])

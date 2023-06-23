@@ -97,7 +97,7 @@ npm install --save react-autocomplete-input-component
 - can be used to control the position of the dropdown
 - `true` opens the dropdown and `false` closes the dropdown
 
-### `onDropdownChange: function` (Optional)
+### `onDropDownChange: function` (Optional)
 - callback function invoked whenever dropdown is opened or closed
 - its only argument is the current position of the dropdown
 
@@ -112,7 +112,7 @@ npm install --save react-autocomplete-input-component
     <>
       <button className='ignore' onClick={toggleDropDown} />
       <AutoComplete
-          onDropdownChange={(isOpen) => setOpenDropDown(isOpen)}
+          onDropDownChange={(isOpen) => setOpenDropDown(isOpen)}
           open={openDropDown}
       />
     </>
@@ -128,13 +128,13 @@ npm install --save react-autocomplete-input-component
 - autocomplete, onChange, onKeyDown, onFocus cannot be overridden
 
 ```jsx
- <AutoComplete
-    inputProps={{
-      placeholder: "search...",
-      onMouseOver: () => setOpenDropDown(true)
-    }}
-    showAll={true}
-    highlightFirstItem={false}
+  <AutoComplete
+      inputProps={{
+        placeholder: "search...",
+        onMouseOver: () => setOpenDropDown(true)
+      }}
+      showAll={true}
+      highlightFirstItem={false}
   />
 ```
 ### `showAll: boolean` (Optional)
@@ -166,6 +166,7 @@ npm install --save react-autocomplete-input-component
           submit={submit}
           onSelect={(selectedItem) => {
             console.log(selectedItem)
+            setSubmit(false)
           }}
       />
     </>
@@ -173,25 +174,24 @@ npm install --save react-autocomplete-input-component
 ```
 
 ### `wrapperStyle: Object` (Optional)
-- J.S. Style Object Variable for the `div` wrapping the whole component
+- Style Object for the `div` wrapping the whole component
 - CSS can also be used with the class name `autocomplete-wrapper`
 
 ### `inputStyle: Object` (Optional)
-- J.S. Style Object Variable for the `input` element
+- Style Object for the `input` element
 - CSS can also be used with the class name `autocomplete-input`
 
 ### `dropDownStyle: Object` (Optional)
-- J.S. Style Object Variable for the dropdown container `div`
+- Style Object for the dropdown container `div`
 - CSS can also be used with the class name `dropdown-container`
 
 ### `listItemStyle: Object` (Optional)
-- J.S. Style Object Variable for each `item div` in the dropdown
+- Style Object for each `item div` in the dropdown
 - CSS can also be used with the class name `dropdown-item`
 
 ### `highlightedItemStyle: Object` (Optional)
-- J.S. Style Object Variable for the `highlighted item`
+- Style Object for the `highlighted item`
 - CSS can also be used with the class name `highlighted-item`
-- Default color is `dodgerBlue`
 
 ```jsx  
   <AutoComplete

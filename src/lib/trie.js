@@ -66,7 +66,7 @@ export default class Trie {
             };
         };
 
-          //  Return all words
+        //  Return all words
         this.returnAll = () => {
             let output = [];
             findAllWords(this.root, output);
@@ -89,9 +89,9 @@ export default class Trie {
                 } else {
                     // if there are none then return it.
                     if (showNoMatchMessage) {
-                            return (
-                                [{ value: showNoMatchMessage, originalIndex: -1 }]
-                            )
+                        return (
+                            [{ value: showNoMatchMessage, originalIndex: -1 }]
+                        )
                     } else {
                         return output;
                     };

@@ -139,8 +139,8 @@ describe('disableOutsideClick', () => {
 
 describe('open & onDropDownChange', () => {
   it('forces the dropdown to open by setting open to true', async () => {
-    const onDropdownChange = jest.fn()
-    const { rerender } = render(<AutoComplete list={myList} showAll={true} open={false} onDropdownChange={onDropdownChange} />);
+    const onDropDownChange = jest.fn()
+    const { rerender } = render(<AutoComplete list={myList} showAll={true} open={false} onDropDownChange={onDropDownChange} />);
 
     expect(screen.queryByTestId('dropDown')).toBeNull();
 
@@ -148,14 +148,14 @@ describe('open & onDropDownChange', () => {
 
     expect(screen.getByTestId('dropDown')).toBeInTheDocument();
 
-    expect(onDropdownChange).toHaveBeenCalled();
+    expect(onDropDownChange).toHaveBeenCalled();
 
     screen.debug();
   });
 
   it('forces the dropdown closed by setting open to false', async () => {
-    const onDropdownChange = jest.fn()
-    const { rerender } = render(<AutoComplete list={myList} showAll={true} open={false} onDropdownChange={onDropdownChange} />);
+    const onDropDownChange = jest.fn()
+    const { rerender } = render(<AutoComplete list={myList} showAll={true} open={false} onDropDownChange={onDropDownChange} />);
 
     expect(screen.queryByTestId('dropDown')).toBeNull();
 
@@ -167,7 +167,7 @@ describe('open & onDropDownChange', () => {
 
     expect(screen.queryByTestId('dropDown')).toBeNull();
 
-    expect(onDropdownChange).toHaveBeenCalled();
+    expect(onDropDownChange).toHaveBeenCalled();
 
     screen.debug();
   });
@@ -344,7 +344,7 @@ describe('handleHighlight', () => {
 
     fireEvent.keyDown(screen.getByRole('searchbox'), { key: "ArrowDown", code: 40 });
 
-    expect(handleHighlight).toHaveBeenCalledTimes(1);
+    expect(handleHighlight).toHaveBeenCalledTimes(2);
     expect(logSpy).toBeCalledWith(2);
 
     screen.debug();

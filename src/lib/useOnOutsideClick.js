@@ -18,5 +18,5 @@ export default function useOnOutsideClick(ref, onOutsideClick, disabled) {
             document.removeEventListener("mousedown", triggered);
             document.removeEventListener("touchstart", triggered);
         };
-    },[ref, onOutsideClick, disabled]);
+    }, [ref, onOutsideClick, disabled]);
 };

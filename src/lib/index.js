@@ -1,5 +1,7 @@
 import Trie from "./trie";
 import AutoComplete from "./AutoComplete";
-import Wrapper from "./Wrapper";
+import DropDown from "./DropDown";
+import Input from "./Input";
+import useOnOutsideClick from "./useOnOutsideClick";
 
-export { Trie, AutoComplete, Wrapper };
+export { Trie, AutoComplete, DropDown, Input, useOnOutsideClick };
